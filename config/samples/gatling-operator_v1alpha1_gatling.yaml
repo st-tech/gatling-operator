@@ -1,0 +1,7 @@
+apiVersion: gatling-operator.tech.zozo.com/v1alpha1
+kind: Gatling
+metadata:
+  name: gatling-sample
+spec:
+  # Add fields here
+  foo: bar

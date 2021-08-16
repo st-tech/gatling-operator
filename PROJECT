@@ -1,0 +1,16 @@
+domain: tech.zozo.com
+layout:
+- go.kubebuilder.io/v3
+projectName: gatling-operator
+repo: github.com/st-tech/gatling-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: tech.zozo.com
+  group: gatling-operator
+  kind: Gatling
+  path: github.com/st-tech/gatling-operator/api/v1alpha1
+  version: v1alpha1
+version: "3"

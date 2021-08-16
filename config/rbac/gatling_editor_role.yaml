@@ -1,0 +1,24 @@
+# permissions for end users to edit gatlings.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gatling-editor-role
+rules:
+- apiGroups:
+  - gatling-operator.tech.zozo.com
+  resources:
+  - gatlings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - gatling-operator.tech.zozo.com
+  resources:
+  - gatlings/status
+  verbs:
+  - get
