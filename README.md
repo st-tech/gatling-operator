@@ -1,4 +1,4 @@
-# gatling-operator-poc
+# gatling-operator
 PoC - automating distributed load testing with Gatling using Kubernetes operator
 
 relevant page:
