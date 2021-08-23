@@ -1,7 +1,53 @@
 apiVersion: gatling-operator.tech.zozo.com/v1alpha1
 kind: Gatling
 metadata:
-  name: gatling-sample
+  name: gatling-sample02
 spec:
-  # Add fields here
-  foo: bar
+  generateReport: true
+  podSpec:
+    #gatlingImage: denvazh/gatling:latest
+    gatlingImage: yoichikawasaki/gatling:3.2.1-01
+    #rcloneImage: rclone/rclone
+    resources:
+      limits:
+        cpu: "500m"
+        memory: "500Mi"
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+  cloudStorageSpec:
+    provider: "aws"
+    storageURL: "s3:gatling-operator-reports"
+    region: "ap-northeast-1"
+    #env:
+      # For S3 see also the env variables for auth
+      # https://rclone.org/s3/#authentication
+      #- name: AWS_ACCESS_KEY_ID
+      #  value: xxxxxxxxxxxxxxx
+      #- name: AWS_SECRET_ACCESS_KEY
+      #  value: xxxxxxxxxxxxxxx
+  testScenarioSpec:
+    startTime: 2021-08-15 08:45:31
+    parallelism: 2
+    simulationsDirectoryPath: "/opt/gatling/user-files/simulations"
+    resourcesDirectoryPath: "/opt/gatling/user-files/resources"
+    resultsDirectoryPath: "/opt/gatling/results"
+    simulationClass: "MyBasicSimulation"
+    env:
+      - name: ENV
+        value: "dev"
+      - name: CONCURRENCY
+        value: "10"
+      - name: DURATION
+        value: "100"
+      - name: SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: gatling-basic-simulation-secrets
+            key: SECRET_KEY

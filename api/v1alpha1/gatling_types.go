@@ -124,6 +124,10 @@ type CloudStorageSpec struct {
 	// +required
 	StorageURL string `json:"storageURL"`
 
+	// Region
+	// +optional
+	Region string `json:"region"`
+
 	// Environment variables used for connecting to the cloud providers.
 	// +optional
 	Env []corev1.EnvVar `json:"env,omitempty"`

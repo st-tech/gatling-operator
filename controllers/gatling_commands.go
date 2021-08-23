@@ -54,25 +54,35 @@ gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RE
 		simulationClass)
 }
 
-func getGatlingTransferResultCommand(resultsDirectoryPath string, reportStorage string) string {
-	template := `
+func getGatlingTransferResultCommand(resultsDirectoryPath string, provider string, region string, reportStorage string) string {
+	switch provider {
+	case "aws":
+		template := `
 RESULTS_DIR_PATH="%s"
-rclone config create s3 s3 env_auth=true
+rclone config create s3 s3 env_auth=true region %s
 for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
 do
-	rclone copyto ${source} --s3-env-auth %s/${HOSTNAME}.log
+	rclone copyto ${source} --s3-no-check-bucket --s3-env-auth %s/${HOSTNAME}.log
 done
 `
-	return fmt.Sprintf(template, resultsDirectoryPath, reportStorage)
+		return fmt.Sprintf(template, resultsDirectoryPath, region, reportStorage)
+	default:
+		return ""
+	}
 }
 
-func getGatlingAggregateResultCommand(resultsDirectoryPath string, reportStorage string) string {
-	template := `
+func getGatlingAggregateResultCommand(resultsDirectoryPath string, provider string, region string, reportStorage string) string {
+	switch provider {
+	case "aws":
+		template := `
 GATLING_AGGREGATE_DIR=%s
-rclone config create s3 s3 env_auth=true
-rclone copy --s3-env-auth %s ${GATLING_AGGREGATE_DIR}
+rclone config create s3 s3 env_auth=true region %s
+rclone copy --s3-no-check-bucket --s3-env-auth %s ${GATLING_AGGREGATE_DIR}
 `
-	return fmt.Sprintf(template, resultsDirectoryPath, reportStorage)
+		return fmt.Sprintf(template, resultsDirectoryPath, region, reportStorage)
+	default:
+		return ""
+	}
 }
 
 func getGatlingGenerateReportCommand(resultsDirectoryPath string) string {
@@ -85,11 +95,16 @@ gatling.sh -rf ${DIR_NAME} -ro ${BASE_NAME}
 	return fmt.Sprintf(template, resultsDirectoryPath)
 }
 
-func getGatlingTransferReportCommand(resultsDirectoryPath string, reportStorage string) string {
-	template := `
-rclone config create s3 s3 env_auth=true
+func getGatlingTransferReportCommand(resultsDirectoryPath string, provider string, region string, reportStorage string) string {
+	switch provider {
+	case "aws":
+		template := `
 GATLING_AGGREGATE_DIR=%s
-rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-env-auth %s 
+rclone config create s3 s3 env_auth=true region %s
+rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3-env-auth %s 
 `
-	return fmt.Sprintf(template, resultsDirectoryPath, reportStorage)
+		return fmt.Sprintf(template, resultsDirectoryPath, region, reportStorage)
+	default:
+		return ""
+	}
 }

@@ -153,6 +153,9 @@ spec:
                     description: 'Provider specifies the cloud provider that will
                       be used. Supported providers: aws'
                     type: string
+                  region:
+                    description: Region
+                    type: string
                   storageURL:
                     description: Storage URL
                     type: string

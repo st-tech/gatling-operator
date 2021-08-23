@@ -44,6 +44,8 @@ const (
 	defaultSimulationsDirectoryPath = "/opt/gatling/user-files/simulations"
 	defaultResourcesDirectoryPath   = "/opt/gatling/user-files/resources"
 	defaultResultsDirectoryPath     = "/opt/gatling/results"
+	defaultCloudStorageProvider     = "aws"
+	defaultCloudStorageRegion       = "ap-northeast-1"
 )
 
 // GatlingReconciler reconciles a Gatling object
@@ -292,7 +294,11 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 
 	if gatling.Spec.GenerateReport {
 
-		gatlingTransferResultCommand := getGatlingTransferResultCommand(r.getResultsDirectoryPath(gatling), reportStorage)
+		gatlingTransferResultCommand := getGatlingTransferResultCommand(
+			r.getResultsDirectoryPath(gatling),
+			r.getCloudStorageProvider(gatling),
+			r.getCloudStorageRegion(gatling),
+			reportStorage)
 		log.Info("gatlingTransferResultCommand:", "command", gatlingTransferResultCommand)
 
 		cloudStorageEnvVars := []corev1.EnvVar{}
@@ -382,14 +388,21 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 	labels := map[string]string{
 		"app": gatling.Name,
 	}
-
-	gatlingAggregateResultCommand := getGatlingAggregateResultCommand(r.getResultsDirectoryPath(gatling), reportStorage)
+	gatlingAggregateResultCommand := getGatlingAggregateResultCommand(
+		r.getResultsDirectoryPath(gatling),
+		r.getCloudStorageProvider(gatling),
+		r.getCloudStorageRegion(gatling),
+		reportStorage)
 	log.Info("gatlingAggregateResultCommand", "command", gatlingAggregateResultCommand)
 
 	gatlingGenerateReportCommand := getGatlingGenerateReportCommand(r.getResultsDirectoryPath(gatling))
 	log.Info("gatlingGenerateReportCommand", "command", gatlingGenerateReportCommand)
 
-	gatlingTransferReportCommand := getGatlingTransferReportCommand(r.getResultsDirectoryPath(gatling), reportStorage)
+	gatlingTransferReportCommand := getGatlingTransferReportCommand(
+		r.getResultsDirectoryPath(gatling),
+		r.getCloudStorageProvider(gatling),
+		r.getCloudStorageRegion(gatling),
+		reportStorage)
 	log.Info("gatlingTransferReportCommand", "command", gatlingTransferReportCommand)
 
 	cloudStorageEnvVars := []corev1.EnvVar{}
@@ -534,6 +547,22 @@ func (r *GatlingReconciler) assignCloudStoragePath(gatling *gatlingv1alpha1.Gatl
 		gatling.Name,
 		hash(fmt.Sprintf("%s%d", gatling.Name, rand.Intn(math.MaxInt32))),
 	)
+}
+
+func (r *GatlingReconciler) getCloudStorageProvider(gatling *gatlingv1alpha1.Gatling) string {
+	provider := defaultCloudStorageProvider
+	if &gatling.Spec.CloudStorageSpec != nil && gatling.Spec.CloudStorageSpec.Provider != "" {
+		provider = gatling.Spec.CloudStorageSpec.Provider
+	}
+	return provider
+}
+
+func (r *GatlingReconciler) getCloudStorageRegion(gatling *gatlingv1alpha1.Gatling) string {
+	region := defaultCloudStorageRegion
+	if &gatling.Spec.CloudStorageSpec != nil && gatling.Spec.CloudStorageSpec.Region != "" {
+		region = gatling.Spec.CloudStorageSpec.Region
+	}
+	return region
 }
 
 func (r *GatlingReconciler) createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error {
