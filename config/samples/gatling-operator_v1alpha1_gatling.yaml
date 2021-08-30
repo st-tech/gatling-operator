@@ -23,7 +23,7 @@ spec:
                     - linux
   cloudStorageSpec:
     provider: "aws"
-    bucket: "s3:gatling-operator-reports"
+    bucket: "gatling-operator-reports"
     region: "ap-northeast-1"
     #env:
       # For S3 see also the env variables for auth
