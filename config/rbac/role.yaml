@@ -19,6 +19,14 @@ rules:
   - update
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - gatling-operator.tech.zozo.com
   resources:
   - gatlings
