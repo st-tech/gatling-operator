@@ -58,6 +58,7 @@ type GatlingReconciler struct {
 }
 
 //+kubebuilder:rbac:groups="batch",resources=jobs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="core",resources=secrets,verbs=get;list;watch
 //+kubebuilder:rbac:groups=gatling-operator.tech.zozo.com,resources=gatlings,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=gatling-operator.tech.zozo.com,resources=gatlings/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=gatling-operator.tech.zozo.com,resources=gatlings/finalizers,verbs=update
@@ -181,7 +182,7 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 		finished, _ := r.isJobFinished(foundJob)
 		if finished {
-			if foundJob.Status.Succeeded == gatling.Spec.Parallelism {
+			if foundJob.Status.Succeeded == gatling.Spec.TestScenarioSpec.Parallelism {
 				log.Info(fmt.Sprintf("Job successfuly completed! ( successded %d )", foundJob.Status.Succeeded), "namespace", foundJob.GetNamespace(), "name", foundJob.GetName())
 				// Delete the runner job
 				if err := r.Delete(ctx, runnerJob, client.PropagationPolicy(metav1.DeletePropagationBackground)); client.IgnoreNotFound(err) != nil {
@@ -388,8 +389,8 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			Labels:    labels,
 		},
 		Spec: batchv1.JobSpec{
-			Parallelism: &gatling.Spec.Parallelism,
-			Completions: &gatling.Spec.Parallelism,
+			Parallelism: &gatling.Spec.TestScenarioSpec.Parallelism,
+			Completions: &gatling.Spec.TestScenarioSpec.Parallelism,
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
 					Affinity: r.getPodAffinity(gatling),

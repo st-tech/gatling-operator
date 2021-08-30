@@ -47,11 +47,11 @@ type GatlingSpec struct {
 
 	// Notification Service specification
 	// +optional
-	NotificationServiceSpec `json:"notificationServiceSpec"`
+	NotificationServiceSpec NotificationServiceSpec `json:"notificationServiceSpec"`
 
 	// Test Scenario specification
 	// +required
-	TestScenarioSpec `json:"testScenarioSpec"`
+	TestScenarioSpec TestScenarioSpec `json:"testScenarioSpec"`
 }
 
 // PodSpec defines type to configure Gatling pod spec
