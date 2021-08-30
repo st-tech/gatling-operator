@@ -29,17 +29,25 @@ type GatlingSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Run simulation and generate reports (default false)
-	// +optional
+	// The flag of generating gatling report
+	// +required
 	GenerateReport bool `json:"generateReport,omitempty"`
+
+	// The flag of notifying gatling report
+	// +required
+	NotifyReport bool `json:"notifyReport,omitempty"`
+
+	// Pod extra specification
+	// +optional
+	PodSpec PodSpec `json:"podSpec,omitempty"`
 
 	// Cloud Storage Provider
 	// +optional
 	CloudStorageSpec CloudStorageSpec `json:"cloudStorageSpec,omitempty"`
 
-	// Pod extra specification
+	// Notification Service specification
 	// +optional
-	PodSpec PodSpec `json:"podSpec,omitempty"`
+	NotificationServiceSpec `json:"notificationServiceSpec"`
 
 	// Test Scenario specification
 	// +required
@@ -120,9 +128,9 @@ type CloudStorageSpec struct {
 	// +required
 	Provider string `json:"provider"`
 
-	// Storage URL
+	// Bucket Name
 	// +required
-	StorageURL string `json:"storageURL"`
+	Bucket string `json:"bucket"`
 
 	// Region
 	// +optional
@@ -131,6 +139,17 @@ type CloudStorageSpec struct {
 	// Environment variables used for connecting to the cloud providers.
 	// +optional
 	Env []corev1.EnvVar `json:"env,omitempty"`
+}
+
+type NotificationServiceSpec struct {
+	// Provider specifies notification service provider
+	// Supported providers: slack
+	// +required
+	Provider string `json:"provider"`
+
+	// The name of secret in which all key/value sets needed for the notification are stored
+	// +required
+	SecretName string `json:"secretName"`
 }
 
 // GatlingStatus defines the observed state of Gatling

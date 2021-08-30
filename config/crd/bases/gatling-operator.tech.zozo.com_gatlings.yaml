@@ -39,6 +39,9 @@ spec:
               cloudStorageSpec:
                 description: Cloud Storage Provider
                 properties:
+                  bucket:
+                    description: Bucket Name
+                    type: string
                   env:
                     description: Environment variables used for connecting to the
                       cloud providers.
@@ -156,15 +159,30 @@ spec:
                   region:
                     description: Region
                     type: string
-                  storageURL:
-                    description: Storage URL
+                required:
+                - bucket
+                - provider
+                type: object
+              generateReport:
+                description: The flag of generating gatling report
+                type: boolean
+              notificationServiceSpec:
+                description: Notification Service specification
+                properties:
+                  provider:
+                    description: 'Provider specifies notification service provider
+                      Supported providers: slack'
+                    type: string
+                  secretName:
+                    description: The name of secret in which all key/value sets needed
+                      for the notification are stored
                     type: string
                 required:
                 - provider
-                - storageURL
+                - secretName
                 type: object
-              generateReport:
-                description: Run simulation and generate reports (default false)
+              notifyReport:
+                description: The flag of notifying gatling report
                 type: boolean
               podSpec:
                 description: Pod extra specification

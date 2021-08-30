@@ -54,7 +54,7 @@ gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RE
 		simulationClass)
 }
 
-func getGatlingTransferResultCommand(resultsDirectoryPath string, provider string, region string, reportStorage string) string {
+func getGatlingTransferResultCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {
 	switch provider {
 	case "aws":
 		template := `
@@ -65,13 +65,17 @@ do
 	rclone copyto ${source} --s3-no-check-bucket --s3-env-auth %s/${HOSTNAME}.log
 done
 `
-		return fmt.Sprintf(template, resultsDirectoryPath, region, reportStorage)
+		return fmt.Sprintf(template, resultsDirectoryPath, region, storagePath)
+	case "gcp": //not supported yet
+		return ""
+	case "azure": //not supported yet
+		return ""
 	default:
 		return ""
 	}
 }
 
-func getGatlingAggregateResultCommand(resultsDirectoryPath string, provider string, region string, reportStorage string) string {
+func getGatlingAggregateResultCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {
 	switch provider {
 	case "aws":
 		template := `
@@ -79,7 +83,11 @@ GATLING_AGGREGATE_DIR=%s
 rclone config create s3 s3 env_auth=true region %s
 rclone copy --s3-no-check-bucket --s3-env-auth %s ${GATLING_AGGREGATE_DIR}
 `
-		return fmt.Sprintf(template, resultsDirectoryPath, region, reportStorage)
+		return fmt.Sprintf(template, resultsDirectoryPath, region, storagePath)
+	case "gcp": //not supported yet
+		return ""
+	case "azure": //not supported yet
+		return ""
 	default:
 		return ""
 	}
@@ -95,7 +103,7 @@ gatling.sh -rf ${DIR_NAME} -ro ${BASE_NAME}
 	return fmt.Sprintf(template, resultsDirectoryPath)
 }
 
-func getGatlingTransferReportCommand(resultsDirectoryPath string, provider string, region string, reportStorage string) string {
+func getGatlingTransferReportCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {
 	switch provider {
 	case "aws":
 		template := `
@@ -103,7 +111,11 @@ GATLING_AGGREGATE_DIR=%s
 rclone config create s3 s3 env_auth=true region %s
 rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3-env-auth %s 
 `
-		return fmt.Sprintf(template, resultsDirectoryPath, region, reportStorage)
+		return fmt.Sprintf(template, resultsDirectoryPath, region, storagePath)
+	case "gcp": //not supported yet
+		return ""
+	case "azure": //not supported yet
+		return ""
 	default:
 		return ""
 	}
