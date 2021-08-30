@@ -1,13 +1,13 @@
 apiVersion: gatling-operator.tech.zozo.com/v1alpha1
 kind: Gatling
 metadata:
-  name: gatling-sample02
+  name: gatling-sample
 spec:
   generateReport: true
+  notifyReport: true
   podSpec:
-    #gatlingImage: denvazh/gatling:latest
-    gatlingImage: yoichikawasaki/gatling:3.2.1-01
-    #rcloneImage: rclone/rclone
+    gatlingImage: yoichikawasaki/gatling:3.2.1
+    rcloneImage: rclone/rclone
     resources:
       limits:
         cpu: "500m"
@@ -23,7 +23,7 @@ spec:
                     - linux
   cloudStorageSpec:
     provider: "aws"
-    storageURL: "s3:gatling-operator-reports"
+    bucket: "s3:gatling-operator-reports"
     region: "ap-northeast-1"
     #env:
       # For S3 see also the env variables for auth
@@ -32,6 +32,9 @@ spec:
       #  value: xxxxxxxxxxxxxxx
       #- name: AWS_SECRET_ACCESS_KEY
       #  value: xxxxxxxxxxxxxxx
+  notificationServiceSpec:
+    provider: "slack"
+    secretName: "gatling-notification-slack-secrets"
   testScenarioSpec:
     startTime: 2021-08-15 08:45:31
     parallelism: 2
@@ -43,9 +46,9 @@ spec:
       - name: ENV
         value: "dev"
       - name: CONCURRENCY
-        value: "10"
+        value: "2"
       - name: DURATION
-        value: "100"
+        value: "10"
       - name: SECRET_KEY
         valueFrom:
           secretKeyRef:
