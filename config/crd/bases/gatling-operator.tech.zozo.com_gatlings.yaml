@@ -1012,12 +1012,35 @@ spec:
                   gatling job
                 format: int32
                 type: integer
+              notificationCompleted:
+                description: Is notification completed (default false)
+                type: boolean
               reportCompleted:
                 description: Is report generation completed (default false)
                 type: boolean
+              reportStoragePath:
+                description: Report Storage Path
+                type: string
               reportUrl:
                 description: Report Url
                 type: string
+              reporterJobName:
+                description: Reporter job name
+                type: string
+              reporterStartTime:
+                description: Reporter start time (UnixTime epoc)
+                format: int32
+                type: integer
+              runnerCompleted:
+                description: Is runner job completed (default false)
+                type: boolean
+              runnerJobName:
+                description: Runner job name
+                type: string
+              runnerStartTime:
+                description: Runner start time (UnixTime epoc)
+                format: int32
+                type: integer
               succeeded:
                 description: The number of pods which reached phase Succeeded for
                   the gatling job

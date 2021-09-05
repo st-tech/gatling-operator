@@ -37,8 +37,9 @@ import (
 )
 
 const (
-	statusCheckIntervalInSeconds       = 10  // 10 sec
-	maxJobCreationWaitTimeInSeconds    = 300 // 300 sec
+	requeueIntervalInSeconds           = 5   // 5 sec
+	maxJobCreationWaitTimeInSeconds    = 600 // 600 sec (10 min)
+	maxJobRunWaitTimeInSeconds         = 600 // 600 sec (10 min)
 	defaultGatlingImage                = "denvazh/gatling:latest"
 	defaultRcloneImage                 = "rclone/rclone:latest"
 	defaultParallelism                 = 1
@@ -65,223 +66,307 @@ type GatlingReconciler struct {
 
 func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := ctrl.LoggerFrom(ctx).WithName("gatling").WithName("Reconcile")
-
-	// Fetch Gatling instance
+	// fetching gatling Resource from in-memory-cache
 	gatling := &gatlingv1alpha1.Gatling{}
-	log.Info("fetching gatling Resource from in-memory-cache")
 	if err := r.Get(ctx, req.NamespacedName, gatling); err != nil {
 		log.Error(err, "Unable to fetch Gatling for some reason, and requeue")
-		// we'll ignore not-found errors, since they can't be fixed by an immediate
-		// requeue (we'll need to wait for a new notification), and we can get them
-		// on deleted requests.
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		return doRequeue(0, client.IgnoreNotFound(err))
 	}
-
-	// Job has already completed, being executed, or failed
-	if gatling.Status.Succeeded > 0 || gatling.Status.Active > 0 || gatling.Status.Failed > 0 {
-		log.Info("Gatling job is already running, completed, or failed", "name", gatling.ObjectMeta.Name, "namespace", gatling.ObjectMeta.Namespace)
-		return ctrl.Result{}, nil
+	log.Info("Reconciling Gatling")
+	// r.dumpGatlingStatus(gatling, log)
+	if r.isGatlingCompleted(gatling) {
+		log.Info("Gatling job has completed!", "name", gatling.ObjectMeta.Name, "namespace", gatling.ObjectMeta.Namespace)
+		return doNotRequeue()
 	}
-
-	if &gatling.Spec.TestScenarioSpec != nil {
-		// Create Simulation Data ConfigMap if defined to create in CR
-		if &gatling.Spec.TestScenarioSpec.SimulationData != nil &&
-			len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
-
-			simulationDataConfigMap := r.newConfigMapForCR(
-				gatling,
-				gatling.Name+"-simulations-data",
-				&gatling.Spec.TestScenarioSpec.SimulationData)
-
-			if err := r.createObject(ctx, gatling, simulationDataConfigMap); err != nil {
-				log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", simulationDataConfigMap.GetNamespace(), simulationDataConfigMap.GetName()))
-				return ctrl.Result{}, err
-			}
+	// Reconciling for running Gatling Jobs
+	if !gatling.Status.RunnerCompleted {
+		requeue, err := r.gatlingRunnerReconcile(ctx, req, gatling, log)
+		if requeue {
+			return doRequeue(requeueIntervalInSeconds*time.Second, err)
 		}
-		// Create Resource Data ConfigMap if defined to create in CR
-		if &gatling.Spec.TestScenarioSpec.ResourceData != nil &&
-			len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
-
-			resourceDataConfigMap := r.newConfigMapForCR(
-				gatling,
-				gatling.Name+"-resources-data",
-				&gatling.Spec.TestScenarioSpec.ResourceData)
-
-			if err := r.createObject(ctx, gatling, resourceDataConfigMap); err != nil {
-				log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", resourceDataConfigMap.GetNamespace(), resourceDataConfigMap.GetName()))
-				return ctrl.Result{}, err
-			}
-		}
-		// Create GatlingConf ConfigMap if defined to create in CR
-		if &gatling.Spec.TestScenarioSpec.GatlingConf != nil &&
-			len(gatling.Spec.TestScenarioSpec.GatlingConf) > 0 {
-
-			gatlingConfConfigMap := r.newConfigMapForCR(
-				gatling,
-				gatling.Name+"-gatling-conf",
-				&gatling.Spec.TestScenarioSpec.GatlingConf)
-
-			if err := r.createObject(ctx, gatling, gatlingConfConfigMap); err != nil {
-				log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", gatlingConfConfigMap.GetNamespace(), gatlingConfConfigMap.GetName()))
-				return ctrl.Result{}, err
-			}
+		if err != nil {
+			r.cleanupJob(ctx, req, gatling.Status.RunnerJobName)
+			return doNotRequeue()
 		}
 	}
-
-	// Generate Gatling Cloud Storage Path if generating report is requred
-	var storagePath string
-	var reportURL string
-	if gatling.Spec.GenerateReport {
-		storagePath, reportURL = r.assignCloudStorageInfo(gatling)
-		log.Info("Assigned", "storagePath", storagePath, "reportURL", reportURL)
+	// Reconciling for reporting
+	if gatling.Spec.GenerateReport && gatling.Status.RunnerCompleted && !gatling.Status.ReportCompleted {
+		requeue, err := r.gatlingReporterReconcile(ctx, req, gatling, log)
+		if requeue {
+			return doRequeue(requeueIntervalInSeconds*time.Second, err)
+		}
+		if err != nil {
+			r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
+			return doNotRequeue()
+		}
 	}
-
-	// Define a new Job object
-	runnerJob := r.newGatlingRunnerJobForCR(gatling, storagePath, log)
-	if err := r.createObject(ctx, gatling, runnerJob); err != nil {
-		log.Error(err, fmt.Sprintf("Failed to creating new job: namespace %s name %s", runnerJob.GetNamespace(), runnerJob.GetName()))
-		return ctrl.Result{}, err
+	// Reconciling for notification
+	if gatling.Spec.NotifyReport && gatling.Status.ReportCompleted && !gatling.Status.NotificationCompleted {
+		requeue, err := r.gatlingNotificationReconcile(ctx, req, gatling, log)
+		if requeue {
+			return doRequeue(requeueIntervalInSeconds*time.Second, err)
+		}
+		if err != nil {
+			return doNotRequeue()
+		}
 	}
+	// Clean up Job resources
+	if gatling.Status.RunnerCompleted {
+		log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.RunnerJobName, gatling.Name))
+		r.cleanupJob(ctx, req, gatling.Status.RunnerJobName)
+	}
+	if gatling.Spec.GenerateReport && gatling.Status.ReportCompleted {
+		log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.ReporterJobName, gatling.Name))
+		r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
+	}
+	return doNotRequeue()
+}
 
-	// Verify if the runner job is completed
-	log.Info("Verify if the runner job is completed", "namespace", runnerJob.GetNamespace(), "name", runnerJob.GetName())
-	jobCreationWaitTime := 0
-	for true {
-		// Check if gatling exists
-		foundGatling := &gatlingv1alpha1.Gatling{}
-		if err := r.Get(ctx, req.NamespacedName, foundGatling); err != nil {
+// Implementation of reconciler logic for the runner job
+func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
+	storagePath, _, err := r.getCloudStorageInfo(ctx, gatling)
+	if err != nil {
+		log.Error(err, "Failed to update gatling status, and requeue")
+		return true, err
+	}
+	// Create Simulation Data ConfigMap if defined to create in CR
+	if &gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
+		configMapName := gatling.Name + "-simulations-data"
+		foundConfigMap := &corev1.ConfigMap{}
+		if err = r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
 			if apierr.IsNotFound(err) {
-				log.Error(err, "Gatling is not found for some reason. It might have been deleted")
-				return ctrl.Result{}, err
-			}
-			log.Error(err, "Failed to get gatling, but not requeue") // NOTE: this isn't critical
-		}
-
-		foundJob := &batchv1.Job{}
-		err := r.Get(ctx, client.ObjectKey{Name: runnerJob.GetName(), Namespace: runnerJob.GetNamespace()}, foundJob)
-		if err != nil && apierr.IsNotFound(err) {
-			if jobCreationWaitTime > maxJobCreationWaitTimeInSeconds {
-				log.Error(err, "Failed to create job", "namespace", runnerJob.GetNamespace(), "name", runnerJob.GetName())
-				return ctrl.Result{}, err
-			}
-			log.Info(fmt.Sprintf("Job is not created yet. let's wait ( %d sec at maximum)", maxJobCreationWaitTimeInSeconds), "namespace", runnerJob.GetNamespace(), "name", runnerJob.GetName())
-			jobCreationWaitTime += statusCheckIntervalInSeconds
-			time.Sleep(statusCheckIntervalInSeconds * time.Second)
-			continue
-		} else if err != nil {
-			log.Error(err, "Failed to get job", "namespace", runnerJob.GetNamespace(), "name", runnerJob.GetName())
-			return ctrl.Result{}, err
-		}
-
-		gatling.Status.Active = foundJob.Status.Active
-		gatling.Status.Failed = foundJob.Status.Failed
-		gatling.Status.Succeeded = foundJob.Status.Succeeded
-		if err := r.updateGatlingStatus(ctx, gatling); err != nil {
-			log.Error(err, "Failed to update gatling status, but not requeue") // NOTE: this isn't critical
-		}
-
-		finished, _ := r.isJobFinished(foundJob)
-		if finished {
-			if foundJob.Status.Succeeded == gatling.Spec.TestScenarioSpec.Parallelism {
-				log.Info(fmt.Sprintf("Job successfuly completed! ( successded %d )", foundJob.Status.Succeeded), "namespace", foundJob.GetNamespace(), "name", foundJob.GetName())
-				// Delete the runner job
-				if err := r.Delete(ctx, runnerJob, client.PropagationPolicy(metav1.DeletePropagationBackground)); client.IgnoreNotFound(err) != nil {
-					log.Error(err, "Failed to delete runner job", "job", runnerJob) // NOTE: this isn't critical
-				} else {
-					log.Info("Deleted runner job!", "job", runnerJob)
+				simulationDataConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.SimulationData)
+				if err := r.createObject(ctx, gatling, simulationDataConfigMap); err != nil {
+					log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", simulationDataConfigMap.GetNamespace(), simulationDataConfigMap.GetName()))
+					return true, err
 				}
-				break
+			} else {
+				return true, err
 			}
-			errorMessage := fmt.Sprintf("Failed to complete runner job ( failed %d / backofflimit %d ). Please review logs", foundJob.Status.Failed, *runnerJob.Spec.BackoffLimit)
-			log.Error(nil, errorMessage)
-			gatling.Status.Error = errorMessage
-			if err := r.updateGatlingStatus(ctx, gatling); err != nil {
-				log.Error(err, "Failed to update gatling status, but not requeue") // NOTE: this isn't critical
-			}
-			return ctrl.Result{}, nil
 		}
-		log.Info(fmt.Sprintf("Runner job is still running ( Job status: active=%d failed=%d succeeded=%d )", foundJob.Status.Active, foundJob.Status.Failed, foundJob.Status.Succeeded))
-		time.Sleep(statusCheckIntervalInSeconds * time.Second)
 	}
-
-	if gatling.Spec.GenerateReport {
+	// Create Resource Data ConfigMap if defined to create in CR
+	if &gatling.Spec.TestScenarioSpec.ResourceData != nil && len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
+		configMapName := gatling.Name + "-resources-data"
+		foundConfigMap := &corev1.ConfigMap{}
+		if err = r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
+			if apierr.IsNotFound(err) {
+				resourceDataConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.ResourceData)
+				if err := r.createObject(ctx, gatling, resourceDataConfigMap); err != nil {
+					log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", resourceDataConfigMap.GetNamespace(), resourceDataConfigMap.GetName()))
+					return true, err
+				}
+			} else {
+				return true, err
+			}
+		}
+	}
+	// Create GatlingConf ConfigMap if defined to create in CR
+	if &gatling.Spec.TestScenarioSpec.GatlingConf != nil && len(gatling.Spec.TestScenarioSpec.GatlingConf) > 0 {
+		configMapName := gatling.Name + "-gatling-conf"
+		foundConfigMap := &corev1.ConfigMap{}
+		if err = r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
+			if apierr.IsNotFound(err) {
+				gatlingConfConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.GatlingConf)
+				if err := r.createObject(ctx, gatling, gatlingConfConfigMap); err != nil {
+					log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", gatlingConfConfigMap.GetNamespace(), gatlingConfConfigMap.GetName()))
+					return true, err
+				}
+			} else {
+				return true, err
+			}
+		}
+	}
+	if gatling.Status.RunnerJobName == "" {
+		// Define and create new Job object
+		runnerJob := &batchv1.Job{}
+		runnerJob = r.newGatlingRunnerJobForCR(gatling, storagePath, log)
+		if err := r.createObject(ctx, gatling, runnerJob); err != nil {
+			log.Error(err, fmt.Sprintf("Failed to creating new job, and requeue: namespace %s name %s", runnerJob.GetNamespace(), runnerJob.GetName()))
+			return true, err
+		}
+		// Update Status
+		gatling.Status.RunnerStartTime = getEpocTime()
+		gatling.Status.RunnerJobName = runnerJob.GetName()
+		gatling.Status.Active = runnerJob.Status.Active
+		gatling.Status.Failed = runnerJob.Status.Failed
+		gatling.Status.Succeeded = runnerJob.Status.Succeeded
+		gatling.Status.RunnerCompleted = false
 		gatling.Status.ReportCompleted = false
-		// Define a new Job object
+		gatling.Status.NotificationCompleted = false
+		if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+			return true, err
+		}
+	}
+	foundJob := &batchv1.Job{}
+	err = r.Get(ctx, client.ObjectKey{Name: gatling.Status.RunnerJobName, Namespace: req.Namespace}, foundJob)
+	if err != nil && apierr.IsNotFound(err) {
+		duration := getEpocTime() - gatling.Status.RunnerStartTime
+		if duration > maxJobCreationWaitTimeInSeconds {
+			msg := fmt.Sprintf("Runs out of time (%d sec) in creating the runner job", maxJobCreationWaitTimeInSeconds)
+			log.Error(err, msg, "namespace", req.Namespace, "name", gatling.Status.RunnerJobName)
+			gatling.Status.Error = msg
+			if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+				return true, err
+			}
+			return false, err // no longer requeue
+		}
+		log.Info("The runner job has not been created yet, and requeue", "namespace", req.Namespace, "name", gatling.Status.RunnerJobName)
+		return true, err
+	} else if err != nil {
+		log.Error(err, "Failed to get the runner job, and requeue", "namespace", req.Namespace, "name", gatling.Status.RunnerJobName)
+		return true, err
+	}
+	// Set foundJob status to gatling status
+	gatling.Status.Active = foundJob.Status.Active
+	gatling.Status.Failed = foundJob.Status.Failed
+	gatling.Status.Succeeded = foundJob.Status.Succeeded
+
+	// Check if the job runs out of time in running the job
+	duration := getEpocTime() - gatling.Status.RunnerStartTime
+	if duration > maxJobRunWaitTimeInSeconds {
+		msg := fmt.Sprintf("Runs out of time (%d sec) in running the runner job", maxJobCreationWaitTimeInSeconds)
+		log.Error(nil, msg, "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
+		gatling.Status.Error = msg
+		if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+			return true, err
+		}
+		return false, errors.New(msg) // no longer requeue
+	}
+	// Check if the runner job has completed
+	log.Info("Check if the runner job has completed", "namespace", foundJob.GetNamespace(), "name", foundJob.GetName())
+	if r.isJobCompleted(foundJob) {
+		if foundJob.Status.Succeeded == gatling.Spec.TestScenarioSpec.Parallelism {
+			log.Info(fmt.Sprintf("Job has successfuly completed! ( successded %d )", foundJob.Status.Succeeded), "namespace", foundJob.GetNamespace(), "name", foundJob.GetName())
+			gatling.Status.RunnerCompleted = true
+			if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+				log.Error(err, "Failed to update gatling status")
+				return true, err
+			}
+			return false, nil
+		} else {
+			msg := fmt.Sprintf("Failed to complete runner job ( failed %d / backofflimit %d ). Please review logs", foundJob.Status.Failed, *foundJob.Spec.BackoffLimit)
+			log.Error(nil, msg)
+			gatling.Status.Error = msg
+			if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+				return true, err
+			}
+			return false, errors.New(msg) // no longer requeue
+		}
+	}
+	log.Info(fmt.Sprintf("Runner job is still running ( Job status: active=%d failed=%d succeeded=%d )", foundJob.Status.Active, foundJob.Status.Failed, foundJob.Status.Succeeded))
+	if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+		log.Error(err, "Failed to update gatling status, but not requeue") // NOTE: this isn't critical
+		return true, err
+	}
+	return true, nil
+}
+
+// Implementation of reconciler logic for the reporter job
+func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
+	storagePath, _, err := r.getCloudStorageInfo(ctx, gatling)
+	if err != nil {
+		log.Error(err, "Failed to get gatling storage info, and requeue")
+		return true, err
+	}
+	if gatling.Status.ReporterJobName == "" {
+		// Define and crewate new Job object
 		reporterJob := r.newGatlingReporterJobForCR(gatling, storagePath, log)
 		if err := r.createObject(ctx, gatling, reporterJob); err != nil {
-			log.Error(err, fmt.Sprintf("Failed to creating new job: namespace %s name %s", reporterJob.GetNamespace(), reporterJob.GetName()))
-			return ctrl.Result{}, err
+			log.Error(err, fmt.Sprintf("Failed to creating new reporter job for gatling %s", gatling.Name))
+			return true, err
 		}
-
-		// Verify if the reporter job is completed
-		log.Info("Verify if the reporter job is completed", "namespace", runnerJob.GetNamespace(), "name", runnerJob.GetName())
-		jobCreationWaitTime = 0
-		for true {
-			// Check if gatling exists
-			foundGatling := &gatlingv1alpha1.Gatling{}
-			if err := r.Get(ctx, req.NamespacedName, foundGatling); err != nil {
-				if apierr.IsNotFound(err) {
-					log.Error(err, "Gatling is not found for some reason. It might have been deleted")
-					return ctrl.Result{}, err
-				}
-				log.Error(err, "Failed to get gatling, but not requeue") // NOTE: this isn't critical
-			}
-
-			foundJob := &batchv1.Job{}
-			err := r.Get(ctx, client.ObjectKey{Name: reporterJob.GetName(), Namespace: reporterJob.GetNamespace()}, foundJob)
-			if err != nil && apierr.IsNotFound(err) {
-				if jobCreationWaitTime > maxJobCreationWaitTimeInSeconds {
-					log.Error(err, "Failed to create job", "namespace", reporterJob.GetNamespace(), "name", reporterJob.GetName())
-					return ctrl.Result{}, err
-				}
-				log.Info(fmt.Sprintf("Job is not created yet. let's wait ( %d sec at maximum)", maxJobCreationWaitTimeInSeconds), "namespace", reporterJob.GetNamespace(), "name", reporterJob.GetName())
-				jobCreationWaitTime += statusCheckIntervalInSeconds
-				time.Sleep(statusCheckIntervalInSeconds * time.Second)
-				continue
-			} else if err != nil {
-				log.Error(err, "Failed to get job", "namespace", runnerJob.GetNamespace(), "name", runnerJob.GetName())
-				return ctrl.Result{}, err
-			}
-
-			// Check if the report Job has finished
-			finished, _ := r.isJobFinished(foundJob)
-			if finished {
-				if foundJob.Status.Succeeded == 1 {
-					log.Info(fmt.Sprintf("Job successfuly completed! ( successded %d )", foundJob.Status.Succeeded), "namespace", foundJob.GetNamespace(), "name", foundJob.GetName())
-					// Delete the reporter job
-					if err := r.Delete(ctx, reporterJob, client.PropagationPolicy(metav1.DeletePropagationBackground)); client.IgnoreNotFound(err) != nil {
-						log.Error(err, "Failed to delete reporter job, but not requeue", "job", reporterJob)
-					} else {
-						log.Info("Deleted reporter job!", "job", reporterJob)
-					}
-					break
-				} else {
-					errorMessage := fmt.Sprintf("Failed to complete reporter job( failed %d / backofflimit %d ). Please review logs", foundJob.Status.Failed, *reporterJob.Spec.BackoffLimit)
-					log.Error(nil, errorMessage)
-					gatling.Status.Error = errorMessage
-					if err := r.updateGatlingStatus(ctx, gatling); err != nil {
-						log.Error(err, "Failed to update gatling status, but not requeue") // NOTE: this isn't critical
-					}
-					return ctrl.Result{}, nil
-				}
-			}
-			log.Info(fmt.Sprintf("Reporter job is still running ( Job status: active=%d failed=%d succeeded=%d )", foundJob.Status.Active, foundJob.Status.Failed, foundJob.Status.Succeeded))
-			time.Sleep(statusCheckIntervalInSeconds * time.Second)
-		}
-
-		// Send notification
-		if gatling.Spec.NotifyReport {
-			if err := r.sendNotification(ctx, gatling, reportURL); err != nil {
-				log.Error(err, "Failed to sendNotification, but not requeue") // NOTE: this isn't critical
-			}
-		}
-		// Update gatling status on report
-		gatling.Status.ReportCompleted = true
-		gatling.Status.ReportUrl = reportURL
+		// Update Status
+		gatling.Status.ReporterStartTime = getEpocTime()
+		gatling.Status.ReporterJobName = reporterJob.GetName()
+		gatling.Status.ReportCompleted = false
+		gatling.Status.NotificationCompleted = false
 		if err := r.updateGatlingStatus(ctx, gatling); err != nil {
-			log.Error(err, "Failed to update gatling status, but not requeue") //NOTE: this isn't critical
+			return true, err
 		}
 	}
+	foundJob := &batchv1.Job{}
+	err = r.Get(ctx, client.ObjectKey{Name: gatling.Status.ReporterJobName, Namespace: req.Namespace}, foundJob)
+	if err != nil && apierr.IsNotFound(err) {
+		// Check if the job runs out of time in creating the job
+		duration := getEpocTime() - gatling.Status.ReporterStartTime
+		if duration > maxJobCreationWaitTimeInSeconds {
+			msg := fmt.Sprintf("Runs out of time (%d sec) in creating the reporter job", maxJobCreationWaitTimeInSeconds)
+			log.Error(err, msg, "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
+			gatling.Status.Error = msg
+			if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+				return true, err
+			}
+			return false, err // no longer requeue
+		}
+		log.Info("The reporter job has not been created yet, and requeue", "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
+		return true, err
+	} else if err != nil {
+		log.Error(err, "Failed to get the reporter job, and requeue", "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
+		return true, err
+	}
+	// Check if the job runs out of time in running the job
+	duration := getEpocTime() - gatling.Status.ReporterStartTime
+	if duration > maxJobRunWaitTimeInSeconds {
+		msg := fmt.Sprintf("Runs out of time (%d sec) in running the reporter job, and no longer requeue", maxJobCreationWaitTimeInSeconds)
+		log.Error(nil, msg, "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
+		gatling.Status.Error = msg
+		if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+			return true, err
+		}
+		return false, errors.New(msg) // no longer requeue
+	}
+	// Check if the reporter job has completed
+	log.Info("Check if the reporter job has completed", "namespace", foundJob.GetNamespace(), "name", foundJob.GetName())
+	if r.isJobCompleted(foundJob) {
+		if foundJob.Status.Succeeded == 1 {
+			log.Info(fmt.Sprintf("Job has successfuly completed! ( successded %d )", foundJob.Status.Succeeded), "namespace", foundJob.GetNamespace(), "name", foundJob.GetName())
+			gatling.Status.ReportCompleted = true
+			if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+				log.Error(err, "Failed to update gatling status, but not requeue")
+				return true, err
+			}
+			return false, nil
+		} else {
+			msg := fmt.Sprintf("Failed to complete reporter job( failed %d / backofflimit %d ). Please review logs", foundJob.Status.Failed, *foundJob.Spec.BackoffLimit)
+			log.Error(nil, msg)
+			gatling.Status.Error = msg
+			if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+				return true, err
+			}
+			return false, errors.New(msg) // no longer requeue
+		}
+	}
+	log.Info(fmt.Sprintf("Reporter job is still running ( Job status: active=%d failed=%d succeeded=%d )", foundJob.Status.Active, foundJob.Status.Failed, foundJob.Status.Succeeded))
+	return true, nil
+}
+
+// Implementation of reconciler logic for the notification
+func (r *GatlingReconciler) gatlingNotificationReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
+	_, reportURL, err := r.getCloudStorageInfo(ctx, gatling)
+	if err != nil {
+		log.Error(err, "Failed to get gatling storage info, and requeue")
+		return true, err
+	}
+	if err := r.sendNotification(ctx, gatling, reportURL); err != nil {
+		log.Error(err, "Failed to sendNotification, but and requeue")
+		return true, err
+	}
+	// Update gatling status on notification
+	gatling.Status.NotificationCompleted = true
+	if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+		log.Error(err, "Failed to update gatling status, and requeue")
+		return true, err
+	}
+	log.Info("Notification has successfully been sent!")
+	return false, nil
+}
+
+func doRequeue(requeueAfter time.Duration, err error) (ctrl.Result, error) {
+	return ctrl.Result{Requeue: true, RequeueAfter: requeueAfter}, err
+}
+
+func doNotRequeue() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
@@ -307,7 +392,6 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 	labels := map[string]string{
 		"app": gatling.Name,
 	}
-
 	gatlingRunnerCommand := getGatlingRunnerCommand(
 		r.getSimulationsDirectoryPath(gatling),
 		r.getTempSimulationsDirectoryPath(gatling),
@@ -321,21 +405,17 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 	if &gatling.Spec.TestScenarioSpec != nil && &gatling.Spec.TestScenarioSpec.Env != nil {
 		envVars = gatling.Spec.TestScenarioSpec.Env
 	}
-
 	if gatling.Spec.GenerateReport {
-
 		gatlingTransferResultCommand := getGatlingTransferResultCommand(
 			r.getResultsDirectoryPath(gatling),
 			r.getCloudStorageProvider(gatling),
 			r.getCloudStorageRegion(gatling),
 			storagePath)
 		log.Info("gatlingTransferResultCommand:", "command", gatlingTransferResultCommand)
-
 		cloudStorageEnvVars := []corev1.EnvVar{}
 		if &gatling.Spec.CloudStorageSpec != nil && &gatling.Spec.CloudStorageSpec.Env != nil {
 			cloudStorageEnvVars = gatling.Spec.CloudStorageSpec.Env
 		}
-
 		return &batchv1.Job{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      gatling.Name + "-runner",
@@ -414,7 +494,6 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 }
 
 func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.Gatling, storagePath string, log logr.Logger) *batchv1.Job {
-
 	labels := map[string]string{
 		"app": gatling.Name,
 	}
@@ -439,7 +518,6 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 	if &gatling.Spec.CloudStorageSpec != nil && &gatling.Spec.CloudStorageSpec.Env != nil {
 		cloudStorageEnvVars = gatling.Spec.CloudStorageSpec.Env
 	}
-
 	//Non parallel job
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -511,7 +589,6 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 // VolumeMounts for Galling Job
 func (r *GatlingReconciler) getGatlingRunnerJobVolumeMounts(gatling *gatlingv1alpha1.Gatling) []corev1.VolumeMount {
 	volumeMounts := make([]corev1.VolumeMount, 0)
-
 	if &gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      "simulations-data-volume",
@@ -571,6 +648,24 @@ func (r *GatlingReconciler) getGatlingRunnerJobVolumes(gatling *gatlingv1alpha1.
 	return volumes
 }
 
+func (r *GatlingReconciler) getCloudStorageInfo(ctx context.Context, gatling *gatlingv1alpha1.Gatling) (string, string, error) {
+	var storagePath string
+	var reportURL string
+	if gatling.Status.ReportStoragePath != "" && gatling.Status.ReportUrl != "" {
+		storagePath = gatling.Status.ReportStoragePath
+		reportURL = gatling.Status.ReportUrl
+	} else {
+		// Generate Gatling Cloud Storage Path
+		storagePath, reportURL = r.assignCloudStorageInfo(gatling)
+		gatling.Status.ReportStoragePath = storagePath
+		gatling.Status.ReportUrl = reportURL
+		if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+			return storagePath, reportURL, err
+		}
+	}
+	return storagePath, reportURL, nil
+}
+
 func (r *GatlingReconciler) assignCloudStorageInfo(gatling *gatlingv1alpha1.Gatling) (string, string) {
 	subDir := fmt.Sprint(hash(fmt.Sprintf("%s%d", gatling.Name, rand.Intn(math.MaxInt32))))
 	storagePath := getCloudStoragePath(
@@ -584,6 +679,98 @@ func (r *GatlingReconciler) assignCloudStorageInfo(gatling *gatlingv1alpha1.Gatl
 		gatling.Name,
 		subDir)
 	return storagePath, reportURL
+}
+
+func (r *GatlingReconciler) sendNotification(ctx context.Context, gatling *gatlingv1alpha1.Gatling, reportURL string) error {
+	secretName := r.getNotificationServiceSecretName(gatling)
+	foundSecret := &corev1.Secret{}
+	if err := r.Get(ctx, client.ObjectKey{Name: secretName, Namespace: gatling.Namespace}, foundSecret); err != nil {
+		// secret is not found or failed to get the secret
+		return err
+	}
+	provider := r.getNotificationServiceProvider(gatling)
+	switch provider {
+	case "slack":
+		if webhookURL, exists := getMapValue("incoming-webhook-url", foundSecret.Data); exists {
+			payloadTextFormat := `
+[%s] Gatling has completed successfully!
+Report URL: %s
+`
+			payloadText := fmt.Sprintf(payloadTextFormat, gatling.Name, reportURL)
+			if err := slackNotify(webhookURL, payloadText); err != nil {
+				return err
+			}
+		}
+	default:
+		return errors.New(fmt.Sprintf("Not supported provider: %s", provider))
+	}
+	return nil
+}
+
+func (r *GatlingReconciler) createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error {
+	if err := r.Get(
+		ctx,
+		client.ObjectKey{Name: object.GetName(), Namespace: object.GetNamespace()},
+		object); err != nil && apierr.IsNotFound(err) {
+		// Set gatling instance as the owner and controller and controller
+		if err := ctrl.SetControllerReference(gatling, object, r.Scheme); err != nil {
+			return err
+		}
+		if err = r.Create(ctx, object); err != nil {
+			return err
+		}
+		return nil // Object create successfully
+	} else if err != nil {
+		return err
+	}
+	return nil // Object already exists
+}
+
+func (r *GatlingReconciler) isJobCompleted(job *batchv1.Job) bool {
+	for _, c := range job.Status.Conditions {
+		if (c.Type == batchv1.JobComplete || c.Type == batchv1.JobFailed) && c.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *GatlingReconciler) cleanupJob(ctx context.Context, req ctrl.Request, jobName string) error {
+	foundJob := &batchv1.Job{}
+	if err := r.Get(ctx, client.ObjectKey{Name: jobName, Namespace: req.Namespace}, foundJob); err != nil {
+		return err
+	}
+	if err := r.Delete(ctx, foundJob, client.PropagationPolicy(metav1.DeletePropagationBackground)); client.IgnoreNotFound(err) != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *GatlingReconciler) updateGatlingStatus(ctx context.Context, gatling *gatlingv1alpha1.Gatling) error {
+	if err := r.Status().Update(ctx, gatling); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *GatlingReconciler) dumpGatlingStatus(gatling *gatlingv1alpha1.Gatling, log logr.Logger) {
+	log.Info(fmt.Sprintf("GatlingStatus: Active %d Succeeded %d Failed %d ReportCompleted %t NotificationCompleted %t ReportUrl %s Error %v",
+		gatling.Status.Active,
+		gatling.Status.Succeeded,
+		gatling.Status.Failed,
+		gatling.Status.ReportCompleted,
+		gatling.Status.NotificationCompleted,
+		gatling.Status.ReportUrl,
+		gatling.Status.Error))
+}
+
+func (r *GatlingReconciler) isGatlingCompleted(gatling *gatlingv1alpha1.Gatling) bool {
+	if !gatling.Status.RunnerCompleted ||
+		(gatling.Spec.GenerateReport && !gatling.Status.ReportCompleted) ||
+		(gatling.Spec.NotifyReport && !gatling.Status.NotificationCompleted) {
+		return false
+	}
+	return true
 }
 
 func (r *GatlingReconciler) getCloudStorageProvider(gatling *gatlingv1alpha1.Gatling) string {
@@ -616,72 +803,6 @@ func (r *GatlingReconciler) getNotificationServiceSecretName(gatling *gatlingv1a
 		secretName = gatling.Spec.NotificationServiceSpec.SecretName
 	}
 	return secretName
-}
-
-func (r *GatlingReconciler) sendNotification(ctx context.Context, gatling *gatlingv1alpha1.Gatling, reportURL string) error {
-	secretName := r.getNotificationServiceSecretName(gatling)
-	foundSecret := &corev1.Secret{}
-	if err := r.Get(ctx, client.ObjectKey{Name: secretName, Namespace: gatling.Namespace}, foundSecret); err != nil {
-		// secret is not found or failed to get the secret
-		return err
-	}
-	provider := r.getNotificationServiceProvider(gatling)
-
-	switch provider {
-	case "slack":
-		if webhookURL, exists := getMapValue("incoming-webhook-url", foundSecret.Data); exists {
-			payloadTextFormat := `
-[%s] Gatling has completed successfully!
-Report URL: %s
-`
-			payloadText := fmt.Sprintf(payloadTextFormat, gatling.Name, reportURL)
-			if err := slackNotify(webhookURL, payloadText); err != nil {
-				return err
-			}
-		}
-	default:
-		return errors.New(fmt.Sprintf("Not supported provider: %s", provider))
-	}
-	return nil
-}
-
-func (r *GatlingReconciler) createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error {
-	// Check if this object already exists
-	if err := r.Get(
-		ctx,
-		client.ObjectKey{Name: object.GetName(), Namespace: object.GetNamespace()},
-		object); err != nil && apierr.IsNotFound(err) {
-
-		// Set gatling instance as the owner and controller and controller
-		if err := ctrl.SetControllerReference(gatling, object, r.Scheme); err != nil {
-			return err
-		}
-		if err = r.Create(ctx, object); err != nil {
-			return err
-		}
-		// Object created successfully, thus do not requeue
-		return nil
-	} else if err != nil {
-		return err
-	}
-	// Object already exists, thus do not requeue
-	return nil
-}
-
-func (r *GatlingReconciler) isJobFinished(job *batchv1.Job) (bool, batchv1.JobConditionType) {
-	for _, c := range job.Status.Conditions {
-		if (c.Type == batchv1.JobComplete || c.Type == batchv1.JobFailed) && c.Status == corev1.ConditionTrue {
-			return true, c.Type
-		}
-	}
-	return false, ""
-}
-
-func (r *GatlingReconciler) updateGatlingStatus(ctx context.Context, gatling *gatlingv1alpha1.Gatling) error {
-	if err := r.Status().Update(ctx, gatling); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (r *GatlingReconciler) getGatlingRunnerJobStartTime(gatling *gatlingv1alpha1.Gatling) string {
@@ -760,6 +881,7 @@ func (r *GatlingReconciler) getResultsDirectoryPath(gatling *gatlingv1alpha1.Gat
 	return path
 }
 
+// TODO: filter on create, update
 // SetupWithManager sets up the controller with the Manager.
 func (r *GatlingReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).

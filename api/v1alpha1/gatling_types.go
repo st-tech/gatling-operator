@@ -170,13 +170,41 @@ type GatlingStatus struct {
 	// +optional
 	Failed int32 `json:"failed,omitempty"`
 
+	// Runner job name
+	// +optional
+	RunnerJobName string `json:"runnerJobName,omitempty"`
+
+	// Runner start time (UnixTime epoc)
+	// +optional
+	RunnerStartTime int32 `json:"runnerStartTime,omitempty"`
+
+	// Is runner job completed (default false)
+	// +optional
+	RunnerCompleted bool `json:"runnerCompleted,omitempty"`
+
+	// Reporter job name
+	// +optional
+	ReporterJobName string `json:"reporterJobName,omitempty"`
+
+	// Reporter start time (UnixTime epoc)
+	// +optional
+	ReporterStartTime int32 `json:"reporterStartTime,omitempty"`
+
 	// Is report generation completed (default false)
 	// +optional
 	ReportCompleted bool `json:"reportCompleted,omitempty"`
 
+	// Report Storage Path
+	// +optional
+	ReportStoragePath string `json:"reportStoragePath,omitempty"`
+
 	// Report Url
 	// +optional
 	ReportUrl string `json:"reportUrl,omitempty"`
+
+	// Is notification completed (default false)
+	// +optional
+	NotificationCompleted bool `json:"notificationCompleted,omitempty"`
 
 	// Error message
 	// +optional

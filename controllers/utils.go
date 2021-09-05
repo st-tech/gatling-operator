@@ -5,6 +5,7 @@ import (
 	"hash/fnv"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 func hash(s string) uint32 {
@@ -13,6 +14,10 @@ func hash(s string) uint32 {
 		return 0
 	}
 	return h.Sum32()
+}
+
+func getEpocTime() int32 {
+	return int32(time.Now().Unix())
 }
 
 type payload struct {
