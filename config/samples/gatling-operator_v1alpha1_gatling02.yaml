@@ -78,6 +78,9 @@ spec:
 
         class MyBasicSimulation extends Simulation {
 
+          val usersPerSec = sys.env.getOrElse("CONCURRENCY", "1").toInt
+          val durationSec = sys.env.getOrElse("DURATION", "10").toInt
+
           val httpProtocol = http
             // Here is the root for all relative URLs
             .baseUrl("http://computer-database.gatling.io")
@@ -117,7 +120,11 @@ spec:
                 .formParam("company", "37")
             )
 
-          setUp(scn.inject(atOnceUsers(1)).protocols(httpProtocol))
+          setUp(
+            scn.inject(
+              constantUsersPerSec(usersPerSec) during(durationSec seconds)
+            ).protocols(httpProtocol)
+          )
         }
     resourceData:                                       # Optional. Default: empty string map. Resource data used with Simulation scala to be created as ConfigMap that is mounted on resource dir
       search.csv: |
