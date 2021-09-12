@@ -59,6 +59,7 @@ type GatlingReconciler struct {
 }
 
 //+kubebuilder:rbac:groups="batch",resources=jobs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="core",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="core",resources=secrets,verbs=get;list;watch
 //+kubebuilder:rbac:groups=gatling-operator.tech.zozo.com,resources=gatlings,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=gatling-operator.tech.zozo.com,resources=gatlings/status,verbs=get;update;patch
