@@ -86,7 +86,9 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			return doRequeue(requeueIntervalInSeconds*time.Second, err)
 		}
 		if err != nil {
-			r.cleanupJob(ctx, req, gatling.Status.RunnerJobName)
+			if gatling.Spec.CleanupAfterJobDone {
+				r.cleanupJob(ctx, req, gatling.Status.RunnerJobName)
+			}
 			return doNotRequeue()
 		}
 	}
@@ -97,7 +99,9 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			return doRequeue(requeueIntervalInSeconds*time.Second, err)
 		}
 		if err != nil {
-			r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
+			if gatling.Spec.CleanupAfterJobDone {
+				r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
+			}
 			return doNotRequeue()
 		}
 	}
@@ -114,11 +118,15 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Clean up Job resources
 	if gatling.Status.RunnerCompleted {
 		log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.RunnerJobName, gatling.Name))
-		r.cleanupJob(ctx, req, gatling.Status.RunnerJobName)
+		if gatling.Spec.CleanupAfterJobDone {
+			r.cleanupJob(ctx, req, gatling.Status.RunnerJobName)
+		}
 	}
 	if gatling.Spec.GenerateReport && gatling.Status.ReportCompleted {
 		log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.ReporterJobName, gatling.Name))
-		r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
+		if gatling.Spec.CleanupAfterJobDone {
+			r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
+		}
 	}
 	return doNotRequeue()
 }

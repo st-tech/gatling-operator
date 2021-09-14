@@ -37,6 +37,10 @@ type GatlingSpec struct {
 	// +required
 	NotifyReport bool `json:"notifyReport,omitempty"`
 
+	// The flag of cleanup gatling jobs resources after the job done
+	// +optional
+	CleanupAfterJobDone bool `json:"cleanupAfterJobDone,omitempty"`
+
 	// Pod extra specification
 	// +optional
 	PodSpec PodSpec `json:"podSpec,omitempty"`
