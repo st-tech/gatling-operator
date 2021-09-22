@@ -14,33 +14,28 @@ TEMP_SIMULATIONS_DIR_PATH="%s"
 RESOURCES_DIR_PATH="%s"
 RESULTS_DIR_PATH="%s"
 START_TIME="%s"
-if [ -z "${START_TIME}" ];
-then
+if [ -z "${START_TIME}" ]; then
   START_TIME=$(date +"%%Y-%%m-%%d %%H:%%M:%%S" --utc)
 fi
 start_time_stamp=$(date -d "${START_TIME}" +"%%s")
 current_time_stamp=$(date +"%%s")
-echo "wait until ${START_TIME}"
+echo "Wait until ${START_TIME}"
 until [ ${current_time_stamp} -ge ${start_time_stamp} ];
 do
   current_time_stamp=$(date +"%%s")
   echo "it's ${current_time_stamp} now and waiting until ${start_time_stamp} ..."
   sleep 1;
 done
-if [ ! -d ${SIMULATIONS_DIR_PATH} ];
-then
+if [ ! -d ${SIMULATIONS_DIR_PATH} ]; then
   mkdir -p ${SIMULATIONS_DIR_PATH}
 fi
-if [ -d ${TEMP_SIMULATIONS_DIR_PATH} ];
-then
-	cp -p ${TEMP_SIMULATIONS_DIR_PATH}/*.scala ${SIMULATIONS_DIR_PATH}
+if [ -d ${TEMP_SIMULATIONS_DIR_PATH} ]; then
+  cp -p ${TEMP_SIMULATIONS_DIR_PATH}/*.scala ${SIMULATIONS_DIR_PATH}
 fi
-if [ ! -d ${RESOURCES_DIR_PATH} ];
-then
+if [ ! -d ${RESOURCES_DIR_PATH} ]; then
   mkdir -p ${RESOURCES_DIR_PATH}
 fi
-if [ ! -d ${RESULTS_DIR_PATH} ];
-then
+if [ ! -d ${RESULTS_DIR_PATH} ]; then
   mkdir -p ${RESULTS_DIR_PATH}
 fi
 gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} -nr
