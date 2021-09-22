@@ -51,7 +51,7 @@ type GatlingSpec struct {
 
 	// Notification Service specification
 	// +optional
-	NotificationServiceSpec NotificationServiceSpec `json:"notificationServiceSpec"`
+	NotificationServiceSpec NotificationServiceSpec `json:"notificationServiceSpec,omitempty"`
 
 	// Test Scenario specification
 	// +required
@@ -110,7 +110,7 @@ type TestScenarioSpec struct {
 	SimulationClass string `json:"simulationClass"`
 
 	// Simulation Data
-	// +required
+	// +optional
 	SimulationData map[string]string `json:"simulationData,omitempty"`
 
 	// Resource Data
@@ -138,7 +138,7 @@ type CloudStorageSpec struct {
 
 	// Region
 	// +optional
-	Region string `json:"region"`
+	Region string `json:"region,omitempty"`
 
 	// Environment variables used for connecting to the cloud providers.
 	// +optional
