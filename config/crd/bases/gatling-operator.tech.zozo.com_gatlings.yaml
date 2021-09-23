@@ -37,6 +37,7 @@ spec:
             description: GatlingSpec defines the desired state of Gatling
             properties:
               cleanupAfterJobDone:
+                default: false
                 description: The flag of cleanup gatling jobs resources after the
                   job done
                 type: boolean
@@ -165,9 +166,9 @@ spec:
                     type: string
                 required:
                 - bucket
-                - provider
                 type: object
               generateReport:
+                default: false
                 description: The flag of generating gatling report
                 type: boolean
               notificationServiceSpec:
@@ -186,6 +187,7 @@ spec:
                 - secretName
                 type: object
               notifyReport:
+                default: false
                 description: The flag of notifying gatling report
                 type: boolean
               podSpec:
@@ -809,12 +811,10 @@ spec:
                         type: object
                     type: object
                   gatlingImage:
-                    description: 'The image that will be used for Gatling container.
-                      Default gatling image: denvazh/gatling:latest'
+                    description: The image that will be used for Gatling container.
                     type: string
                   rcloneImage:
-                    description: 'The image that will be used for rclone conatiner.
-                      Default rclone image: rclone/rclone:latest'
+                    description: The image that will be used for rclone conatiner.
                     type: string
                   resources:
                     description: Resources specifies the resource limits of the container.
@@ -962,9 +962,10 @@ spec:
                     description: Gatling Configurations
                     type: object
                   parallelism:
-                    description: Number of jobs/pods running at the same time (default
-                      1)
+                    default: 1
+                    description: Number of pods running at the same time
                     format: int32
+                    minimum: 1
                     type: integer
                   resourceData:
                     additionalProperties:
@@ -972,12 +973,12 @@ spec:
                     description: Resource Data
                     type: object
                   resourcesDirectoryPath:
-                    description: 'Gatling Simulation directory path where resources
-                      are stored Default simulation path: /opt/gating/user-files/resources'
+                    description: Gatling Simulation directory path where resources
+                      are stored
                     type: string
                   resultsDirectoryPath:
-                    description: 'Gatling Results directory path where results are
-                      stored Default results path: /opt/gating/results'
+                    description: Gatling Results directory path where results are
+                      stored
                     type: string
                   simulationClass:
                     description: Simulation Class
@@ -988,8 +989,8 @@ spec:
                     description: Simulation Data
                     type: object
                   simulationsDirectoryPath:
-                    description: 'Gatling Resources directory path where simulation
-                      files are stored Default resources path: /opt/gating/user-files/simulations'
+                    description: Gatling Resources directory path where simulation
+                      files are stored
                     type: string
                   startTime:
                     description: Test Start time

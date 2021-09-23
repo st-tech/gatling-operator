@@ -30,31 +30,34 @@ type GatlingSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// The flag of generating gatling report
-	// +required
+	// +kubebuilder:default=false
+	// +kubebuilder:validation:Optional
 	GenerateReport bool `json:"generateReport,omitempty"`
 
 	// The flag of notifying gatling report
-	// +required
+	// +kubebuilder:default=false
+	// +kubebuilder:validation:Optional
 	NotifyReport bool `json:"notifyReport,omitempty"`
 
 	// The flag of cleanup gatling jobs resources after the job done
-	// +optional
+	// +kubebuilder:default=false
+	// +kubebuilder:validation:Optional
 	CleanupAfterJobDone bool `json:"cleanupAfterJobDone,omitempty"`
 
 	// Pod extra specification
-	// +optional
+	// +kubebuilder:validation:Optional
 	PodSpec PodSpec `json:"podSpec,omitempty"`
 
 	// Cloud Storage Provider
-	// +optional
+	// +kubebuilder:validation:Optional
 	CloudStorageSpec CloudStorageSpec `json:"cloudStorageSpec,omitempty"`
 
 	// Notification Service specification
-	// +optional
+	// +kubebuilder:validation:Optional
 	NotificationServiceSpec NotificationServiceSpec `json:"notificationServiceSpec,omitempty"`
 
 	// Test Scenario specification
-	// +required
+	// +kubebuilder:validation:Required
 	TestScenarioSpec TestScenarioSpec `json:"testScenarioSpec"`
 }
 
@@ -62,63 +65,60 @@ type GatlingSpec struct {
 // ref: mysql-operator/pkg/apis/mysql/v1alpha1/mysqlcluster_types.go
 type PodSpec struct {
 	// The image that will be used for Gatling container.
-	// Default gatling image: denvazh/gatling:latest
-	// +optional
+	// +kubebuilder:validation:Optional
 	GatlingImage string `json:"gatlingImage,omitempty"`
 
 	// The image that will be used for rclone conatiner.
-	// Default rclone image: rclone/rclone:latest
-	// +optional
+	// +kubebuilder:validation:Optional
 	RcloneImage string `json:"rcloneImage,omitempty"`
 
 	// Resources specifies the resource limits of the container.
-	// +optional
+	// +kubebuilder:validation:Optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 
 	// Affinity specification
-	// +optional
+	// +kubebuilder:validation:Optional
 	Affinity corev1.Affinity `json:"affinity,omitempty"`
 }
 
 // TestScenarioSpec defines the load testing scenario
 type TestScenarioSpec struct {
 	// Test Start time
-	// +optional
+	// +kubebuilder:validation:Optional
 	StartTime string `json:"startTime,omitempty"`
 
-	// Number of jobs/pods running at the same time (default 1)
-	// +optional
+	// Number of pods running at the same time
+	// +kubebuilder:default=1
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Optional
 	Parallelism int32 `json:"parallelism,omitempty"`
 
 	// Gatling Resources directory path where simulation files are stored
-	// Default resources path: /opt/gating/user-files/simulations
-	// +optional
+	// +kubebuilder:validation:Optional
 	SimulationsDirectoryPath string `json:"simulationsDirectoryPath,omitempty"`
 
 	// Gatling Simulation directory path where resources are stored
-	// Default simulation path: /opt/gating/user-files/resources
-	// +optional
+	// +kubebuilder:validation:Optional
 	ResourcesDirectoryPath string `json:"resourcesDirectoryPath,omitempty"`
 
 	// Gatling Results directory path where results are stored
-	// Default results path: /opt/gating/results
-	// +optional
+	// +kubebuilder:validation:Optional
 	ResultsDirectoryPath string `json:"resultsDirectoryPath,omitempty"`
 
 	// Simulation Class
-	// +required
+	// +kubebuilder:validation:Required
 	SimulationClass string `json:"simulationClass"`
 
 	// Simulation Data
-	// +optional
+	// +kubebuilder:validation:Optional
 	SimulationData map[string]string `json:"simulationData,omitempty"`
 
 	// Resource Data
-	// +optional
+	// +kubebuilder:validation:Optional
 	ResourceData map[string]string `json:"resourceData,omitempty"`
 
 	// Gatling Configurations
-	// +optional
+	// +kubebuilder:validation:Optional
 	GatlingConf map[string]string `json:"gatlingConf,omitempty"`
 
 	// Environment variables used for running load testing scenario
@@ -129,30 +129,30 @@ type TestScenarioSpec struct {
 type CloudStorageSpec struct {
 	// Provider specifies the cloud provider that will be used.
 	// Supported providers: aws
-	// +required
+	// +kubebuilder:validation:Optional
 	Provider string `json:"provider"`
 
 	// Bucket Name
-	// +required
+	// +kubebuilder:validation:Required
 	Bucket string `json:"bucket"`
 
 	// Region
-	// +optional
+	// +kubebuilder:validation:Optional
 	Region string `json:"region,omitempty"`
 
 	// Environment variables used for connecting to the cloud providers.
-	// +optional
+	// +kubebuilder:validation:Optional
 	Env []corev1.EnvVar `json:"env,omitempty"`
 }
 
 type NotificationServiceSpec struct {
 	// Provider specifies notification service provider
 	// Supported providers: slack
-	// +required
+	// +kubebuilder:validation:Required
 	Provider string `json:"provider"`
 
 	// The name of secret in which all key/value sets needed for the notification are stored
-	// +required
+	// +kubebuilder:validation:Required
 	SecretName string `json:"secretName"`
 }
 
