@@ -42,7 +42,6 @@ const (
 	maxJobRunWaitTimeInSeconds         = 600 // 600 sec (10 min)
 	defaultGatlingImage                = "denvazh/gatling:latest"
 	defaultRcloneImage                 = "rclone/rclone:latest"
-	defaultParallelism                 = 1
 	defaultSimulationsDirectoryPath    = "/opt/gatling/user-files/simulations"
 	defaultResourcesDirectoryPath      = "/opt/gatling/user-files/resources"
 	defaultResultsDirectoryPath        = "/opt/gatling/results"
@@ -815,7 +814,7 @@ func (r *GatlingReconciler) getNotificationServiceSecretName(gatling *gatlingv1a
 }
 
 func (r *GatlingReconciler) getGatlingRunnerJobStartTime(gatling *gatlingv1alpha1.Gatling) string {
-	startTime := ""
+	var startTime string
 	if &gatling.Spec.TestScenarioSpec != nil && gatling.Spec.TestScenarioSpec.StartTime != "" {
 		startTime = gatling.Spec.TestScenarioSpec.StartTime
 	}
@@ -823,7 +822,7 @@ func (r *GatlingReconciler) getGatlingRunnerJobStartTime(gatling *gatlingv1alpha
 }
 
 func (r *GatlingReconciler) getGatlingRunnerJobParallelism(gatling *gatlingv1alpha1.Gatling) *int32 {
-	parallelism := int32(defaultParallelism)
+	var parallelism int32
 	if &gatling.Spec.TestScenarioSpec != nil && gatling.Spec.TestScenarioSpec.Parallelism != 0 {
 		parallelism = gatling.Spec.TestScenarioSpec.Parallelism
 	}
