@@ -58,6 +58,7 @@ var _ = BeforeSuite(func() {
 		ErrorIfCRDPathMissing: true,
 	}
 
+	// Start etcd and kube-apiserver
 	cfg, err := testEnv.Start()
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
@@ -75,6 +76,7 @@ var _ = BeforeSuite(func() {
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
+	// End etcd and kube-apiserver
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
 })
