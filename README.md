@@ -1,6 +1,6 @@
 # Gatling Operator
 
-[Gatling](https://gatling.io/) is an opensource load testing tool that allows to analyze and measure the performance of a variety of services. Gatling Operator is a Kubernetes Operator for running automated distributed load testing with Gatling.
+[Gatling](https://gatling.io/) is an open source load testing tool that allows to analyze and measure the performance of a variety of services. Gatling Operator is a Kubernetes Operator for running automated distributed load testing with Gatling.
 
 The Gatling Operator is currently in **closed alpha**
 ## How Gatling Operator works
@@ -37,12 +37,16 @@ Build
   docker-build     Build docker image with the manager.
   docker-push      Push docker image with the manager.
   kind-load-image  Load local docker image into the kind cluster
+  kind-load-sample-image  Load local docker image for sample Gatling into the kind cluster
+  sample-docker-build  Build docker image for sample Gatling
 
 Deployment
   install-crd      Install CRDs into the K8s cluster specified in ~/.kube/config.
   uninstall-crd    Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
   deploy           Deploy controller to the K8s cluster specified in ~/.kube/config.
   kind-deploy      Deploy controller to the kind cluster specified in ~/.kube/config.
+  sample-deploy    Install sample Gatling CR into the k8s cluster specified in ~/.kube/config.
+  kind-sample-deploy  Install sample Gatling CR into the kind cluster specified in ~/.kube/config.
   undeploy         Undeploy controller from the K8s cluster specified in ~/.kube/config.
   controller-gen   Download controller-gen locally if necessary.
   kustomize        Download kustomize locally if necessary.
@@ -106,8 +110,44 @@ kubectl get pods -n gatling-system
 
 ### Running your first load testing
 
-Sample yamls are provided in the config folder.
+Sample Gatling load testing data is provided in the gatling folder.
+Just like you do for the Operator, you can proceed all steps needed for deploying sample Gatling CR with GNU make.
 
+#### Deploying and running the load testing locally
+
+To deploy sample Gatling CR to a local Kubernetes cluster/Kind instance:
+
+```bash
+make kind-sample-deploy
+```
+
+The command above will create the Kind instance if necessary, build a sample gatling image, load the image into the cluster, and finally deploy the Gatling CR to the cluster.
+
+Check if the sample Gatling CR named "gatling-sample01" in "default" namespace is deployed
+
+```bash
+kubectl get gatling
+```
+
+#### Deploying and running the load testing in the remote cluster
+
+First, you need to push a sample gatling image to container registry
+
+```bash
+make sample-docker-push SAMPLE_IMG=<your-registry>/gatling:<tag>
+```
+
+📝 Ensure that you're logged into your docker container registry that you will be using as the image store for your K8s cluster if not yet done!
+
+After you push the sample gatling container, deploy the Gatling CR to your cluster:
+
+```bash
+make sample-deploy SAMPLE_IMG=<your-registry>/gatling:<tag>
+```
+
+> :memo: Ensure you're connected to your K8s cluster
+
+> :memo: Ensure your cluster has permissions to pull containers from your container registry
 
 ## Documentations
 
