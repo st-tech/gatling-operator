@@ -3,6 +3,8 @@
 IMAGE_TAG := $(shell /bin/date "+%Y%m%d-%H%M%S")
 # Image URL should be like this when it gets to open sourced: ghcr.io/st-tech/gatling-operator:$(IMAGE_TAG)
 IMG ?= gatling-operator:$(IMAGE_TAG)
+# Image URL should be like this when it gets to open sourced: ghcr.io/st-tech/gatling:$(IMAGE_TAG)
+SAMPLE_IMG := gatling:$(IMAGE_TAG)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 KIND_CLUSTER_NAME ?= "gatling-cluster"
@@ -91,6 +93,16 @@ kind-load-image: kind-create docker-build ## Load local docker image into the ki
 	@echo "Loading image into kind"
 	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME} -v 1 
 
+kind-load-sample-image: kind-create sample-docker-build ## Load local docker image for sample Gatling into the kind cluster
+	@echo "Loading sample image into kind"
+	kind load docker-image ${SAMPLE_IMG} --name ${KIND_CLUSTER_NAME} -v 1 
+
+sample-docker-build: ## Build docker image for sample Gatling
+	cd gatling && docker build -t ${SAMPLE_IMG} .	
+
+sample-docker-push: sample-docker-build
+	docker push ${SAMPLE_IMG}
+
 ##@ Deployment
 
 install-crd: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
@@ -105,9 +117,13 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 
 kind-deploy: kind-load-image deploy ## Deploy controller to the kind cluster specified in ~/.kube/config.
 
+sample-deploy: kustomize ## Install sample Gatling CR into the k8s cluster specified in ~/.kube/config.
+	$(KUSTOMIZE) build config/samples | sed -e "s,GATLING_IMAGE,${SAMPLE_IMG},g" | kubectl apply -f -
+
+kind-sample-deploy: kind-load-sample-image sample-deploy ## Install sample Gatling CR into the kind cluster specified in ~/.kube/config.
+
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
-
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
