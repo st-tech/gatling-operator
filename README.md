@@ -95,6 +95,7 @@ kubeclt apply -f gatling-operator.yaml
 ```
 
 > :memo: Ensure you're connected to your K8s cluster
+
 > :memo: Ensure your cluster has permissions to pull containers from your container registry
 
 Finally check if the operator manager pod named "gatling-operator-controller-manager-xxxx" in "gatling-system" namespace is running
@@ -102,7 +103,6 @@ Finally check if the operator manager pod named "gatling-operator-controller-man
 ```bash
 kubectl get pods -n gatling-system
 ```
-
 
 ### Running your first load testing
 
