@@ -1,16 +1,4 @@
 resources:
 - manager.yaml
 
-generatorOptions:
-  disableNameSuffixHash: true
-
-configMapGenerator:
-- files:
-  - controller_manager_config.yaml
-  name: manager-config
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-images:
-- name: controller
-  newName: 717397055837.dkr.ecr.ap-northeast-1.amazonaws.com/gatling-operator
-  newTag: latest
+# This file will get modified by kustomize file. Please don't commit any changes to the git repo!
