@@ -1,0 +1,4 @@
+resources:
+- gatling-basic-simulation-secrets.yaml
+- gatling-notification-slack-secrets.yaml
+- gatling-operator_v1alpha1_gatling01.yaml

@@ -1,0 +1,66 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - gatling-operator.tech.zozo.com
+  resources:
+  - gatlings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - gatling-operator.tech.zozo.com
+  resources:
+  - gatlings/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - gatling-operator.tech.zozo.com
+  resources:
+  - gatlings/status
+  verbs:
+  - get
+  - patch
+  - update

@@ -1,0 +1,4 @@
+resources:
+- manager.yaml
+
+# This file will get modified by kustomize file. Please don't commit any changes to the git repo!
