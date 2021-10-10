@@ -3,8 +3,8 @@ kind: Gatling
 metadata:
   name: gatling-sample02
 spec:
-  generateReport: true                                    # The flag of generating gatling report
-  notifyReport: true                                      # The flag of notifying gatling report
+  generateReport: true                                   # The flag of generating gatling report
+  notifyReport: false                                     # The flag of notifying gatling report
   cleanupAfterJobDone: true                               #  The flag of cleaning up gatling jobs resources after the job done
   podSpec:
     gatlingImage: denvazh/gatling:latest                  # Optional. Default: denvazh/gatling:latest. The image that will be used for Gatling container.
@@ -37,7 +37,7 @@ spec:
     secretName: "gatling-notification-slack-secrets"      # The name of secret in which all key/value sets needed for the notification are stored
   testScenarioSpec:
     # startTime: 2021-09-10 08:45:31                      # Optional. Start time of running test scenario in UTC. Format: %Y-%m-%d %H:%M:%S
-    parallelism: 5                                        # Optional. Default: 1. Number of pods running at any instant
+    parallelism: 3                                        # Optional. Default: 1. Number of pods running at any instant
     # simulationsDirectoryPath: "/dir-path-to-simulation" # Optional. Default: /opt/gatling/user-files/simulations
     # resourcesDirectoryPath: "dir-path-to-resources"     # Optional. Default: /opt/gatling/user-files/resources
     # resultsDirectoryPath: "dir-path-to-results"         # Optional. Default: /opt/gatling/results.
@@ -46,9 +46,9 @@ spec:
       - name: ENV
         value: "dev"
       - name: CONCURRENCY
-        value: "10"
+        value: "2"
       - name: DURATION
-        value: "100"
+        value: "10"
       - name: SECRET_KEY
         valueFrom:
           secretKeyRef:
