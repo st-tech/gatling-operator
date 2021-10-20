@@ -452,7 +452,8 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 				Completions: r.getGatlingRunnerJobParallelism(gatling),
 				Template: corev1.PodTemplateSpec{
 					Spec: corev1.PodSpec{
-						Affinity: r.getPodAffinity(gatling),
+						Affinity:    r.getPodAffinity(gatling),
+						Tolerations: r.getPodTolerations(gatling),
 						InitContainers: []corev1.Container{
 							{
 								Name:         "gatling-runner",
@@ -498,7 +499,8 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			Completions: &gatling.Spec.TestScenarioSpec.Parallelism,
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
-					Affinity: r.getPodAffinity(gatling),
+					Affinity:    r.getPodAffinity(gatling),
+					Tolerations: r.getPodTolerations(gatling),
 					Containers: []corev1.Container{
 						{
 							Name:         "gatling-runner",
@@ -554,6 +556,7 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
 					Affinity: r.getPodAffinity(gatling),
+                    Tolerations: r.getPodTolerations(gatling),
 					InitContainers: []corev1.Container{
 						{
 							Name:    "gatling-result-aggregator",
@@ -891,6 +894,14 @@ func (r *GatlingReconciler) getPodAffinity(gatling *gatlingv1alpha1.Gatling) *co
 		affinity = gatling.Spec.PodSpec.Affinity
 	}
 	return &affinity
+}
+
+func (r *GatlingReconciler) getPodTolerations(gatling *gatlingv1alpha1.Gatling) []corev1.Toleration {
+	tolerations := []corev1.Toleration{}
+	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.Tolerations != nil {
+		tolerations = gatling.Spec.PodSpec.Tolerations
+	}
+	return tolerations
 }
 
 func (r *GatlingReconciler) getSimulationsDirectoryPath(gatling *gatlingv1alpha1.Gatling) string {

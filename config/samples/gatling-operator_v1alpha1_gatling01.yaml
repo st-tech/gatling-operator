@@ -22,6 +22,11 @@ spec:
                   operator: In
                   values:
                     - linux
+    tolerations:
+      - key: "node-type"
+        operator: "Equal"
+        value: "non-kube-system"
+        effect: "NoSchedule"
   cloudStorageSpec:
     provider: "aws"                                       # Provider specifies the cloud provider that will be used. Supported providers: "aws"
     bucket: "gatling-operator-reports"                    # Bucket name in cloud storage service, on which Gatlilng report files are stored

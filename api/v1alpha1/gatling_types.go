@@ -79,6 +79,10 @@ type PodSpec struct {
 	// Affinity specification
 	// +kubebuilder:validation:Optional
 	Affinity corev1.Affinity `json:"affinity,omitempty"`
+
+	// Tolerations specification
+	// +kubebuilder:validation:Optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 // TestScenarioSpec defines the load testing scenario
