@@ -37,16 +37,14 @@ import (
 )
 
 const (
-	requeueIntervalInSeconds        = 5   // 5 sec
-	maxJobCreationWaitTimeInSeconds = 600 // 600 sec (10 min)
-	maxJobRunWaitTimeInSeconds      = 600 // 600 sec (10 min)
-	defaultGatlingImage             = "denvazh/gatling:latest"
-	defaultRcloneImage              = "rclone/rclone:latest"
-	defaultSimulationsDirectoryPath = "/opt/gatling/user-files/simulations"
-	defaultResourcesDirectoryPath   = "/opt/gatling/user-files/resources"
-	defaultResultsDirectoryPath     = "/opt/gatling/results"
-	//defaultCloudStorageProvider        = "aws"
-	//defaultCloudStorageRegion          = "ap-northeast-1"
+	requeueIntervalInSeconds           = 5   // 5 sec
+	maxJobCreationWaitTimeInSeconds    = 600 // 600 sec (10 min)
+	maxJobRunWaitTimeInSeconds         = 600 // 600 sec (10 min)
+	defaultGatlingImage                = "denvazh/gatling:latest"
+	defaultRcloneImage                 = "rclone/rclone:latest"
+	defaultSimulationsDirectoryPath    = "/opt/gatling/user-files/simulations"
+	defaultResourcesDirectoryPath      = "/opt/gatling/user-files/resources"
+	defaultResultsDirectoryPath        = "/opt/gatling/results"
 	defaultNotificationServiceProvider = "slack"
 )
 
