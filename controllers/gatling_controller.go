@@ -37,16 +37,16 @@ import (
 )
 
 const (
-	requeueIntervalInSeconds           = 5   // 5 sec
-	maxJobCreationWaitTimeInSeconds    = 600 // 600 sec (10 min)
-	maxJobRunWaitTimeInSeconds         = 600 // 600 sec (10 min)
-	defaultGatlingImage                = "denvazh/gatling:latest"
-	defaultRcloneImage                 = "rclone/rclone:latest"
-	defaultSimulationsDirectoryPath    = "/opt/gatling/user-files/simulations"
-	defaultResourcesDirectoryPath      = "/opt/gatling/user-files/resources"
-	defaultResultsDirectoryPath        = "/opt/gatling/results"
-	defaultCloudStorageProvider        = "aws"
-	defaultCloudStorageRegion          = "ap-northeast-1"
+	requeueIntervalInSeconds        = 5   // 5 sec
+	maxJobCreationWaitTimeInSeconds = 600 // 600 sec (10 min)
+	maxJobRunWaitTimeInSeconds      = 600 // 600 sec (10 min)
+	defaultGatlingImage             = "denvazh/gatling:latest"
+	defaultRcloneImage              = "rclone/rclone:latest"
+	defaultSimulationsDirectoryPath = "/opt/gatling/user-files/simulations"
+	defaultResourcesDirectoryPath   = "/opt/gatling/user-files/resources"
+	defaultResultsDirectoryPath     = "/opt/gatling/results"
+	//defaultCloudStorageProvider        = "aws"
+	//defaultCloudStorageRegion          = "ap-northeast-1"
 	defaultNotificationServiceProvider = "slack"
 )
 
@@ -782,7 +782,7 @@ func (r *GatlingReconciler) isGatlingCompleted(gatling *gatlingv1alpha1.Gatling)
 }
 
 func (r *GatlingReconciler) getCloudStorageProvider(gatling *gatlingv1alpha1.Gatling) string {
-	provider := defaultCloudStorageProvider
+	provider := ""
 	if &gatling.Spec.CloudStorageSpec != nil && gatling.Spec.CloudStorageSpec.Provider != "" {
 		provider = gatling.Spec.CloudStorageSpec.Provider
 	}
@@ -790,7 +790,7 @@ func (r *GatlingReconciler) getCloudStorageProvider(gatling *gatlingv1alpha1.Gat
 }
 
 func (r *GatlingReconciler) getCloudStorageRegion(gatling *gatlingv1alpha1.Gatling) string {
-	region := defaultCloudStorageRegion
+	region := ""
 	if &gatling.Spec.CloudStorageSpec != nil && gatling.Spec.CloudStorageSpec.Region != "" {
 		region = gatling.Spec.CloudStorageSpec.Region
 	}
