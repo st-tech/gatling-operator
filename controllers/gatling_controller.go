@@ -270,6 +270,17 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 
 // Implementation of reconciler logic for the reporter job
 func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
+	// Check if cloud storage info is given, and skip the reporter job if prerequistes are not made
+	if r.getCloudStorageProvider(gatling) == "" || r.getCloudStorageRegion(gatling) == "" || r.getCloudStorageBucket(gatling) == "" {
+		log.Error(nil, "Minimum cloud storage info is not given, thus skip reporting reconcile, and requeue")
+		gatling.Status.ReportCompleted = true
+		gatling.Status.NotificationCompleted = false
+		if err := r.updateGatlingStatus(ctx, gatling); err != nil {
+			return true, err
+		}
+		return true, nil
+	}
+
 	storagePath, _, err := r.getCloudStorageInfo(ctx, gatling)
 	if err != nil {
 		log.Error(err, "Failed to get gatling storage info, and requeue")
@@ -676,7 +687,7 @@ func (r *GatlingReconciler) assignCloudStorageInfo(gatling *gatlingv1alpha1.Gatl
 	subDir := fmt.Sprint(hash(fmt.Sprintf("%s%d", gatling.Name, rand.Intn(math.MaxInt32))))
 	storagePath := getCloudStoragePath(
 		r.getCloudStorageProvider(gatling),
-		gatling.Spec.CloudStorageSpec.Bucket,
+		r.getCloudStorageBucket(gatling),
 		gatling.Name,
 		subDir)
 	reportURL := getCloudStorageReportURL(
@@ -793,6 +804,14 @@ func (r *GatlingReconciler) getCloudStorageRegion(gatling *gatlingv1alpha1.Gatli
 		region = gatling.Spec.CloudStorageSpec.Region
 	}
 	return region
+}
+
+func (r *GatlingReconciler) getCloudStorageBucket(gatling *gatlingv1alpha1.Gatling) string {
+	bucket := ""
+	if &gatling.Spec.CloudStorageSpec != nil && gatling.Spec.CloudStorageSpec.Bucket != "" {
+		bucket = gatling.Spec.CloudStorageSpec.Bucket
+	}
+	return bucket
 }
 
 func (r *GatlingReconciler) getNotificationServiceProvider(gatling *gatlingv1alpha1.Gatling) string {
