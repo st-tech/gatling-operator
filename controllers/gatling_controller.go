@@ -185,8 +185,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 	}
 	if gatling.Status.RunnerJobName == "" {
 		// Define and create new Job object
-		runnerJob := &batchv1.Job{}
-		runnerJob = r.newGatlingRunnerJobForCR(gatling, storagePath, log)
+		runnerJob := r.newGatlingRunnerJobForCR(gatling, storagePath, log)
 		if err := r.createObject(ctx, gatling, runnerJob); err != nil {
 			log.Error(err, fmt.Sprintf("Failed to creating new job, and requeue: namespace %s name %s", runnerJob.GetNamespace(), runnerJob.GetName()))
 			return true, err
