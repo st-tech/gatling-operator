@@ -103,7 +103,9 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		}
 	}
 	// Reconciling for notification
-	if gatling.Spec.NotifyReport && gatling.Status.ReportCompleted && !gatling.Status.NotificationCompleted {
+	if gatling.Spec.NotifyReport &&
+		((gatling.Spec.GenerateReport && gatling.Status.ReportCompleted) || !gatling.Spec.GenerateReport) &&
+		!gatling.Status.NotificationCompleted {
 		requeue, err := r.gatlingNotificationReconcile(ctx, req, gatling, log)
 		if requeue {
 			return doRequeue(requeueIntervalInSeconds*time.Second, err)
@@ -130,16 +132,11 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 // Implementation of reconciler logic for the runner job
 func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
-	storagePath, _, err := r.getCloudStorageInfo(ctx, gatling)
-	if err != nil {
-		log.Error(err, "Failed to update gatling status, and requeue")
-		return true, err
-	}
 	// Create Simulation Data ConfigMap if defined to create in CR
 	if &gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
 		configMapName := gatling.Name + "-simulations-data"
 		foundConfigMap := &corev1.ConfigMap{}
-		if err = r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
+		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
 			if apierr.IsNotFound(err) {
 				simulationDataConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.SimulationData)
 				if err := r.createObject(ctx, gatling, simulationDataConfigMap); err != nil {
@@ -155,7 +152,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 	if &gatling.Spec.TestScenarioSpec.ResourceData != nil && len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
 		configMapName := gatling.Name + "-resources-data"
 		foundConfigMap := &corev1.ConfigMap{}
-		if err = r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
+		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
 			if apierr.IsNotFound(err) {
 				resourceDataConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.ResourceData)
 				if err := r.createObject(ctx, gatling, resourceDataConfigMap); err != nil {
@@ -171,7 +168,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 	if &gatling.Spec.TestScenarioSpec.GatlingConf != nil && len(gatling.Spec.TestScenarioSpec.GatlingConf) > 0 {
 		configMapName := gatling.Name + "-gatling-conf"
 		foundConfigMap := &corev1.ConfigMap{}
-		if err = r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
+		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
 			if apierr.IsNotFound(err) {
 				gatlingConfConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.GatlingConf)
 				if err := r.createObject(ctx, gatling, gatlingConfConfigMap); err != nil {
@@ -184,6 +181,16 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 		}
 	}
 	if gatling.Status.RunnerJobName == "" {
+		var storagePath = ""
+		// Get cloud storage info only if gatling.spec.generateReport is true
+		if gatling.Spec.GenerateReport {
+			path, _, err := r.getOrAssignCloudStorageInfo(ctx, gatling)
+			if err != nil {
+				log.Error(err, "Failed to update gatling status, and requeue")
+				return true, err
+			}
+			storagePath = path
+		}
 		// Define and create new Job object
 		runnerJob := r.newGatlingRunnerJobForCR(gatling, storagePath, log)
 		if err := r.createObject(ctx, gatling, runnerJob); err != nil {
@@ -204,7 +211,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 		}
 	}
 	foundJob := &batchv1.Job{}
-	err = r.Get(ctx, client.ObjectKey{Name: gatling.Status.RunnerJobName, Namespace: req.Namespace}, foundJob)
+	err := r.Get(ctx, client.ObjectKey{Name: gatling.Status.RunnerJobName, Namespace: req.Namespace}, foundJob)
 	if err != nil && apierr.IsNotFound(err) {
 		duration := getEpocTime() - gatling.Status.RunnerStartTime
 		if duration > maxJobCreationWaitTimeInSeconds {
@@ -280,7 +287,7 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 		return true, nil
 	}
 
-	storagePath, _, err := r.getCloudStorageInfo(ctx, gatling)
+	storagePath, _, err := r.getOrAssignCloudStorageInfo(ctx, gatling)
 	if err != nil {
 		log.Error(err, "Failed to get gatling storage info, and requeue")
 		return true, err
@@ -359,10 +366,15 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 
 // Implementation of reconciler logic for the notification
 func (r *GatlingReconciler) gatlingNotificationReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
-	_, reportURL, err := r.getCloudStorageInfo(ctx, gatling)
-	if err != nil {
-		log.Error(err, "Failed to get gatling storage info, and requeue")
-		return true, err
+	var reportURL = "none"
+	// Get cloud storage info only if gatling.spec.generateReport is true
+	if gatling.Spec.GenerateReport {
+		_, url, err := r.getOrAssignCloudStorageInfo(ctx, gatling)
+		if err != nil {
+			log.Error(err, "Failed to get gatling storage info, and requeue")
+			return true, err
+		}
+		reportURL = url
 	}
 	if err := r.sendNotification(ctx, gatling, reportURL); err != nil {
 		log.Error(err, "Failed to sendNotification, but and requeue")
@@ -664,14 +676,15 @@ func (r *GatlingReconciler) getGatlingRunnerJobVolumes(gatling *gatlingv1alpha1.
 	return volumes
 }
 
-func (r *GatlingReconciler) getCloudStorageInfo(ctx context.Context, gatling *gatlingv1alpha1.Gatling) (string, string, error) {
+func (r *GatlingReconciler) getOrAssignCloudStorageInfo(ctx context.Context, gatling *gatlingv1alpha1.Gatling) (string, string, error) {
 	var storagePath string
 	var reportURL string
 	if gatling.Status.ReportStoragePath != "" && gatling.Status.ReportUrl != "" {
 		storagePath = gatling.Status.ReportStoragePath
 		reportURL = gatling.Status.ReportUrl
 	} else {
-		// Generate Gatling Cloud Storage Path
+		// Assign new Gatling Cloud Storage Path and report URL,
+		// and save them on Gatling Status fields
 		storagePath, reportURL = r.assignCloudStorageInfo(gatling)
 		gatling.Status.ReportStoragePath = storagePath
 		gatling.Status.ReportUrl = reportURL
