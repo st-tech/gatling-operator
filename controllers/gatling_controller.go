@@ -184,7 +184,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 		var storagePath = ""
 		// Get cloud storage info only if gatling.spec.generateReport is true
 		if gatling.Spec.GenerateReport {
-			path, _, err := r.assignCloudStorageInfo(ctx, gatling)
+			path, _, err := r.getCloudStorageInfo(ctx, gatling)
 			if err != nil {
 				log.Error(err, "Failed to update gatling status, and requeue")
 				return true, err
@@ -287,7 +287,7 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 		return true, nil
 	}
 
-	storagePath, _, err := r.assignCloudStorageInfo(ctx, gatling)
+	storagePath, _, err := r.getCloudStorageInfo(ctx, gatling)
 	if err != nil {
 		log.Error(err, "Failed to get gatling storage info, and requeue")
 		return true, err
@@ -369,7 +369,7 @@ func (r *GatlingReconciler) gatlingNotificationReconcile(ctx context.Context, re
 	var reportURL = "none"
 	// Get cloud storage info only if gatling.spec.generateReport is true
 	if gatling.Spec.GenerateReport {
-		_, url, err := r.assignCloudStorageInfo(ctx, gatling)
+		_, url, err := r.getCloudStorageInfo(ctx, gatling)
 		if err != nil {
 			log.Error(err, "Failed to get gatling storage info, and requeue")
 			return true, err
@@ -676,7 +676,7 @@ func (r *GatlingReconciler) getGatlingRunnerJobVolumes(gatling *gatlingv1alpha1.
 	return volumes
 }
 
-func (r *GatlingReconciler) assignCloudStorageInfo(ctx context.Context, gatling *gatlingv1alpha1.Gatling) (string, string, error) {
+func (r *GatlingReconciler) getCloudStorageInfo(ctx context.Context, gatling *gatlingv1alpha1.Gatling) (string, string, error) {
 	var storagePath string
 	var reportURL string
 	if gatling.Status.ReportStoragePath != "" && gatling.Status.ReportUrl != "" {
