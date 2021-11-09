@@ -37,9 +37,9 @@ import (
 )
 
 const (
-	requeueIntervalInSeconds           = 5   // 5 sec
-	maxJobCreationWaitTimeInSeconds    = 600 // 600 sec (10 min)
-	maxJobRunWaitTimeInSeconds         = 600 // 600 sec (10 min)
+	requeueIntervalInSeconds           = 5    // 5 sec
+	maxJobCreationWaitTimeInSeconds    = 600  // 600 sec (10 min)
+	maxJobRunWaitTimeInSeconds         = 1800 // 1800 sec (30 min)
 	defaultGatlingImage                = "denvazh/gatling:latest"
 	defaultRcloneImage                 = "rclone/rclone:latest"
 	defaultSimulationsDirectoryPath    = "/opt/gatling/user-files/simulations"
