@@ -67,14 +67,15 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// fetching gatling Resource from in-memory-cache
 	gatling := &gatlingv1alpha1.Gatling{}
 	if err := r.Get(ctx, req.NamespacedName, gatling); err != nil {
-		log.Error(err, "Unable to fetch Gatling for some reason, and requeue")
-		return doRequeue(0, client.IgnoreNotFound(err))
+		log.Error(err, "Unable to fetch Gatling, thus no longer requeue")
+		return doNotRequeue(client.IgnoreNotFound(err))
 	}
+
 	log.Info("Reconciling Gatling")
 	// r.dumpGatlingStatus(gatling, log)
 	if r.isGatlingCompleted(gatling) {
 		log.Info("Gatling job has completed!", "name", gatling.ObjectMeta.Name, "namespace", gatling.ObjectMeta.Namespace)
-		return doNotRequeue()
+		return doNotRequeue(nil)
 	}
 	// Reconciling for running Gatling Jobs
 	if !gatling.Status.RunnerCompleted {
@@ -86,7 +87,7 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			if gatling.Spec.CleanupAfterJobDone {
 				r.cleanupJob(ctx, req, gatling.Status.RunnerJobName)
 			}
-			return doNotRequeue()
+			return doNotRequeue(err)
 		}
 	}
 	// Reconciling for reporting
@@ -99,7 +100,7 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			if gatling.Spec.CleanupAfterJobDone {
 				r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
 			}
-			return doNotRequeue()
+			return doNotRequeue(err)
 		}
 	}
 	// Reconciling for notification
@@ -111,7 +112,7 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			return doRequeue(requeueIntervalInSeconds*time.Second, err)
 		}
 		if err != nil {
-			return doNotRequeue()
+			return doNotRequeue(err)
 		}
 	}
 	// Clean up Job resources
@@ -127,7 +128,7 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
 		}
 	}
-	return doNotRequeue()
+	return doNotRequeue(nil)
 }
 
 // Implementation of reconciler logic for the runner job
@@ -394,8 +395,8 @@ func doRequeue(requeueAfter time.Duration, err error) (ctrl.Result, error) {
 	return ctrl.Result{Requeue: true, RequeueAfter: requeueAfter}, err
 }
 
-func doNotRequeue() (ctrl.Result, error) {
-	return ctrl.Result{}, nil
+func doNotRequeue(err error) (ctrl.Result, error) {
+	return ctrl.Result{}, err
 }
 
 func (r *GatlingReconciler) newConfigMapForCR(gatling *gatlingv1alpha1.Gatling, configMapName string, configMapData *map[string]string) *corev1.ConfigMap {
