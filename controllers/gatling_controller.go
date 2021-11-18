@@ -254,7 +254,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 				log.Error(err, "Failed to update gatling status")
 				return true, err
 			}
-			return false, nil
+			return true, nil
 		} else {
 			msg := fmt.Sprintf("Failed to complete runner job ( failed %d / backofflimit %d ). Please review logs", foundJob.Status.Failed, *foundJob.Spec.BackoffLimit)
 			log.Error(nil, msg)
@@ -348,7 +348,7 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 				log.Error(err, "Failed to update gatling status, but not requeue")
 				return true, err
 			}
-			return false, nil
+			return true, nil
 		} else {
 			msg := fmt.Sprintf("Failed to complete reporter job( failed %d / backofflimit %d ). Please review logs", foundJob.Status.Failed, *foundJob.Spec.BackoffLimit)
 			log.Error(nil, msg)
