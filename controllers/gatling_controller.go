@@ -75,6 +75,16 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// r.dumpGatlingStatus(gatling, log)
 	if r.isGatlingCompleted(gatling) {
 		log.Info("Gatling job has completed!", "name", gatling.ObjectMeta.Name, "namespace", gatling.ObjectMeta.Namespace)
+
+		// Clean up Job resources if neccessary
+		if gatling.Spec.CleanupAfterJobDone {
+			log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.RunnerJobName, gatling.Name))
+			r.cleanupJob(ctx, req, gatling.Status.RunnerJobName)
+			if gatling.Spec.GenerateReport {
+				log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.ReporterJobName, gatling.Name))
+				r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
+			}
+		}
 		return doNotRequeue(nil)
 	}
 	// Reconciling for running Gatling Jobs
@@ -115,19 +125,7 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			return doNotRequeue(err)
 		}
 	}
-	// Clean up Job resources
-	if gatling.Status.RunnerCompleted {
-		log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.RunnerJobName, gatling.Name))
-		if gatling.Spec.CleanupAfterJobDone {
-			r.cleanupJob(ctx, req, gatling.Status.RunnerJobName)
-		}
-	}
-	if gatling.Spec.GenerateReport && gatling.Status.ReportCompleted {
-		log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.ReporterJobName, gatling.Name))
-		if gatling.Spec.CleanupAfterJobDone {
-			r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
-		}
-	}
+
 	return doNotRequeue(nil)
 }
 
@@ -256,7 +254,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 				log.Error(err, "Failed to update gatling status")
 				return true, err
 			}
-			return false, nil
+			return true, nil
 		} else {
 			msg := fmt.Sprintf("Failed to complete runner job ( failed %d / backofflimit %d ). Please review logs", foundJob.Status.Failed, *foundJob.Spec.BackoffLimit)
 			log.Error(nil, msg)
@@ -350,7 +348,7 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 				log.Error(err, "Failed to update gatling status, but not requeue")
 				return true, err
 			}
-			return false, nil
+			return true, nil
 		} else {
 			msg := fmt.Sprintf("Failed to complete reporter job( failed %d / backofflimit %d ). Please review logs", foundJob.Status.Failed, *foundJob.Spec.BackoffLimit)
 			log.Error(nil, msg)
@@ -388,7 +386,7 @@ func (r *GatlingReconciler) gatlingNotificationReconcile(ctx context.Context, re
 		return true, err
 	}
 	log.Info("Notification has successfully been sent!")
-	return false, nil
+	return true, nil
 }
 
 func doRequeue(requeueAfter time.Duration, err error) (ctrl.Result, error) {
