@@ -1,4 +1,8 @@
 resources:
 - manager.yaml
-
-# This file will get modified by kustomize file. Please don't commit any changes to the git repo!
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- name: controller
+  newName: gatling-operator
+  newTag: 20211125-172146

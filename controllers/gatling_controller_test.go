@@ -9,9 +9,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	gatlingv1alpha1 "github.com/st-tech/gatling-operator/api/v1alpha1"
+	"github.com/st-tech/gatling-operator/utils"
+	"github.com/stretchr/testify/mock"
+	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
+	ctrl "sigs.k8s.io/controller-runtime"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -86,3 +92,48 @@ var _ = Context("Inside of a new namespace", func() {
 
 	})
 })
+
+var _ = Describe("Test Reconcile", func() {
+	ctx := context.TODO()
+	ns := SetupTest(ctx)
+	gatlingName := "test-gatling"
+	client := utils.NewClient()
+
+	BeforeEach(func() {
+
+	})
+
+	AfterEach(func() {
+
+	})
+
+	It("Gatling Completed", func() {
+		client.On("Get",
+			mock.IsType(context.Background()),
+			mock.IsType(types.NamespacedName{}),
+			mock.Anything,
+		).Return(nil)
+
+		reconciler := &GatlingReconciler{
+			Client: client,
+			Scheme: newTestScheme(),
+		}
+		request := ctrl.Request{
+			NamespacedName: types.NamespacedName{
+				Namespace: ns.Name,
+				Name:      gatlingName,
+			},
+		}
+
+		reconciliationResult, err := reconciler.Reconcile(ctx, request)
+
+		Expect(err).To(HaveOccurred())
+		Expect(reconciliationResult.Requeue).To(Equal(true))
+	})
+})
+
+func newTestScheme() *runtime.Scheme {
+	testScheme := runtime.NewScheme()
+	_ = appsv1.AddToScheme(testScheme)
+	return testScheme
+}
