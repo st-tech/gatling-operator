@@ -41,6 +41,11 @@ spec:
                 description: The flag of cleanup gatling jobs resources after the
                   job done
                 type: boolean
+              cleanupGatlingResourceAfterJobDone:
+                default: false
+                description: The flag of cleanup gatling jobs resources after the
+                  job done
+                type: boolean
               cloudStorageSpec:
                 description: Cloud Storage Provider
                 properties:

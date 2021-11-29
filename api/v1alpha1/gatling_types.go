@@ -44,6 +44,11 @@ type GatlingSpec struct {
 	// +kubebuilder:validation:Optional
 	CleanupAfterJobDone bool `json:"cleanupAfterJobDone,omitempty"`
 
+	// The flag of cleanup gatling jobs resources after the job done
+	// +kubebuilder:default=false
+	// +kubebuilder:validation:Optional
+	CleanupGatlingResourceAfterJobDone bool `json:"cleanupGatlingResourceAfterJobDone,omitempty"`
+
 	// Pod extra specification
 	// +kubebuilder:validation:Optional
 	PodSpec PodSpec `json:"podSpec,omitempty"`

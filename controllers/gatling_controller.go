@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -84,6 +85,10 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 				log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.ReporterJobName, gatling.Name))
 				r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
 			}
+		}
+		if gatling.Spec.CleanupGatlingResourceAfterJobDone {
+			log.Info(fmt.Sprintf("Cleaning up gatlig %s", gatling.Name))
+			r.cleanupGatling(ctx, req, gatling.Name)
 		}
 		return doNotRequeue(nil)
 	}
@@ -764,6 +769,17 @@ func (r *GatlingReconciler) cleanupJob(ctx context.Context, req ctrl.Request, jo
 		return err
 	}
 	if err := r.Delete(ctx, foundJob, client.PropagationPolicy(metav1.DeletePropagationBackground)); client.IgnoreNotFound(err) != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *GatlingReconciler) cleanupGatling(ctx context.Context, req ctrl.Request, gatlingName string) error {
+	foundGatling := &gatlingv1alpha1.Gatling{}
+	if err := r.Get(ctx, client.ObjectKey{Name: gatlingName, Namespace: req.Namespace}, foundGatling); err != nil {
+		return err
+	}
+	if err := r.Delete(ctx, foundGatling, client.PropagationPolicy(metav1.DeletePropagationBackground)); client.IgnoreNotFound(err) != nil {
 		return err
 	}
 	return nil

@@ -6,6 +6,7 @@ spec:
   generateReport: false                                   # The flag of generating gatling report
   notifyReport: false                                     # The flag of notifying gatling report
   cleanupAfterJobDone: true                               #  The flag of cleaning up gatling jobs resources after the job done
+  cleanupGatlingResourceAfterJobDone: true                #  The flag of cleaning up gatling resources after the job done
   podSpec:
     gatlingImage: GATLING_IMAGE                           # Optional. Default: denvazh/gatling:latest. The image that will be used for Gatling container.
     rcloneImage: rclone/rclone                            # Optional. Default: rclone/rclone:latest. The image that will be used for rclone conatiner.
@@ -33,7 +34,7 @@ spec:
     #  - name: AWS_SECRET_ACCESS_KEY
     #    value: xxxxxxxxxxxxxxx
   notificationServiceSpec:
-    provider: "slack"                                     # Notification provider name. Supported provider: "slack" 
+    provider: "slack"                                     # Notification provider name. Supported provider: "slack"
     secretName: "gatling-notification-slack-secrets"      # The name of secret in which all key/value sets needed for the notification are stored
   testScenarioSpec:
     # startTime: 2021-09-10 08:45:31                      # Optional. Start time of running test scenario in UTC. Format: %Y-%m-%d %H:%M:%S
