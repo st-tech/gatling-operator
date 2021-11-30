@@ -53,6 +53,12 @@ type GatlingReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+	GatlingReconcilerInterface
+}
+
+// GatlingReconciler Interface
+type GatlingReconcilerInterface interface {
+	createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error
 }
 
 //+kubebuilder:rbac:groups="batch",resources=jobs,verbs=get;list;watch;create;update;patch;delete

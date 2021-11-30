@@ -1,7 +1,9 @@
-package utils
+package controllers
 
 import (
 	"context"
+
+	gatlingv1alpha1 "github.com/st-tech/gatling-operator/api/v1alpha1"
 
 	"github.com/stretchr/testify/mock"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -10,7 +12,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// Mock GatlingReconciler
+type GatlingMockReconciler struct {
+	mock.Mock
+	*GatlingReconciler
+}
+
+func (r *GatlingMockReconciler) createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error {
+	return nil
+}
+
 // Client is a mock for the controller-runtime dynamic client interface.
+// Ref. https://itnext.io/unit-testing-kubernetes-operators-using-mocks-ba3ba2483ba3
 type Client struct {
 	mock.Mock
 
