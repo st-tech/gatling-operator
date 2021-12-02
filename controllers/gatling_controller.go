@@ -78,14 +78,6 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 		// Clean up Job resources if neccessary
 		if gatling.Spec.CleanupAfterJobDone {
-			log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.RunnerJobName, gatling.Name))
-			r.cleanupJob(ctx, req, gatling.Status.RunnerJobName)
-			if gatling.Spec.GenerateReport {
-				log.Info(fmt.Sprintf("Cleaning up job %s for gatling %s", gatling.Status.ReporterJobName, gatling.Name))
-				r.cleanupJob(ctx, req, gatling.Status.ReporterJobName)
-			}
-		}
-		if gatling.Spec.CleanupGatlingResourceAfterJobDone {
 			log.Info(fmt.Sprintf("Cleaning up gatlig %s", gatling.Name))
 			r.cleanupGatling(ctx, req, gatling.Name)
 		}
