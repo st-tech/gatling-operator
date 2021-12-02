@@ -96,7 +96,7 @@ var _ = Context("Inside of a new namespace", func() {
 
 var _ = Describe("Test gatlingRunnerReconcile", func() {
 	ctx := context.TODO()
-	namespace := "test-namespace"
+	namespace := "test-namespaceXX"
 	gatlingName := "test-gatling"
 	client := NewClient()
 	reconciler := GatlingMockReconciler{GatlingReconciler: &GatlingReconciler{
@@ -112,11 +112,28 @@ var _ = Describe("Test gatlingRunnerReconcile", func() {
 				mock.Anything,
 			).Return(fmt.Errorf("mock Get"))
 
+			ExpectConfigMap := &corev1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      namespace,
+					Namespace: namespace,
+					Labels: map[string]string{
+						"app": gatlingName,
+					},
+				},
+				Data: map[string]string{},
+			}
+
 			reconciler.On("createObject",
 				mock.IsType(ctx),
-				mock.IsType(gatlingv1alpha1.Gatling{}),
+				mock.Anything,
 				mock.Anything,
 			).Return(fmt.Errorf("mock createObject"))
+
+			reconciler.On("newConfigMapForCR",
+				mock.Anything,
+				mock.Anything,
+				mock.Anything,
+			).Return(ExpectConfigMap)
 
 			request := ctrl.Request{
 				NamespacedName: types.NamespacedName{
@@ -143,7 +160,7 @@ var _ = Describe("Test gatlingRunnerReconcile", func() {
 			}
 
 			reconciliationResult, err := reconciler.gatlingRunnerReconcile(ctx, request, gatling, log.FromContext(ctx))
-			Expect(err).To(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 			Expect(reconciliationResult).To(Equal(true))
 		})
 	})
@@ -190,7 +207,7 @@ var _ = Describe("Test newConfigMapForCR", func() {
 	})
 })
 
-var _ = Describe("Test newConfigMapForCR", func() {
+var _ = Describe("Test createObject", func() {
 })
 
 func newTestScheme() *runtime.Scheme {

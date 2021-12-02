@@ -6,6 +6,7 @@ import (
 	gatlingv1alpha1 "github.com/st-tech/gatling-operator/api/v1alpha1"
 
 	"github.com/stretchr/testify/mock"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -19,7 +20,13 @@ type GatlingMockReconciler struct {
 }
 
 func (r *GatlingMockReconciler) createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error {
-	return nil
+	args := r.Called(ctx, gatling, object)
+	return args.Error(0)
+}
+
+func (r *GatlingMockReconciler) newConfigMapForCR(gatling *gatlingv1alpha1.Gatling, configMapName string, configMapData *map[string]string) *corev1.ConfigMap {
+	args := r.Called(gatling, configMapName, configMapData)
+	return args.Get(0).(*corev1.ConfigMap)
 }
 
 // Client is a mock for the controller-runtime dynamic client interface.

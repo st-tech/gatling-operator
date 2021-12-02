@@ -59,6 +59,7 @@ type GatlingReconciler struct {
 // GatlingReconciler Interface
 type GatlingReconcilerInterface interface {
 	createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error
+	newConfigMapForCR(gatling *gatlingv1alpha1.Gatling, configMapName string, configMapData *map[string]string) *corev1.ConfigMap
 }
 
 //+kubebuilder:rbac:groups="batch",resources=jobs,verbs=get;list;watch;create;update;patch;delete
@@ -142,15 +143,15 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 		configMapName := gatling.Name + "-simulations-data"
 		foundConfigMap := &corev1.ConfigMap{}
 		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
-			if apierr.IsNotFound(err) {
-				simulationDataConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.SimulationData)
-				if err := r.createObject(ctx, gatling, simulationDataConfigMap); err != nil {
-					log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", simulationDataConfigMap.GetNamespace(), simulationDataConfigMap.GetName()))
-					return true, err
-				}
-			} else {
+
+			simulationDataConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.SimulationData)
+			if err := r.createObject(ctx, gatling, simulationDataConfigMap); err != nil {
+				log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", simulationDataConfigMap.GetNamespace(), simulationDataConfigMap.GetName()))
 				return true, err
 			}
+
+			return true, err
+
 		}
 	}
 	// Create Resource Data ConfigMap if defined to create in CR
