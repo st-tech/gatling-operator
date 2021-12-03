@@ -14,17 +14,22 @@ import (
 )
 
 // Mock GatlingReconciler
-type GatlingMockReconciler struct {
+type MockGatlingReconcilerImpl struct {
 	mock.Mock
-	*GatlingReconciler
 }
 
-func (r *GatlingMockReconciler) createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error {
+// var _ GatlingReconcilerInterface = &MockGatlingReconcilerImpl{}
+
+func NewMockGatlingReconcilerImpl() *MockGatlingReconcilerImpl {
+	return &MockGatlingReconcilerImpl{}
+}
+
+func (r *MockGatlingReconcilerImpl) createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error {
 	args := r.Called(ctx, gatling, object)
 	return args.Error(0)
 }
 
-func (r *GatlingMockReconciler) newConfigMapForCR(gatling *gatlingv1alpha1.Gatling, configMapName string, configMapData *map[string]string) *corev1.ConfigMap {
+func (r *MockGatlingReconcilerImpl) newConfigMapForCR(gatling *gatlingv1alpha1.Gatling, configMapName string, configMapData *map[string]string) *corev1.ConfigMap {
 	args := r.Called(gatling, configMapName, configMapData)
 	return args.Get(0).(*corev1.ConfigMap)
 }

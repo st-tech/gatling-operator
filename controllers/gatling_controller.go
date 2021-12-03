@@ -53,7 +53,11 @@ type GatlingReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-	GatlingReconcilerInterface
+	*GatlingReconcilerImpl
+}
+
+// gatginReconciler Impl
+type GatlingReconcilerImpl struct {
 }
 
 // GatlingReconciler Interface

@@ -99,10 +99,12 @@ var _ = Describe("Test gatlingRunnerReconcile", func() {
 	namespace := "test-namespaceXX"
 	gatlingName := "test-gatling"
 	client := NewClient()
-	reconciler := GatlingMockReconciler{GatlingReconciler: &GatlingReconciler{
-		Client: client,
-		Scheme: newTestScheme(),
-	}}
+	gatlingReconcilerImplMock := NewMockGatlingReconcilerImpl()
+	reconciler := GatlingReconciler{
+		Client:                client,
+		Scheme:                newTestScheme(),
+		GatlingReconcilerImpl: gatlingReconcilerImplMock,
+	}
 	Context("Create Simulation Data ConfigMap if defined to create in CR", func() {
 		It("Failed to creating new ConfigMap", func() {
 			// create mock function
@@ -123,13 +125,13 @@ var _ = Describe("Test gatlingRunnerReconcile", func() {
 				Data: map[string]string{},
 			}
 
-			reconciler.On("createObject",
-				mock.IsType(ctx),
+			gatlingReconcilerImplMock.On("createObject",
+				mock.Anything,
 				mock.Anything,
 				mock.Anything,
 			).Return(fmt.Errorf("mock createObject"))
 
-			reconciler.On("newConfigMapForCR",
+			gatlingReconcilerImplMock.On("newConfigMapForCR",
 				mock.Anything,
 				mock.Anything,
 				mock.Anything,
