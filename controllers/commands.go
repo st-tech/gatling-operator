@@ -9,11 +9,11 @@ func getGatlingRunnerCommand(
 	resultsDirectoryPath string, startTime string, simulationClass string) string {
 
 	template := `
-SIMULATIONS_DIR_PATH="%s"
-TEMP_SIMULATIONS_DIR_PATH="%s"
-RESOURCES_DIR_PATH="%s"
-RESULTS_DIR_PATH="%s"
-START_TIME="%s"
+SIMULATIONS_DIR_PATH=%s
+TEMP_SIMULATIONS_DIR_PATH=%s
+RESOURCES_DIR_PATH=%s
+RESULTS_DIR_PATH=%s
+START_TIME=%s
 if [ -z "${START_TIME}" ]; then
   START_TIME=$(date +"%%Y-%%m-%%d %%H:%%M:%%S" --utc)
 fi
@@ -53,7 +53,7 @@ func getGatlingTransferResultCommand(resultsDirectoryPath string, provider strin
 	switch provider {
 	case "aws":
 		template := `
-RESULTS_DIR_PATH="%s"
+RESULTS_DIR_PATH=%s
 rclone config create s3 s3 env_auth=true region %s
 for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
 do
@@ -104,7 +104,7 @@ func getGatlingTransferReportCommand(resultsDirectoryPath string, provider strin
 		template := `
 GATLING_AGGREGATE_DIR=%s
 rclone config create s3 s3 env_auth=true region %s
-rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3-env-auth %s 
+rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3-env-auth %s
 `
 		return fmt.Sprintf(template, resultsDirectoryPath, region, storagePath)
 	case "gcp": //not supported yet
