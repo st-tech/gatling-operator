@@ -100,11 +100,12 @@ var _ = Describe("Test gatlingRunnerReconcile", func() {
 	gatlingName := "test-gatling"
 	client := NewClient()
 	gatlingReconcilerImplMock := NewMockGatlingReconcilerImpl()
-	reconciler := GatlingReconciler{
-		Client:                client,
-		Scheme:                newTestScheme(),
-		GatlingReconcilerImpl: gatlingReconcilerImplMock,
-	}
+	gatlingReconcilerImplMock.Client = client
+	// reconciler := GatlingReconciler{
+	// 	Client:                     client,
+	// 	Scheme:                     newTestScheme(),
+	// 	GatlingReconcilerInterface: gatlingReconcilerImplMock,
+	// }
 	Context("Create Simulation Data ConfigMap if defined to create in CR", func() {
 		It("Failed to creating new ConfigMap", func() {
 			// create mock function
@@ -116,8 +117,8 @@ var _ = Describe("Test gatlingRunnerReconcile", func() {
 
 			ExpectConfigMap := &corev1.ConfigMap{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      namespace,
-					Namespace: namespace,
+					Name:      "test-namespaceYY",
+					Namespace: "test-namespaceYY",
 					Labels: map[string]string{
 						"app": gatlingName,
 					},
@@ -126,7 +127,7 @@ var _ = Describe("Test gatlingRunnerReconcile", func() {
 			}
 
 			gatlingReconcilerImplMock.On("createObject",
-				mock.Anything,
+				mock.IsType(ctx),
 				mock.Anything,
 				mock.Anything,
 			).Return(fmt.Errorf("mock createObject"))
@@ -161,7 +162,9 @@ var _ = Describe("Test gatlingRunnerReconcile", func() {
 				},
 			}
 
-			reconciliationResult, err := reconciler.gatlingRunnerReconcile(ctx, request, gatling, log.FromContext(ctx))
+			// mockerr := gatlingReconcilerImplMock.createObject(ctx, gatling, nil)
+			// Expect(mockerr).NotTo(HaveOccurred())
+			reconciliationResult, err := gatlingReconcilerImplMock.gatlingRunnerReconcile(ctx, request, gatling, log.FromContext(ctx))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(reconciliationResult).To(Equal(true))
 		})
