@@ -28,7 +28,7 @@ SIMULATIONS_DIR_PATH=testSimulationDirectoryPath
 TEMP_SIMULATIONS_DIR_PATH=testTempSimulationsDirectoryPath
 RESOURCES_DIR_PATH=testResourcesDirectoryPath
 RESULTS_DIR_PATH=testResultsDirectoryPath
-START_TIME=2021-09-10 08:45:31
+START_TIME="2021-09-10 08:45:31"
 if [ -z "${START_TIME}" ]; then
   START_TIME=$(date +"%Y-%m-%d %H:%M:%S" --utc)
 fi

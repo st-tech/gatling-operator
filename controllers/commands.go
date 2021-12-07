@@ -13,7 +13,7 @@ SIMULATIONS_DIR_PATH=%s
 TEMP_SIMULATIONS_DIR_PATH=%s
 RESOURCES_DIR_PATH=%s
 RESULTS_DIR_PATH=%s
-START_TIME=%s
+START_TIME="%s"
 if [ -z "${START_TIME}" ]; then
   START_TIME=$(date +"%%Y-%%m-%%d %%H:%%M:%%S" --utc)
 fi
