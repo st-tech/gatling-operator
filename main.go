@@ -79,9 +79,9 @@ func main() {
 	}
 
 	if err = (&controllers.GatlingReconciler{
-		Client:                mgr.GetClient(),
-		Scheme:                mgr.GetScheme(),
-		GatlingReconcilerImpl: &controllers.GatlingReconcilerImpl{},
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+		// GatlingReconcilerInterface: &controllers.GatlingReconcilerImpl{},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Gatling")
 		os.Exit(1)

@@ -53,18 +53,27 @@ type GatlingReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-	*GatlingReconcilerImpl
 }
 
 // gatginReconciler Impl
-type GatlingReconcilerImpl struct {
-}
+// type GatlingReconcilerImpl struct {
+// }
+var _ GatlingReconcilerInterface = &GatlingReconciler{}
 
 // GatlingReconciler Interface
 type GatlingReconcilerInterface interface {
 	createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error
 	newConfigMapForCR(gatling *gatlingv1alpha1.Gatling, configMapName string, configMapData *map[string]string) *corev1.ConfigMap
+	gatlingRunnerReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error)
 }
+
+// func (r *GatlingReconcilerImpl) createObject(ctx context.Context, gatling *gatlingv1alpha1.Gatling, object client.Object) error {
+// 	return fmt.Errorf("interface error")
+// }
+
+// func (r *GatlingReconcilerImpl) newConfigMapForCR(gatling *gatlingv1alpha1.Gatling, configMapName string, configMapData *map[string]string) *corev1.ConfigMap {
+// 	return &corev1.ConfigMap{}
+// }
 
 //+kubebuilder:rbac:groups="batch",resources=jobs,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="core",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
