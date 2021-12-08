@@ -55,6 +55,16 @@ type GatlingReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+var _ GatlingReconcilerInterface = &GatlingReconciler{}
+
+// GatlingReconciler Interface
+type GatlingReconcilerInterface interface {
+	gatlingNotificationReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error)
+	getCloudStorageInfo(ctx context.Context, gatling *gatlingv1alpha1.Gatling) (string, string, error)
+	sendNotification(ctx context.Context, gatling *gatlingv1alpha1.Gatling, reportURL string) error
+	updateGatlingStatus(ctx context.Context, gatling *gatlingv1alpha1.Gatling) error
+}
+
 //+kubebuilder:rbac:groups="batch",resources=jobs,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="core",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="core",resources=secrets,verbs=get;list;watch
