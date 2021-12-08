@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
-	controllers "github.com/st-tech/gatling-operator/api/controllers"
 	gatlingv1alpha1 "github.com/st-tech/gatling-operator/api/v1alpha1"
+	"github.com/st-tech/gatling-operator/controllers"
 	"github.com/stretchr/testify/mock"
 
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -17,7 +17,7 @@ type MockGatlingNotificationReconcile struct {
 	mock.Mock
 }
 
-var _ GatlingReconcilerInterface = &MockGatlingNotificationReconcile{}
+var _ controllers.GatlingReconcilerInterface = &MockGatlingNotificationReconcile{}
 
 func NewMockGatlingNotificationReconcile() *MockGatlingNotificationReconcile {
 	return &MockGatlingNotificationReconcile{}

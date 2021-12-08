@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	utils "github.com/st-tech/gatling-operator/api/utils"
 	gatlingv1alpha1 "github.com/st-tech/gatling-operator/api/v1alpha1"
+	"github.com/st-tech/gatling-operator/utils"
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
