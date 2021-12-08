@@ -11,7 +11,7 @@ on:
       - add-ci
       - main
     paths-ignore:
-      - '.github/workflows/**'
+      #- '.github/workflows/**'
       - '**.md'
       - '.gitignore'    
   workflow_dispatch:
