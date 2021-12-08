@@ -8,6 +8,7 @@ on:
       - v*
   pull_request:
     branches:
+      - add-ci
       - main
     paths-ignore:
       - '.github/workflows/**'
