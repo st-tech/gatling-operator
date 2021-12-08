@@ -8,10 +8,8 @@ on:
       - v*
   pull_request:
     branches:
-      - add-ci
       - main
     paths-ignore:
-      #- '.github/workflows/**'
       - '**.md'
       - '.gitignore'    
   workflow_dispatch:
@@ -52,8 +50,3 @@ jobs:
 
       - name: Run Tests
         run: make test
-
-      - name: Verify manifests are up-to-date
-        run: |
-          make manifests
-          git diff --exit-code
