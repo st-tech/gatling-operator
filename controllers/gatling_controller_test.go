@@ -6,13 +6,17 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	gatlingv1alpha1 "github.com/st-tech/gatling-operator/api/v1alpha1"
-	"github.com/st-tech/gatling-operator/utils"
+	"github.com/stretchr/testify/mock"
+	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	log "sigs.k8s.io/controller-runtime/pkg/log"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -91,7 +95,10 @@ var _ = Context("Inside of a new namespace", func() {
 var _ = Describe("Test gatlingNotificationReconcile", func() {
 	namespace := "test-namespace"
 	gatlingName := "test-gatling"
-	gatlingReconcilerImplMock := utils.NewMockGatlingNotificationReconcile()
+	gatlingReconcilerImplMock := NewMockGatlingReconcilerImpl()
+	client := k8sClient
+	scheme := newTestScheme()
+	reconciler := &GatlingReconciler{Client: client, Scheme: scheme, GatlingReconcilerInterface: gatlingReconcilerImplMock}
 	ctx := context.TODO()
 	request := ctrl.Request{
 		NamespacedName: types.NamespacedName{
@@ -105,7 +112,7 @@ var _ = Describe("Test gatlingNotificationReconcile", func() {
 			Namespace: namespace,
 		},
 		Spec: gatlingv1alpha1.GatlingSpec{
-			GenerateReport:      false,
+			GenerateReport:      true,
 			NotifyReport:        false,
 			CleanupAfterJobDone: false,
 			TestScenarioSpec: gatlingv1alpha1.TestScenarioSpec{
@@ -116,23 +123,19 @@ var _ = Describe("Test gatlingNotificationReconcile", func() {
 		},
 	}
 	Context("gatling.spec.generateReport is true && getCloudStorageInfo return error", func() {
-		BeforeEach(func() {
-			gatling.Spec.GenerateReport = true
-		})
 		gatlingReconcilerImplMock.On("getCloudStorageInfo",
 			mock.IsType(ctx),
 			mock.Anything,
-		).Return("", "", fmt.Errorf("mock getCloudStorageInfo"))
-		reconciliationResult, err := gatlingReconcilerImplMock.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
+			mock.Anything,
+		).Return("", "", fmt.Errorf("mock getCloudStorageInfo")).Once()
+		reconciliationResult, err := reconciler.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
 		Expect(err).To(HaveOccurred())
 		Expect(reconciliationResult).To(Equal(true))
 	})
 	Context("gatling.spec.generateReport is true && getCloudStorageInfo return url", func() {
-		BeforeEach(func() {
-			gatling.Spec.GenerateReport = true
-		})
 		gatlingReconcilerImplMock.On("getCloudStorageInfo",
 			mock.IsType(ctx),
+			mock.Anything,
 			mock.Anything,
 		).Return("", "test_url", nil)
 		It("sendNotification return error", func() {
@@ -140,8 +143,9 @@ var _ = Describe("Test gatlingNotificationReconcile", func() {
 				mock.IsType(ctx),
 				mock.Anything,
 				mock.Anything,
-			).Return(fmt.Errorf("mock sendNotification"))
-			reconciliationResult, err := gatlingReconcilerImplMock.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
+				mock.Anything,
+			).Return(fmt.Errorf("mock sendNotification")).Once()
+			reconciliationResult, err := reconciler.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
 			Expect(err).To(HaveOccurred())
 			Expect(reconciliationResult).To(Equal(true))
 		})
@@ -149,13 +153,16 @@ var _ = Describe("Test gatlingNotificationReconcile", func() {
 			mock.IsType(ctx),
 			mock.Anything,
 			mock.Anything,
+			mock.Anything,
 		).Return(nil)
 		It("sendNotification return nil && updateGatlingStatus return error", func() {
 			gatlingReconcilerImplMock.On("updateGatlingStatus",
 				mock.IsType(ctx),
 				mock.Anything,
-			).Return(fmt.Errorf("mock updateGatlingStatus"))
-			reconciliationResult, err := gatlingReconcilerImplMock.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
+				mock.Anything,
+				mock.Anything,
+			).Return(fmt.Errorf("mock updateGatlingStatus")).Once()
+			reconciliationResult, err := reconciler.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
 			Expect(err).To(HaveOccurred())
 			Expect(reconciliationResult).To(Equal(true))
 		})
@@ -163,8 +170,10 @@ var _ = Describe("Test gatlingNotificationReconcile", func() {
 			gatlingReconcilerImplMock.On("updateGatlingStatus",
 				mock.IsType(ctx),
 				mock.Anything,
+				mock.Anything,
+				mock.Anything,
 			).Return(nil)
-			reconciliationResult, err := gatlingReconcilerImplMock.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
+			reconciliationResult, err := reconciler.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(reconciliationResult).To(Equal(true))
 		})
