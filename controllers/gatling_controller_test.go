@@ -179,6 +179,7 @@ var _ = Describe("Test gatlingNotificationReconcile", func() {
 	})
 })
 
+// TODO
 var _ = Describe("Test GetCloudStorageInfo", func() {
 
 })
@@ -202,6 +203,38 @@ var _ = Describe("Test GetCloudStorageProvider", func() {
 		gatling.Spec.CloudStorageSpec.Provider = "aws"
 		resultProvider := reconciler.GetCloudStorageProvider(gatling)
 		Expect(resultProvider).To(Equal("aws"))
+	})
+})
+
+var _ = Describe("Test UpdateGatlingStatus", func() {
+	ctx := context.TODO()
+	client := utils.NewClient()
+	scheme := newTestScheme()
+	reconciler := &GatlingReconciler{Client: client, Scheme: scheme, GatlingReconcilerInterface: &GatlingReconcilerInterfaceImpl{}}
+	gatling := &gatlingv1alpha1.Gatling{
+		Spec: gatlingv1alpha1.GatlingSpec{
+			CloudStorageSpec: gatlingv1alpha1.CloudStorageSpec{
+				Provider: "",
+			},
+		},
+	}
+	It("error update", func() {
+		client.StatusMock.On("Update",
+			mock.IsType(ctx),
+			mock.Anything,
+			mock.Anything,
+		).Return(fmt.Errorf("error mock StatusMock update")).Once()
+		err := reconciler.UpdateGatlingStatus(ctx, gatling, client)
+		Expect(err).To(HaveOccurred())
+	})
+	It("success update", func() {
+		client.StatusMock.On("Update",
+			mock.IsType(ctx),
+			mock.Anything,
+			mock.Anything,
+		).Return(nil)
+		err := reconciler.UpdateGatlingStatus(ctx, gatling, client)
+		Expect(err).NotTo(HaveOccurred())
 	})
 })
 
