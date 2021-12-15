@@ -149,34 +149,34 @@ var _ = Describe("Test gatlingNotificationReconcile", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(reconciliationResult).To(Equal(true))
 		})
-		gatlingReconcilerImplMock.On("sendNotification",
-			mock.IsType(ctx),
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
-		).Return(nil)
-		It("sendNotification return nil && updateGatlingStatus return error", func() {
-			gatlingReconcilerImplMock.On("updateGatlingStatus",
-				mock.IsType(ctx),
-				mock.Anything,
-				mock.Anything,
-				mock.Anything,
-			).Return(fmt.Errorf("mock updateGatlingStatus")).Once()
-			reconciliationResult, err := reconciler.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
-			Expect(err).To(HaveOccurred())
-			Expect(reconciliationResult).To(Equal(true))
-		})
-		It("sendNotification return nil && updateGatlingStatus return nil", func() {
-			gatlingReconcilerImplMock.On("updateGatlingStatus",
-				mock.IsType(ctx),
-				mock.Anything,
-				mock.Anything,
-				mock.Anything,
-			).Return(nil)
-			reconciliationResult, err := reconciler.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
-			Expect(err).NotTo(HaveOccurred())
-			Expect(reconciliationResult).To(Equal(true))
-		})
+		// gatlingReconcilerImplMock.On("sendNotification",
+		// 	mock.IsType(ctx),
+		// 	mock.Anything,
+		// 	mock.Anything,
+		// 	mock.Anything,
+		// ).Return(nil)
+		// It("sendNotification return nil && updateGatlingStatus return error", func() {
+		// 	gatlingReconcilerImplMock.On("updateGatlingStatus",
+		// 		mock.IsType(ctx),
+		// 		mock.Anything,
+		// 		mock.Anything,
+		// 		mock.Anything,
+		// 	).Return(fmt.Errorf("mock updateGatlingStatus")).Once()
+		// 	reconciliationResult, err := reconciler.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
+		// 	Expect(err).To(HaveOccurred())
+		// 	Expect(reconciliationResult).To(Equal(true))
+		// })
+		// It("sendNotification return nil && updateGatlingStatus return nil", func() {
+		// 	gatlingReconcilerImplMock.On("updateGatlingStatus",
+		// 		mock.IsType(ctx),
+		// 		mock.Anything,
+		// 		mock.Anything,
+		// 		mock.Anything,
+		// 	).Return(nil)
+		// 	reconciliationResult, err := reconciler.gatlingNotificationReconcile(ctx, request, gatling, log.FromContext(ctx))
+		// 	Expect(err).NotTo(HaveOccurred())
+		// 	Expect(reconciliationResult).To(Equal(true))
+		// })
 	})
 })
 

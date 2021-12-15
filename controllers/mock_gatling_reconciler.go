@@ -29,10 +29,10 @@ func (r *MockGatlingReconcilerImpl) sendNotification(ctx context.Context, gatlin
 	return args.Error(0)
 }
 
-func (r *MockGatlingReconcilerImpl) updateGatlingStatus(ctx context.Context, gatling *gatlingv1alpha1.Gatling, c client.Client) error {
-	args := r.Called(ctx, gatling, c)
-	return args.Error(0)
-}
+// func (r *MockGatlingReconcilerImpl) updateGatlingStatus(ctx context.Context, gatling *gatlingv1alpha1.Gatling, c client.Client) error {
+// 	args := r.Called(ctx, gatling, c)
+// 	return args.Error(0)
+// }
 
 func (r *MockGatlingReconcilerImpl) getCloudStorageProvider(gatling *gatlingv1alpha1.Gatling) string {
 	args := r.Called(gatling)
