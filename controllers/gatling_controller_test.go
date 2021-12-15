@@ -180,6 +180,32 @@ var _ = Describe("Test gatlingNotificationReconcile", func() {
 	})
 })
 
+var _ = Describe("Test GetCloudStorageInfo", func() {
+
+})
+
+var _ = Describe("Test GetCloudStorageProvider", func() {
+	client := utils.NewClient()
+	scheme := newTestScheme()
+	reconciler := &GatlingReconciler{Client: client, Scheme: scheme, GatlingReconcilerInterface: &GatlingReconcilerInterfaceImpl{}}
+	gatling := &gatlingv1alpha1.Gatling{
+		Spec: gatlingv1alpha1.GatlingSpec{
+			CloudStorageSpec: gatlingv1alpha1.CloudStorageSpec{
+				Provider: "",
+			},
+		},
+	}
+	It("provicer is empty", func() {
+		resultProvider := reconciler.GetCloudStorageProvider(gatling)
+		Expect(resultProvider).To(Equal(""))
+	})
+	It("provicer is aws", func() {
+		gatling.Spec.CloudStorageSpec.Provider = "aws"
+		resultProvider := reconciler.GetCloudStorageProvider(gatling)
+		Expect(resultProvider).To(Equal("aws"))
+	})
+})
+
 func newTestScheme() *runtime.Scheme {
 	testScheme := runtime.NewScheme()
 	_ = appsv1.AddToScheme(testScheme)
