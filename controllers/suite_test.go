@@ -116,8 +116,9 @@ func SetupTest(ctx context.Context) *corev1.Namespace {
 		Expect(err).NotTo(HaveOccurred(), "failed to create manager")
 
 		controller := &GatlingReconciler{
-			Client: mgr.GetClient(),
-			Scheme: mgr.GetScheme(),
+			Client:                     mgr.GetClient(),
+			Scheme:                     mgr.GetScheme(),
+			GatlingReconcilerInterface: &GatlingReconcilerInterfaceImpl{},
 		}
 
 		err = controller.SetupWithManager(mgr)
