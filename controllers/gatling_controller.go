@@ -63,12 +63,11 @@ type GatlingReconcilerInterfaceImpl struct {
 
 // GatlingReconciler Interface
 type GatlingReconcilerInterface interface {
-	getCloudStorageInfo(ctx context.Context, gatling *gatlingv1alpha1.Gatling, c client.Client) (string, string, error)
-	sendNotification(ctx context.Context, gatling *gatlingv1alpha1.Gatling, reportURL string, c client.Client) error
-	// updateGatlingStatus(ctx context.Context, gatling *gatlingv1alpha1.Gatling, c client.Client) error
-	getCloudStorageProvider(gatling *gatlingv1alpha1.Gatling) string
-	getCloudStorageBucket(gatling *gatlingv1alpha1.Gatling) string
-	getNotificationServiceSecretName(gatling *gatlingv1alpha1.Gatling) string
+	GetCloudStorageInfo(ctx context.Context, gatling *gatlingv1alpha1.Gatling, c client.Client) (string, string, error)
+	SendNotification(ctx context.Context, gatling *gatlingv1alpha1.Gatling, reportURL string, c client.Client) error
+	GetCloudStorageProvider(gatling *gatlingv1alpha1.Gatling) string
+	GetCloudStorageBucket(gatling *gatlingv1alpha1.Gatling) string
+	GetNotificationServiceSecretName(gatling *gatlingv1alpha1.Gatling) string
 }
 
 //+kubebuilder:rbac:groups="batch",resources=jobs,verbs=get;list;watch;create;update;patch;delete
@@ -195,7 +194,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 		var storagePath = ""
 		// Get cloud storage info only if gatling.spec.generateReport is true
 		if gatling.Spec.GenerateReport {
-			path, _, err := r.getCloudStorageInfo(ctx, gatling, r.Client)
+			path, _, err := r.GetCloudStorageInfo(ctx, gatling, r.Client)
 			if err != nil {
 				log.Error(err, "Failed to update gatling status, and requeue")
 				return true, err
@@ -288,7 +287,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 // Implementation of reconciler logic for the reporter job
 func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
 	// Check if cloud storage info is given, and skip the reporter job if prerequistes are not made
-	if r.getCloudStorageProvider(gatling) == "" || r.getCloudStorageRegion(gatling) == "" || r.getCloudStorageBucket(gatling) == "" {
+	if r.GetCloudStorageProvider(gatling) == "" || r.getCloudStorageRegion(gatling) == "" || r.GetCloudStorageBucket(gatling) == "" {
 		log.Error(nil, "Minimum cloud storage info is not given, thus skip reporting reconcile, and requeue")
 		gatling.Status.ReportCompleted = true
 		gatling.Status.NotificationCompleted = false
@@ -298,7 +297,7 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 		return true, nil
 	}
 
-	storagePath, _, err := r.getCloudStorageInfo(ctx, gatling, r.Client)
+	storagePath, _, err := r.GetCloudStorageInfo(ctx, gatling, r.Client)
 	if err != nil {
 		log.Error(err, "Failed to get gatling storage info, and requeue")
 		return true, err
@@ -381,15 +380,15 @@ func (r *GatlingReconciler) gatlingNotificationReconcile(ctx context.Context, re
 	cl := r.Client
 	// Get cloud storage info only if gatling.spec.generateReport is true
 	if gatling.Spec.GenerateReport {
-		_, url, err := r.getCloudStorageInfo(ctx, gatling, cl)
+		_, url, err := r.GetCloudStorageInfo(ctx, gatling, cl)
 		if err != nil {
 			log.Error(err, "Failed to get gatling storage info, and requeue")
 			return true, err
 		}
 		reportURL = url
 	}
-	if err := r.sendNotification(ctx, gatling, reportURL, cl); err != nil {
-		log.Error(err, "Failed to sendNotification, but and requeue")
+	if err := r.SendNotification(ctx, gatling, reportURL, cl); err != nil {
+		log.Error(err, "Failed to SendNotification, but and requeue")
 		return true, err
 	}
 	// Update gatling status on notification
@@ -448,7 +447,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 	if gatling.Spec.GenerateReport {
 		gatlingTransferResultCommand := getGatlingTransferResultCommand(
 			r.getResultsDirectoryPath(gatling),
-			r.getCloudStorageProvider(gatling),
+			r.GetCloudStorageProvider(gatling),
 			r.getCloudStorageRegion(gatling),
 			storagePath)
 		log.Info("gatlingTransferResultCommand:", "command", gatlingTransferResultCommand)
@@ -539,7 +538,7 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 	}
 	gatlingAggregateResultCommand := getGatlingAggregateResultCommand(
 		r.getResultsDirectoryPath(gatling),
-		r.getCloudStorageProvider(gatling),
+		r.GetCloudStorageProvider(gatling),
 		r.getCloudStorageRegion(gatling),
 		storagePath)
 	log.Info("gatlingAggregateResultCommand", "command", gatlingAggregateResultCommand)
@@ -549,7 +548,7 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 
 	gatlingTransferReportCommand := getGatlingTransferReportCommand(
 		r.getResultsDirectoryPath(gatling),
-		r.getCloudStorageProvider(gatling),
+		r.GetCloudStorageProvider(gatling),
 		r.getCloudStorageRegion(gatling),
 		storagePath)
 	log.Info("gatlingTransferReportCommand", "command", gatlingTransferReportCommand)
@@ -688,7 +687,7 @@ func (r *GatlingReconciler) getGatlingRunnerJobVolumes(gatling *gatlingv1alpha1.
 	return volumes
 }
 
-func (r *GatlingReconcilerInterfaceImpl) getCloudStorageInfo(ctx context.Context, gatling *gatlingv1alpha1.Gatling, c client.Client) (string, string, error) {
+func (r *GatlingReconcilerInterfaceImpl) GetCloudStorageInfo(ctx context.Context, gatling *gatlingv1alpha1.Gatling, c client.Client) (string, string, error) {
 	var storagePath string
 	var reportURL string
 	if gatling.Status.ReportStoragePath != "" && gatling.Status.ReportUrl != "" {
@@ -699,12 +698,12 @@ func (r *GatlingReconcilerInterfaceImpl) getCloudStorageInfo(ctx context.Context
 		// and save them on Gatling Status fields
 		subDir := fmt.Sprint(hash(fmt.Sprintf("%s%d", gatling.Name, rand.Intn(math.MaxInt32))))
 		storagePath = getCloudStoragePath(
-			r.getCloudStorageProvider(gatling),
-			r.getCloudStorageBucket(gatling),
+			r.GetCloudStorageProvider(gatling),
+			r.GetCloudStorageBucket(gatling),
 			gatling.Name,
 			subDir)
 		reportURL = getCloudStorageReportURL(
-			r.getCloudStorageProvider(gatling),
+			r.GetCloudStorageProvider(gatling),
 			gatling.Spec.CloudStorageSpec.Bucket,
 			gatling.Name,
 			subDir)
@@ -717,8 +716,8 @@ func (r *GatlingReconcilerInterfaceImpl) getCloudStorageInfo(ctx context.Context
 	return storagePath, reportURL, nil
 }
 
-func (r *GatlingReconcilerInterfaceImpl) sendNotification(ctx context.Context, gatling *gatlingv1alpha1.Gatling, reportURL string, c client.Client) error {
-	secretName := r.getNotificationServiceSecretName(gatling)
+func (r *GatlingReconcilerInterfaceImpl) SendNotification(ctx context.Context, gatling *gatlingv1alpha1.Gatling, reportURL string, c client.Client) error {
+	secretName := r.GetNotificationServiceSecretName(gatling)
 	foundSecret := &corev1.Secret{}
 	if err := c.Get(ctx, client.ObjectKey{Name: secretName, Namespace: gatling.Namespace}, foundSecret); err != nil {
 		// secret is not found or failed to get the secret
@@ -820,7 +819,7 @@ func (r *GatlingReconciler) isGatlingCompleted(gatling *gatlingv1alpha1.Gatling)
 	return true
 }
 
-func (r *GatlingReconcilerInterfaceImpl) getCloudStorageProvider(gatling *gatlingv1alpha1.Gatling) string {
+func (r *GatlingReconcilerInterfaceImpl) GetCloudStorageProvider(gatling *gatlingv1alpha1.Gatling) string {
 	provider := ""
 	if &gatling.Spec.CloudStorageSpec != nil && gatling.Spec.CloudStorageSpec.Provider != "" {
 		provider = gatling.Spec.CloudStorageSpec.Provider
@@ -836,7 +835,7 @@ func (r *GatlingReconciler) getCloudStorageRegion(gatling *gatlingv1alpha1.Gatli
 	return region
 }
 
-func (r *GatlingReconcilerInterfaceImpl) getCloudStorageBucket(gatling *gatlingv1alpha1.Gatling) string {
+func (r *GatlingReconcilerInterfaceImpl) GetCloudStorageBucket(gatling *gatlingv1alpha1.Gatling) string {
 	bucket := ""
 	if &gatling.Spec.CloudStorageSpec != nil && gatling.Spec.CloudStorageSpec.Bucket != "" {
 		bucket = gatling.Spec.CloudStorageSpec.Bucket
@@ -852,7 +851,7 @@ func (r *GatlingReconcilerInterfaceImpl) getNotificationServiceProvider(gatling 
 	return provider
 }
 
-func (r *GatlingReconcilerInterfaceImpl) getNotificationServiceSecretName(gatling *gatlingv1alpha1.Gatling) string {
+func (r *GatlingReconcilerInterfaceImpl) GetNotificationServiceSecretName(gatling *gatlingv1alpha1.Gatling) string {
 	secretName := ""
 	if &gatling.Spec.NotificationServiceSpec != nil && gatling.Spec.NotificationServiceSpec.SecretName != "" {
 		secretName = gatling.Spec.NotificationServiceSpec.SecretName
