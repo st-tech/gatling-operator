@@ -29,6 +29,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	gatlingv1alpha1 "github.com/st-tech/gatling-operator/api/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
