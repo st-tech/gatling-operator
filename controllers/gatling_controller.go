@@ -927,7 +927,7 @@ func (r *GatlingReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&gatlingv1alpha1.Gatling{}).
 		WithEventFilter(predicate.Funcs{
 			DeleteFunc: func(e event.DeleteEvent) bool {
-				// Suppress Delete events as we don't take any action in the reconiliation loop
+				// Suppress Delete events as we don't take any action in the reconciliation loop
 				// when invoked after the gatlingv1alpha1.Gatling is actually deleted
 				return false
 			},
