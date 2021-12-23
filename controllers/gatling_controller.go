@@ -919,10 +919,16 @@ func (r *GatlingReconciler) getResultsDirectoryPath(gatling *gatlingv1alpha1.Gat
 	return path
 }
 
-// TODO: filter on create, update
 // SetupWithManager sets up the controller with the Manager.
 func (r *GatlingReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&gatlingv1alpha1.Gatling{}).
+		WithEventFilter(predicate.Funcs{
+			DeleteFunc: func(e event.DeleteEvent) bool {
+				// Suppress Delete events as we don't take any action in the reconiliation loop
+				// when invoked after the gatlingv1alpha1.Gatling is actually deleted
+				return false
+			},
+		}).
 		Complete(r)
 }
