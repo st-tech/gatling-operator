@@ -69,8 +69,6 @@ jobs:
         with:
           go-version: '1.16'
 
-      - run: go version
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -89,15 +87,14 @@ jobs:
         env:
           VERSION: ${{ steps.get_version.outputs.VERSION }}      
         run: |
-          make manifests-release
+          IMAGE_ID=$REGISTRY/$IMAGE_NAME
+          make manifests-release IMG=$IMAGE_ID:$VERSION
 
       - name: Publish images to the registry
         env:
           VERSION: ${{ steps.get_version.outputs.VERSION }}      
         run: |
           IMAGE_ID=$REGISTRY/$IMAGE_NAME
-          # Convert uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
           make docker-push IMG=$IMAGE_ID:$VERSION
