@@ -29,6 +29,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	gatlingv1alpha1 "github.com/st-tech/gatling-operator/api/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -919,10 +921,16 @@ func (r *GatlingReconciler) getResultsDirectoryPath(gatling *gatlingv1alpha1.Gat
 	return path
 }
 
-// TODO: filter on create, update
 // SetupWithManager sets up the controller with the Manager.
 func (r *GatlingReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&gatlingv1alpha1.Gatling{}).
+		WithEventFilter(predicate.Funcs{
+			DeleteFunc: func(e event.DeleteEvent) bool {
+				// Suppress Delete events as we don't take any action in the reconciliation loop
+				// when invoked after the gatlingv1alpha1.Gatling is actually deleted
+				return false
+			},
+		}).
 		Complete(r)
 }
