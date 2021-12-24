@@ -81,7 +81,7 @@ jobs:
 
       - name: Get the version
         id: get_version
-        run: echo ::set-output name=VERSION::0.0.1-alpha.1
+        run: echo ::set-output name=VERSION::0.0.1-alpha.2
         #run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
 
       - name: Set up Docker Buildx
