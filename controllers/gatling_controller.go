@@ -274,7 +274,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 // Implementation of reconciler logic for the reporter job
 func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
 	// Check if cloud storage info is given, and skip the reporter job if prerequistes are not made
-	if r.getCloudStorageProvider(gatling) == "" || r.getCloudStorageRegion(gatling) == "" || r.getCloudStorageBucket(gatling) == "" {
+	if r.getCloudStorageProvider(gatling) == "" || (r.getCloudStorageRegion(gatling) == "" && r.getCloudStorageProvider(gatling) == "aws") || r.getCloudStorageBucket(gatling) == "" {
 		log.Error(nil, "Minimum cloud storage info is not given, thus skip reporting reconcile, and requeue")
 		gatling.Status.ReportCompleted = true
 		gatling.Status.NotificationCompleted = false
