@@ -83,6 +83,10 @@ type PodSpec struct {
 	// Tolerations specification
 	// +kubebuilder:validation:Optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// ServiceAccountName specification
+	// +kubebuilder:validation:Optional
+	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 }
 
 // TestScenarioSpec defines the load testing scenario

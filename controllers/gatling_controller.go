@@ -452,8 +452,9 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 				Completions: r.getGatlingRunnerJobParallelism(gatling),
 				Template: corev1.PodTemplateSpec{
 					Spec: corev1.PodSpec{
-						Affinity:    r.getPodAffinity(gatling),
-						Tolerations: r.getPodTolerations(gatling),
+						Affinity:           r.getPodAffinity(gatling),
+						Tolerations:        r.getPodTolerations(gatling),
+						ServiceAccountName: r.getPodServiceAccountName(gatling),
 						InitContainers: []corev1.Container{
 							{
 								Name:         "gatling-runner",
@@ -499,8 +500,9 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			Completions: &gatling.Spec.TestScenarioSpec.Parallelism,
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
-					Affinity:    r.getPodAffinity(gatling),
-					Tolerations: r.getPodTolerations(gatling),
+					Affinity:           r.getPodAffinity(gatling),
+					Tolerations:        r.getPodTolerations(gatling),
+					ServiceAccountName: r.getPodServiceAccountName(gatling),
 					Containers: []corev1.Container{
 						{
 							Name:         "gatling-runner",
@@ -555,8 +557,9 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
-					Affinity: r.getPodAffinity(gatling),
-                    Tolerations: r.getPodTolerations(gatling),
+					Affinity:           r.getPodAffinity(gatling),
+					Tolerations:        r.getPodTolerations(gatling),
+					ServiceAccountName: r.getPodServiceAccountName(gatling),
 					InitContainers: []corev1.Container{
 						{
 							Name:    "gatling-result-aggregator",
@@ -902,6 +905,14 @@ func (r *GatlingReconciler) getPodTolerations(gatling *gatlingv1alpha1.Gatling) 
 		tolerations = gatling.Spec.PodSpec.Tolerations
 	}
 	return tolerations
+}
+
+func (r *GatlingReconciler) getPodServiceAccountName(gatling *gatlingv1alpha1.Gatling) string {
+	serviceAccountName := ""
+	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.ServiceAccountName != nil {
+		serviceAccountName = gatling.Spec.PodSpec.ServiceAccountName
+	}
+	return serviceAccountName
 }
 
 func (r *GatlingReconciler) getSimulationsDirectoryPath(gatling *gatlingv1alpha1.Gatling) string {
