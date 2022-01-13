@@ -97,7 +97,15 @@ done
 	Context("Provider is gcp", func() {
 		BeforeEach(func() {
 			provider = "gcp"
-			expectedValue = ""
+			expectedValue = `
+RESULTS_DIR_PATH=testResultsDirectoryPath
+rclone config create gs "google cloud storage" --gcs-anonymous
+# assumes each pod only contain single gatling log file but use for loop to use find command result
+for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
+do
+	rclone copyto ${source} testStoragePath/${HOSTNAME}.log
+done
+`
 		})
 		It("Provider is gcp", func() {
 			Expect(getGatlingTransferResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
@@ -157,7 +165,11 @@ rclone copy --s3-no-check-bucket --s3-env-auth testStoragePath ${GATLING_AGGREGA
 	Context("Provider is gcp", func() {
 		BeforeEach(func() {
 			provider = "gcp"
-			expectedValue = ""
+			expectedValue = `
+GATLING_AGGREGATE_DIR=testResultsDirectoryPath
+rclone config create gs "google cloud storage" --gcs-anonymous
+rclone copy testStoragePath ${GATLING_AGGREGATE_DIR}
+`
 		})
 		It("Provider is gcp", func() {
 			Expect(getGatlingAggregateResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
@@ -238,7 +250,11 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3
 	Context("Provider is gcp", func() {
 		BeforeEach(func() {
 			provider = "gcp"
-			expectedValue = ""
+			expectedValue = `
+GATLING_AGGREGATE_DIR=testResultsDirectoryPath
+rclone config create gs "google cloud storage" --gcs-anonymous
+rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" testStoragePath
+`
 		})
 		It("Provider is gcp", func() {
 			Expect(getGatlingTransferReportCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))

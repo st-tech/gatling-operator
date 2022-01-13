@@ -9,8 +9,8 @@ func getCloudStoragePath(provider string, bucket string, gatlingName string, sub
 	case "aws":
 		// Format s3:<bucket>/<gatling-name>/<sub-dir>
 		return fmt.Sprintf("s3:%s/%s/%s", bucket, gatlingName, subDir)
-	case "gcp": //not supported yet
-		return ""
+	case "gcp":
+		return fmt.Sprintf("gs://%s/%s/%s", bucket, gatlingName, subDir)
 	case "azure": //not supported yet
 		return ""
 	default:
@@ -26,7 +26,7 @@ func getCloudStorageReportURL(provider string, bucket string, gatlingName string
 	case "gcp": //not supported yet
 		// Format http(s)://<bucket>.storage.googleapis.com/<gatling-name>/<sub-dir>/index.html
 		// or http(s)://storage.googleapis.com/<bucket>/<gatling-name>/<sub-dir>/index.html
-		return ""
+		return fmt.Sprintf("https://storage.googleapis.com/%s/%s/%s/index.html", bucket, gatlingName, subDir)
 	case "azure": //not supported yet
 		// Format https://<bucket>.blob.core.windows.net/<gatling-name>/<sub-dir>/index.html
 		return ""
