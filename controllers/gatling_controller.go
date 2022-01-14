@@ -274,7 +274,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 // Implementation of reconciler logic for the reporter job
 func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
 	// Check if cloud storage info is given, and skip the reporter job if prerequistes are not made
-	if r.getCloudStorageProvider(gatling) == "" || r.getCloudStorageRegion(gatling) == "" || r.getCloudStorageBucket(gatling) == "" {
+	if r.getCloudStorageProvider(gatling) == "" || (r.getCloudStorageRegion(gatling) == "" && r.getCloudStorageProvider(gatling) == "aws") || r.getCloudStorageBucket(gatling) == "" {
 		log.Error(nil, "Minimum cloud storage info is not given, thus skip reporting reconcile, and requeue")
 		gatling.Status.ReportCompleted = true
 		gatling.Status.NotificationCompleted = false
@@ -452,7 +452,9 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 				Completions: r.getGatlingRunnerJobParallelism(gatling),
 				Template: corev1.PodTemplateSpec{
 					Spec: corev1.PodSpec{
-						Affinity: r.getPodAffinity(gatling),
+						Affinity:           r.getPodAffinity(gatling),
+						Tolerations:        r.getPodTolerations(gatling),
+						ServiceAccountName: r.getPodServiceAccountName(gatling),
 						InitContainers: []corev1.Container{
 							{
 								Name:         "gatling-runner",
@@ -498,7 +500,9 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			Completions: &gatling.Spec.TestScenarioSpec.Parallelism,
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
-					Affinity: r.getPodAffinity(gatling),
+					Affinity:           r.getPodAffinity(gatling),
+					Tolerations:        r.getPodTolerations(gatling),
+					ServiceAccountName: r.getPodServiceAccountName(gatling),
 					Containers: []corev1.Container{
 						{
 							Name:         "gatling-runner",
@@ -553,7 +557,9 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
-					Affinity: r.getPodAffinity(gatling),
+					Affinity:           r.getPodAffinity(gatling),
+					Tolerations:        r.getPodTolerations(gatling),
+					ServiceAccountName: r.getPodServiceAccountName(gatling),
 					InitContainers: []corev1.Container{
 						{
 							Name:    "gatling-result-aggregator",
@@ -891,6 +897,22 @@ func (r *GatlingReconciler) getPodAffinity(gatling *gatlingv1alpha1.Gatling) *co
 		affinity = gatling.Spec.PodSpec.Affinity
 	}
 	return &affinity
+}
+
+func (r *GatlingReconciler) getPodTolerations(gatling *gatlingv1alpha1.Gatling) []corev1.Toleration {
+	tolerations := []corev1.Toleration{}
+	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.Tolerations != nil {
+		tolerations = gatling.Spec.PodSpec.Tolerations
+	}
+	return tolerations
+}
+
+func (r *GatlingReconciler) getPodServiceAccountName(gatling *gatlingv1alpha1.Gatling) string {
+	serviceAccountName := ""
+	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.ServiceAccountName != nil {
+		serviceAccountName = gatling.Spec.PodSpec.ServiceAccountName
+	}
+	return serviceAccountName
 }
 
 func (r *GatlingReconciler) getSimulationsDirectoryPath(gatling *gatlingv1alpha1.Gatling) string {

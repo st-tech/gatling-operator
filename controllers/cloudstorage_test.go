@@ -41,8 +41,8 @@ var _ = Describe("getCloudStoragePath", func() {
 		BeforeEach(func() {
 			provider = "gcp"
 		})
-		It("path is empty", func() {
-			Expect(getCloudStoragePath(provider, bucket, gatlingName, subDir)).To(Equal(""))
+		It("path is gcp gcs bucket", func() {
+			Expect(getCloudStoragePath(provider, bucket, gatlingName, subDir)).To(Equal("gs://testBucket/testGatling/subDir"))
 		})
 	})
 
@@ -92,8 +92,8 @@ var _ = Describe("getCloudStorageReportURL", func() {
 		BeforeEach(func() {
 			provider = "gcp"
 		})
-		It("path is empty", func() {
-			Expect(getCloudStorageReportURL(provider, bucket, gatlingName, subDir)).To(Equal(""))
+		It("path is gcp gcs bucket", func() {
+			Expect(getCloudStorageReportURL(provider, bucket, gatlingName, subDir)).To(Equal("https://storage.googleapis.com/testBucket/testGatling/subDir/index.html"))
 		})
 	})
 

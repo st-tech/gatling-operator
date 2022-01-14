@@ -61,8 +61,17 @@ do
 done
 `
 		return fmt.Sprintf(template, resultsDirectoryPath, region, storagePath)
-	case "gcp": //not supported yet
-		return ""
+	case "gcp":
+		template := `
+RESULTS_DIR_PATH=%s
+rclone config create gs "google cloud storage" --gcs-anonymous
+# assumes each pod only contain single gatling log file but use for loop to use find command result
+for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
+do
+	rclone copyto ${source} %s/${HOSTNAME}.log
+done
+`
+		return fmt.Sprintf(template, resultsDirectoryPath, storagePath)
 	case "azure": //not supported yet
 		return ""
 	default:
@@ -79,8 +88,13 @@ rclone config create s3 s3 env_auth=true region %s
 rclone copy --s3-no-check-bucket --s3-env-auth %s ${GATLING_AGGREGATE_DIR}
 `
 		return fmt.Sprintf(template, resultsDirectoryPath, region, storagePath)
-	case "gcp": //not supported yet
-		return ""
+	case "gcp":
+		template := `
+GATLING_AGGREGATE_DIR=%s
+rclone config create gs "google cloud storage" --gcs-anonymous
+rclone copy %s ${GATLING_AGGREGATE_DIR}
+`
+		return fmt.Sprintf(template, resultsDirectoryPath, storagePath)
 	case "azure": //not supported yet
 		return ""
 	default:
@@ -107,8 +121,13 @@ rclone config create s3 s3 env_auth=true region %s
 rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3-env-auth %s
 `
 		return fmt.Sprintf(template, resultsDirectoryPath, region, storagePath)
-	case "gcp": //not supported yet
-		return ""
+	case "gcp":
+		template := `
+GATLING_AGGREGATE_DIR=%s
+rclone config create gs "google cloud storage" --gcs-anonymous
+rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" %s
+`
+		return fmt.Sprintf(template, resultsDirectoryPath, storagePath)
 	case "azure": //not supported yet
 		return ""
 	default:

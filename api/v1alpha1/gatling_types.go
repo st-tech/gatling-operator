@@ -79,6 +79,14 @@ type PodSpec struct {
 	// Affinity specification
 	// +kubebuilder:validation:Optional
 	Affinity corev1.Affinity `json:"affinity,omitempty"`
+
+	// Tolerations specification
+	// +kubebuilder:validation:Optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// ServiceAccountName specification
+	// +kubebuilder:validation:Optional
+	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 }
 
 // TestScenarioSpec defines the load testing scenario
@@ -128,7 +136,7 @@ type TestScenarioSpec struct {
 
 type CloudStorageSpec struct {
 	// Provider specifies the cloud provider that will be used.
-	// Supported providers: aws
+	// Supported providers: aws, gcp
 	// +kubebuilder:validation:Optional
 	Provider string `json:"provider"`
 
