@@ -38,17 +38,16 @@ The desired state of a distributed load testing with Gatling is described throug
 
 - Kubernetes: verson >= 1.18
 
-> note: the versions below 1.18 are not tested
+> note: the versions below 1.18 might work but are not tested
 
 ## Quick Start
 
 - [Quick Start Guide](docs/quickstart-guide.md)
-- Gatling Operator Introduction Blog (planned in Japanese)
 ## Documentations
 
 - [Gatling API reference](docs/api.md)
 - Custom Resource Examples :construction:
-- Developer Guide  :construction:
+- Developer Guide :construction:
 
 ## Contributing
 
