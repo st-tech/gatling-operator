@@ -104,7 +104,7 @@ kind-load-sample-image: kind-create sample-docker-build ## Load local docker ima
 sample-docker-build: ## Build docker image for sample Gatling
 	cd gatling && docker build -t ${SAMPLE_IMG} .	
 
-sample-docker-push: sample-docker-build
+sample-docker-push: sample-docker-build ## Push docker image for sample Gatling
 	docker push ${SAMPLE_IMG}
 
 ##@ Deployment
