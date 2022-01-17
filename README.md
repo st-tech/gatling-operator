@@ -34,15 +34,21 @@ The desired state of a distributed load testing with Gatling is described throug
   - Allows webhook URL info to be specified via Secret resource
 - Automated cleaning up Gatling resouces
 
+## Requirements
+
+- Kubernetes: verson >= 1.18
+
+> note: the versions below 1.18 are not tested
+
 ## Quick Start
 
-- Quick Start Guide :construction:
+- [Quick Start Guide](docs/quickstart-guide.md)
 - Gatling Operator Introduction Blog (planned in Japanese)
 ## Documentations
 
 - [Gatling API reference](docs/api.md)
 - Custom Resource Examples :construction:
-- [Developer Guide](docs/dev-guide.md)
+- Developer Guide  :construction:
 
 ## Contributing
 

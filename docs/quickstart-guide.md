@@ -1,10 +1,6 @@
-# Developer Guide
+# Quick Start Guide
 
-The developer guide helps to setup a developer environment and adding providers (Cloud Storage Providers or Notification Providers) for the Gatling operator.
-
-## Setup developer environment
-
-### Clone the repositry
+The quick start guide helps to quickly deploy Gatling Operator and start a simple distributed load testing using Gatling Operator.
 
 First of all, clone the repo:
 ```bash
@@ -52,7 +48,7 @@ Deployment
 ```
 > The above is an output of running `make help`
 
-### Deploying locally
+## Deploying locally
 
 Here we use a local Kubernetes Cluster provided by the [KIND tool](https://github.com/kubernetes-sigs/kind) to run the operator locally for development or testing.
 
@@ -70,9 +66,9 @@ kind get clusters
 # Check if the operator manager pod named "gatling-operator-controller-manager-xxxx" in "gatling-system" namespace is running 
 kubectl get pods -n gatling-system
 ```
-### Deploying to a remote cluster
+## Deploying to a remote cluster
 
-#### Pushing the image to container registry
+### Pushing the image to container registry
 
 ```bash
 make docker-push IMG=<your-registry>/gatling-operator:<tag>
@@ -80,7 +76,7 @@ make docker-push IMG=<your-registry>/gatling-operator:<tag>
 
 > :memo: Ensure that you're logged into your docker container registry that you will be using as the image store for your K8s cluster if not yet done!
 
-#### Deploying
+### Deploying
 
 Deploy the operator to your cluster:
 
@@ -107,12 +103,12 @@ Finally check if the operator manager pod named "gatling-operator-controller-man
 kubectl get pods -n gatling-system
 ```
 
-### Running your first load testing
+## Running your first load testing
 
 Sample Gatling load testing data is provided in the gatling folder.
 Just like you do for the Operator, you can proceed all steps needed for deploying sample Gatling CR with GNU make.
 
-#### Deploying and running the load testing locally
+### Deploying and running the load testing locally
 
 To deploy sample Gatling CR to a local Kubernetes cluster/Kind instance:
 
@@ -128,7 +124,7 @@ Check if the sample Gatling CR named "gatling-sample01" in "default" namespace i
 kubectl get gatling
 ```
 
-#### Deploying and running the load testing in the remote cluster
+### Deploying and running the load testing in the remote cluster
 
 First, you need to push a sample gatling image to container registry
 
@@ -147,8 +143,3 @@ make sample-deploy SAMPLE_IMG=<your-registry>/gatling:<tag>
 > :memo: Ensure you're connected to your K8s cluster
 
 > :memo: Ensure your cluster has permissions to pull containers from your container registry
-
-
-## Adding providers
-
- :construction: :construction: :construction:
