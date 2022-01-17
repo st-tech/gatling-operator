@@ -99,7 +99,8 @@ done
 			provider = "gcp"
 			expectedValue = `
 RESULTS_DIR_PATH=testResultsDirectoryPath
-rclone config create gs "google cloud storage" --gcs-anonymous
+# assumes gcs bucket using uniform bucket-level access control
+rclone config create gs "google cloud storage" bucket_policy_only true --non-interactive
 # assumes each pod only contain single gatling log file but use for loop to use find command result
 for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
 do
@@ -167,7 +168,8 @@ rclone copy --s3-no-check-bucket --s3-env-auth testStoragePath ${GATLING_AGGREGA
 			provider = "gcp"
 			expectedValue = `
 GATLING_AGGREGATE_DIR=testResultsDirectoryPath
-rclone config create gs "google cloud storage" --gcs-anonymous
+# assumes gcs bucket using uniform bucket-level access control
+rclone config create gs "google cloud storage" bucket_policy_only true --non-interactive
 rclone copy testStoragePath ${GATLING_AGGREGATE_DIR}
 `
 		})
@@ -252,7 +254,8 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3
 			provider = "gcp"
 			expectedValue = `
 GATLING_AGGREGATE_DIR=testResultsDirectoryPath
-rclone config create gs "google cloud storage" --gcs-anonymous
+# assumes gcs bucket using uniform bucket-level access control
+rclone config create gs "google cloud storage" bucket_policy_only true --non-interactive
 rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" testStoragePath
 `
 		})
