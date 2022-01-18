@@ -30,7 +30,7 @@ The desired state of a distributed load testing with Gatling is described throug
   - Automated generating aggregated Gatling reports and storing them to remote cloud storages such as AWS S3, Google Cloud Storage, etc via [rclone](https://rclone.org/)
   - Allows credentails info for accessing the remote storage to be specified via Secret resource
 - Notification
-  - Automated posting webhook message and seding Gatling load testing result via notification providers such as slack
+  - Automated posting webhook message and sending Gatling load testing result via notification providers such as slack
   - Allows webhook URL info to be specified via Secret resource
 - Automated cleaning up Gatling resouces
 
