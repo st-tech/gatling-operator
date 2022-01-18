@@ -11,7 +11,7 @@ The desired state of a distributed load testing with Gatling is described throug
 ## Features
 
 - Allows Gatling load testing senarios, resources, Gatling configurations files to be specified
-  - In a Gatling container where all senarios, resources, and configurations files are bundled along with Gatling runtime
+  - In a Gatling container where all scenarios, resources, and configurations files are bundled along with Gatling runtime
   - In `ConfigMap` resources
 - Scaling Gatling load testing
   - Gatling runs as a Job which creates multiple Pods and run Gatling load testing in parallel
