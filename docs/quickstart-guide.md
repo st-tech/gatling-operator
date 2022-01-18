@@ -90,7 +90,7 @@ Or you can create all-in-one manifest and apply it to the cluster:
 # Generate all-in-one manifest that will be outputed as gatling-operator.yaml
 make manifests-release IMG=<your-registry>/gatling-operator:<tag>
 # Apply the manifest generated in the step above to the cluster
-kubeclt apply -f gatling-operator.yaml
+kubectl apply -f gatling-operator.yaml
 ```
 
 > :memo: Ensure you're connected to your K8s cluster
