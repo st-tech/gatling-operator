@@ -11,7 +11,7 @@ The desired state of a distributed load testing with Gatling is described throug
 ## Features
 
 - Allows Gatling load testing senarios, resources, Gatling configurations files to be specified
-  - In a Gatling container where all senarios, resources, and configurations files are bundled along with Gatling runtime
+  - In a Gatling container where all scenarios, resources, and configurations files are bundled along with Gatling runtime
   - In `ConfigMap` resources
 - Scaling Gatling load testing
   - Gatling runs as a Job which creates multiple Pods and run Gatling load testing in parallel
@@ -20,7 +20,7 @@ The desired state of a distributed load testing with Gatling is described throug
 - Allows Gatling load testing to start running at a specific time
   - By default, the Gatling load testing starts running as soon as the runner Pod's init container gets ready
   - By specifing the start time, the Gatling load testing waits to start running until the specified time
-- Configurable Galing Pod attributions
+- Configurable Gatling Pod attributions
   - Gatling runtime container image
   - [rclone](https://rclone.org/) conatiner image
   - CPU and RAM resource allocation request and limit
@@ -30,7 +30,7 @@ The desired state of a distributed load testing with Gatling is described throug
   - Automated generating aggregated Gatling reports and storing them to remote cloud storages such as AWS S3, Google Cloud Storage, etc via [rclone](https://rclone.org/)
   - Allows credentails info for accessing the remote storage to be specified via Secret resource
 - Notification
-  - Automated posting webhook message and seding Gatling load testing result via notification providers such as slack
+  - Automated posting webhook message and sending Gatling load testing result via notification providers such as slack
   - Allows webhook URL info to be specified via Secret resource
 - Automated cleaning up Gatling resouces
 
