@@ -5,6 +5,30 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+var _ = Describe("getGatlingWaiterCommand", func() {
+	It("getExceptValue", func() {
+		expectedValue := `
+PARALLELISM=1
+NAMESPACE=gatling-system
+JOB_NAME=gatling-test
+POD_NAME=$(cat /etc/pod-info/name)
+
+kubectl label pods -n $NAMESPACE $POD_NAME gatling-waiter=initialized
+
+while true; do
+  READY_PODS=$(kubectl get pods -n $NAMESPACE --selector=job-name=$JOB_NAME-runner,gatling-waiter=initialized --no-headers | grep -c ".*");
+  echo "$READY_PODS/$PARALLELISM pods are ready";
+  if  [ $READY_PODS -eq $PARALLELISM ]; then
+    break;
+  fi;
+  sleep 1;
+done
+`
+		var parallelism int32 = 1
+		Expect(getGatlingWaiterCommand(&parallelism, "gatling-system", "gatling-test")).To(Equal(expectedValue))
+	})
+})
+
 var _ = Describe("getGatlingRunnerCommand", func() {
 	var (
 		simulationsDirectoryPath     string

@@ -4,6 +4,31 @@ import (
 	"fmt"
 )
 
+func getGatlingWaiterCommand(parallelism *int32, gatlingNamespace string, gatlingName string) string {
+	template := `
+PARALLELISM=%d
+NAMESPACE=%s
+JOB_NAME=%s
+POD_NAME=$(cat /etc/pod-info/name)
+
+kubectl label pods -n $NAMESPACE $POD_NAME gatling-waiter=initialized
+
+while true; do
+  READY_PODS=$(kubectl get pods -n $NAMESPACE --selector=job-name=$JOB_NAME-runner,gatling-waiter=initialized --no-headers | grep -c ".*");
+  echo "$READY_PODS/$PARALLELISM pods are ready";
+  if  [ $READY_PODS -eq $PARALLELISM ]; then
+    break;
+  fi;
+  sleep 1;
+done
+`
+	return fmt.Sprintf(template,
+		*parallelism,
+		gatlingNamespace,
+		gatlingName,
+	)
+}
+
 func getGatlingRunnerCommand(
 	simulationsDirectoryPath string, tempSimulationsDirectoryPath string, resourcesDirectoryPath string,
 	resultsDirectoryPath string, startTime string, simulationClass string, generateLocalReport bool) string {
