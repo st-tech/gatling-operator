@@ -20,7 +20,7 @@ The desired state of a distributed load testing with Gatling is described throug
 - Allows Gatling load testing to start running at a specific time
   - By default, the Gatling load testing starts running as soon as the runner Pod's init container gets ready
   - By specifing the start time, the Gatling load testing waits to start running until the specified time
-- Configurable Galing Pod attributions
+- Configurable Gatling Pod attributions
   - Gatling runtime container image
   - [rclone](https://rclone.org/) conatiner image
   - CPU and RAM resource allocation request and limit
