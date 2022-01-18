@@ -132,7 +132,7 @@ First, you need to push a sample gatling image to container registry
 make sample-docker-push SAMPLE_IMG=<your-registry>/gatling:<tag>
 ```
 
-📝 Ensure that you're logged into your docker container registry that you will be using as the image store for your K8s cluster if not yet done!
+> 📝  Ensure that you're logged into your docker container registry that you will be using as the image store for your K8s cluster if not yet done!
 
 After you push the sample gatling container, deploy the Gatling CR to your cluster:
 
