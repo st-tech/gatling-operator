@@ -38,17 +38,18 @@ spec:
             properties:
               cleanupAfterJobDone:
                 default: false
-                description: The flag of cleanup gatling resources after the job done
+                description: (Optional) The flag of cleanup gatling resources after
+                  the job done. Defaults to `false`
                 type: boolean
               cloudStorageSpec:
-                description: Cloud Storage Provider
+                description: (Optional) Cloud Storage Provider specification.
                 properties:
                   bucket:
-                    description: Bucket Name
+                    description: Storage Bucket Name.
                     type: string
                   env:
-                    description: Environment variables used for connecting to the
-                      cloud providers.
+                    description: (Optional) Environment variables used for connecting
+                      to the cloud providers.
                     items:
                       description: EnvVar represents an environment variable present
                         in a Container.
@@ -158,28 +159,30 @@ spec:
                     type: array
                   provider:
                     description: 'Provider specifies the cloud provider that will
-                      be used. Supported providers: aws'
+                      be used. Supported providers: `aws`, `gcp`'
                     type: string
                   region:
-                    description: Region
+                    description: (Optional) Region Name.
                     type: string
                 required:
                 - bucket
+                - provider
                 type: object
               generateReport:
                 default: false
-                description: The flag of generating gatling report
+                description: (Optional) The flag of generating gatling report.  Defaults
+                  to `false`
                 type: boolean
               notificationServiceSpec:
-                description: Notification Service specification
+                description: (Optional) Notification Service specification.
                 properties:
                   provider:
-                    description: 'Provider specifies notification service provider
-                      Supported providers: slack'
+                    description: 'Provider specifies notification service provider.
+                      Supported providers: `slack`'
                     type: string
                   secretName:
                     description: The name of secret in which all key/value sets needed
-                      for the notification are stored
+                      for the notification are stored.
                     type: string
                 required:
                 - provider
@@ -187,13 +190,14 @@ spec:
                 type: object
               notifyReport:
                 default: false
-                description: The flag of notifying gatling report
+                description: (Optional) The flag of notifying gatling report. Defaults
+                  to `false`
                 type: boolean
               podSpec:
-                description: Pod extra specification
+                description: (Optional) Gatling Pod specification.
                 properties:
                   affinity:
-                    description: Affinity specification
+                    description: (Optional) Affinity specification.
                     properties:
                       nodeAffinity:
                         description: Describes node affinity scheduling rules for
@@ -810,13 +814,16 @@ spec:
                         type: object
                     type: object
                   gatlingImage:
-                    description: The image that will be used for Gatling container.
+                    description: (Optional) The image that will be used for Gatling
+                      container. Defaults to `denvazh/gatling:latest`
                     type: string
                   rcloneImage:
-                    description: The image that will be used for rclone conatiner.
+                    description: (Optional) The image that will be used for rclone
+                      conatiner. Defaults to `rclone/rclone:latest`
                     type: string
                   resources:
-                    description: Resources specifies the resource limits of the container.
+                    description: (Optional) Resources specifies the resource limits
+                      of the container.
                     properties:
                       limits:
                         additionalProperties:
@@ -841,8 +848,11 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
+                  serviceAccountName:
+                    description: (Optional) ServiceAccountName specification.
+                    type: string
                   tolerations:
-                    description: Tolerations specification
+                    description: (Optional) Tolerations specification.
                     items:
                       description: The pod this Toleration is attached to tolerates
                         any taint that matches the triple <key,value,effect> using
@@ -887,8 +897,8 @@ spec:
                 description: Test Scenario specification
                 properties:
                   env:
-                    description: Environment variables used for running load testing
-                      scenario
+                    description: (Optional) Environment variables used for running
+                      load testing scenario.
                     items:
                       description: EnvVar represents an environment variable present
                         in a Container.
@@ -999,41 +1009,42 @@ spec:
                   gatlingConf:
                     additionalProperties:
                       type: string
-                    description: Gatling Configurations
+                    description: (Optional) Gatling Configurations.
                     type: object
                   parallelism:
                     default: 1
-                    description: Number of pods running at the same time
+                    description: (Optional) Number of pods running at the same time.
+                      Defaults to `1` (Mininum `1`)
                     format: int32
                     minimum: 1
                     type: integer
                   resourceData:
                     additionalProperties:
                       type: string
-                    description: Resource Data
+                    description: (Optional) Resource Data.
                     type: object
                   resourcesDirectoryPath:
-                    description: Gatling Simulation directory path where resources
-                      are stored
+                    description: (Optional) Gatling Simulation directory path where
+                      resources are stored. Defaults to `/opt/gatling/user-files/resources`
                     type: string
                   resultsDirectoryPath:
-                    description: Gatling Results directory path where results are
-                      stored
+                    description: (Optional) Gatling Results directory path where results
+                      are stored. Defaults to `/opt/gatling/results`
                     type: string
                   simulationClass:
-                    description: Simulation Class
+                    description: Simulation Class Name.
                     type: string
                   simulationData:
                     additionalProperties:
                       type: string
-                    description: Simulation Data
+                    description: (Optional) Simulation Data.
                     type: object
                   simulationsDirectoryPath:
-                    description: Gatling Resources directory path where simulation
-                      files are stored
+                    description: (Optional) Gatling Resources directory path where
+                      simulation files are stored. Defaults to `/opt/gatling/user-files/simulations`
                     type: string
                   startTime:
-                    description: Test Start time
+                    description: (Optional) Test Start time.
                     type: string
                 required:
                 - simulationClass
