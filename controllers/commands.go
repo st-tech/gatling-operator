@@ -64,7 +64,8 @@ done
 	case "gcp":
 		template := `
 RESULTS_DIR_PATH=%s
-rclone config create gs "google cloud storage" --gcs-anonymous
+# assumes gcs bucket using uniform bucket-level access control
+rclone config create gs "google cloud storage" bucket_policy_only true --non-interactive
 # assumes each pod only contain single gatling log file but use for loop to use find command result
 for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
 do
@@ -91,7 +92,8 @@ rclone copy --s3-no-check-bucket --s3-env-auth %s ${GATLING_AGGREGATE_DIR}
 	case "gcp":
 		template := `
 GATLING_AGGREGATE_DIR=%s
-rclone config create gs "google cloud storage" --gcs-anonymous
+# assumes gcs bucket using uniform bucket-level access control
+rclone config create gs "google cloud storage" bucket_policy_only true --non-interactive
 rclone copy %s ${GATLING_AGGREGATE_DIR}
 `
 		return fmt.Sprintf(template, resultsDirectoryPath, storagePath)
@@ -124,7 +126,8 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3
 	case "gcp":
 		template := `
 GATLING_AGGREGATE_DIR=%s
-rclone config create gs "google cloud storage" --gcs-anonymous
+# assumes gcs bucket using uniform bucket-level access control
+rclone config create gs "google cloud storage" bucket_policy_only true --non-interactive
 rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" %s
 `
 		return fmt.Sprintf(template, resultsDirectoryPath, storagePath)
