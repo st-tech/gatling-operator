@@ -13,6 +13,7 @@ var _ = Describe("getGatlingRunnerCommand", func() {
 		resultsDirectoryPath         string
 		startTime                    string
 		simulationClass              string
+		generateLocalReport          bool
 		expectedValue                string
 	)
 
@@ -23,6 +24,47 @@ var _ = Describe("getGatlingRunnerCommand", func() {
 		resultsDirectoryPath = "testResultsDirectoryPath"
 		startTime = "2021-09-10 08:45:31"
 		simulationClass = "testSimulationClass"
+	})
+
+	It("getCommandsWithLocalReport", func() {
+		generateLocalReport = true
+		expectedValue = `
+SIMULATIONS_DIR_PATH=testSimulationDirectoryPath
+TEMP_SIMULATIONS_DIR_PATH=testTempSimulationsDirectoryPath
+RESOURCES_DIR_PATH=testResourcesDirectoryPath
+RESULTS_DIR_PATH=testResultsDirectoryPath
+START_TIME="2021-09-10 08:45:31"
+if [ -z "${START_TIME}" ]; then
+  START_TIME=$(date +"%Y-%m-%d %H:%M:%S" --utc)
+fi
+start_time_stamp=$(date -d "${START_TIME}" +"%s")
+current_time_stamp=$(date +"%s")
+echo "Wait until ${START_TIME}"
+until [ ${current_time_stamp} -ge ${start_time_stamp} ];
+do
+  current_time_stamp=$(date +"%s")
+  echo "it's ${current_time_stamp} now and waiting until ${start_time_stamp} ..."
+  sleep 1;
+done
+if [ ! -d ${SIMULATIONS_DIR_PATH} ]; then
+  mkdir -p ${SIMULATIONS_DIR_PATH}
+fi
+if [ -d ${TEMP_SIMULATIONS_DIR_PATH} ]; then
+  cp -p ${TEMP_SIMULATIONS_DIR_PATH}/*.scala ${SIMULATIONS_DIR_PATH}
+fi
+if [ ! -d ${RESOURCES_DIR_PATH} ]; then
+  mkdir -p ${RESOURCES_DIR_PATH}
+fi
+if [ ! -d ${RESULTS_DIR_PATH} ]; then
+  mkdir -p ${RESULTS_DIR_PATH}
+fi
+gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s testSimulationClass -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} 
+`
+		Expect(getGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
+	})
+
+	It("getCommandWithoutLocalReport", func() {
+		generateLocalReport = false
 		expectedValue = `
 SIMULATIONS_DIR_PATH=testSimulationDirectoryPath
 TEMP_SIMULATIONS_DIR_PATH=testTempSimulationsDirectoryPath
@@ -55,10 +97,7 @@ if [ ! -d ${RESULTS_DIR_PATH} ]; then
 fi
 gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s testSimulationClass -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} -nr
 `
-	})
-
-	It("getExceptValue", func() {
-		Expect(getGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass)).To(Equal(expectedValue))
+		Expect(getGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
 	})
 })
 

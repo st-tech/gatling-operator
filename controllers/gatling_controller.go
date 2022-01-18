@@ -423,7 +423,8 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 		r.getResourcesDirectoryPath(gatling),
 		r.getResultsDirectoryPath(gatling),
 		r.getGatlingRunnerJobStartTime(gatling),
-		gatling.Spec.TestScenarioSpec.SimulationClass)
+		gatling.Spec.TestScenarioSpec.SimulationClass,
+		r.getGenerateLocalReport(gatling))
 	log.Info("gatlingRunnerCommand:", "comand", gatlingRunnerCommand)
 
 	envVars := []corev1.EnvVar{}
@@ -941,6 +942,13 @@ func (r *GatlingReconciler) getResultsDirectoryPath(gatling *gatlingv1alpha1.Gat
 		path = gatling.Spec.TestScenarioSpec.ResultsDirectoryPath
 	}
 	return path
+}
+
+func (r *GatlingReconciler) getGenerateLocalReport(gatling *gatlingv1alpha1.Gatling) bool {
+	if &gatling.Spec.GenerateLocalReport == nil {
+		return false
+	}
+	return gatling.Spec.GenerateLocalReport
 }
 
 // SetupWithManager sets up the controller with the Manager.
