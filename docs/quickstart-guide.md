@@ -22,10 +22,10 @@ Development
   manifests        Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
   generate         Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
   manifests-release  Generate all-in-one manifest for release
+  docs             Generate API reference documentation from CRD types
   fmt              Run go fmt against code.
   vet              Run go vet against code.
   test             Run tests.
-  docs           Generate API Reference api.md
 
 Build
   build            Build manager binary.
@@ -35,6 +35,7 @@ Build
   kind-load-image  Load local docker image into the kind cluster
   kind-load-sample-image  Load local docker image for sample Gatling into the kind cluster
   sample-docker-build  Build docker image for sample Gatling
+  sample-docker-push  Push docker image for sample Gatling
 
 Deployment
   install-crd      Install CRDs into the K8s cluster specified in ~/.kube/config.
@@ -46,6 +47,7 @@ Deployment
   undeploy         Undeploy controller from the K8s cluster specified in ~/.kube/config.
   controller-gen   Download controller-gen locally if necessary.
   kustomize        Download kustomize locally if necessary.
+  crd-ref-docs     Download crd-ref-docs locally if necessary.
 ```
 > The above is an output of running `make help`
 
