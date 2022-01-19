@@ -64,6 +64,10 @@ manifests-release: manifests kustomize ## Generate all-in-one manifest for relea
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default > gatling-operator.yaml
 
+docs: crd-ref-docs ## Generate API reference documentation from CRD types
+	cd config/crd-ref-docs
+	$(CRD_REF_DOCS) --source-path=api --config=config/crd-ref-docs/config.yaml --renderer=markdown --templates-dir=config/crd-ref-docs/templates/markdown --output-path=docs/api.md
+
 fmt: ## Run go fmt against code.
 	go fmt ./...
 
@@ -100,7 +104,7 @@ kind-load-sample-image: kind-create sample-docker-build ## Load local docker ima
 sample-docker-build: ## Build docker image for sample Gatling
 	cd gatling && docker build -t ${SAMPLE_IMG} .	
 
-sample-docker-push: sample-docker-build
+sample-docker-push: sample-docker-build ## Push docker image for sample Gatling
 	docker push ${SAMPLE_IMG}
 
 ##@ Deployment
@@ -132,6 +136,10 @@ controller-gen: ## Download controller-gen locally if necessary.
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 kustomize: ## Download kustomize locally if necessary.
 	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.8.7)
+
+CRD_REF_DOCS = $(shell pwd)/bin/crd-ref-docs
+crd-ref-docs: ## Download crd-ref-docs locally if necessary.
+	$(call go-get-tool,$(CRD_REF_DOCS),github.com/elastic/crd-ref-docs@master)
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))

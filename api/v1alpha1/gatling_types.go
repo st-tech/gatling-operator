@@ -29,137 +29,138 @@ type GatlingSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// The flag of generating gatling report
+	// (Optional) The flag of generating gatling report.  Defaults to `false`
 	// +kubebuilder:default=false
 	// +kubebuilder:validation:Optional
 	GenerateReport bool `json:"generateReport,omitempty"`
 
-	// The flag of notifying gatling report
+	// (Optional) The flag of notifying gatling report. Defaults to `false`
 	// +kubebuilder:default=false
 	// +kubebuilder:validation:Optional
 	NotifyReport bool `json:"notifyReport,omitempty"`
 
-	// The flag of cleanup gatling resources after the job done
+	// (Optional) The flag of cleanup gatling resources after the job done. Defaults to `false`
 	// +kubebuilder:default=false
 	// +kubebuilder:validation:Optional
 	CleanupAfterJobDone bool `json:"cleanupAfterJobDone,omitempty"`
 
-	// Pod extra specification
+	// (Optional) Gatling Pod specification.
 	// +kubebuilder:validation:Optional
 	PodSpec PodSpec `json:"podSpec,omitempty"`
 
-	// Cloud Storage Provider
+	// (Optional) Cloud Storage Provider specification.
 	// +kubebuilder:validation:Optional
 	CloudStorageSpec CloudStorageSpec `json:"cloudStorageSpec,omitempty"`
 
-	// Notification Service specification
+	// (Optional) Notification Service specification.
 	// +kubebuilder:validation:Optional
 	NotificationServiceSpec NotificationServiceSpec `json:"notificationServiceSpec,omitempty"`
 
-	// Test Scenario specification
+	// (Required) Test Scenario specification
 	// +kubebuilder:validation:Required
 	TestScenarioSpec TestScenarioSpec `json:"testScenarioSpec"`
 }
 
-// PodSpec defines type to configure Gatling pod spec
-// ref: mysql-operator/pkg/apis/mysql/v1alpha1/mysqlcluster_types.go
+// PodSpec defines type to configure Gatling Pod specification. For the idea of PodSpec, refer to [bitpoke/mysql-operator](https://github.com/bitpoke/mysql-operator/blob/master/pkg/apis/mysql/v1alpha1/mysqlcluster_types.go)
 type PodSpec struct {
-	// The image that will be used for Gatling container.
+	// (Optional) The image that will be used for Gatling container. Defaults to `denvazh/gatling:latest`
 	// +kubebuilder:validation:Optional
 	GatlingImage string `json:"gatlingImage,omitempty"`
 
-	// The image that will be used for rclone conatiner.
+	// (Optional) The image that will be used for rclone conatiner. Defaults to `rclone/rclone:latest`
 	// +kubebuilder:validation:Optional
 	RcloneImage string `json:"rcloneImage,omitempty"`
 
-	// Resources specifies the resource limits of the container.
+	// (Optional) Resources specifies the resource limits of the container.
 	// +kubebuilder:validation:Optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 
-	// Affinity specification
+	// (Optional) Affinity specification.
 	// +kubebuilder:validation:Optional
 	Affinity corev1.Affinity `json:"affinity,omitempty"`
 
-	// Tolerations specification
+	// (Optional) Tolerations specification.
 	// +kubebuilder:validation:Optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
-	// ServiceAccountName specification
+	// (Optional) ServiceAccountName specification.
 	// +kubebuilder:validation:Optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 }
 
 // TestScenarioSpec defines the load testing scenario
 type TestScenarioSpec struct {
-	// Test Start time
+	// (Optional) Test Start time.
 	// +kubebuilder:validation:Optional
 	StartTime string `json:"startTime,omitempty"`
 
-	// Number of pods running at the same time
+	// (Optional) Number of pods running at the same time. Defaults to `1` (Mininum `1`)
 	// +kubebuilder:default=1
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Optional
 	Parallelism int32 `json:"parallelism,omitempty"`
 
-	// Gatling Resources directory path where simulation files are stored
+	// (Optional) Gatling Resources directory path where simulation files are stored. Defaults to `/opt/gatling/user-files/simulations`
 	// +kubebuilder:validation:Optional
 	SimulationsDirectoryPath string `json:"simulationsDirectoryPath,omitempty"`
 
-	// Gatling Simulation directory path where resources are stored
+	// (Optional) Gatling Simulation directory path where resources are stored. Defaults to `/opt/gatling/user-files/resources`
 	// +kubebuilder:validation:Optional
 	ResourcesDirectoryPath string `json:"resourcesDirectoryPath,omitempty"`
 
-	// Gatling Results directory path where results are stored
+	// (Optional) Gatling Results directory path where results are stored. Defaults to `/opt/gatling/results`
 	// +kubebuilder:validation:Optional
 	ResultsDirectoryPath string `json:"resultsDirectoryPath,omitempty"`
 
-	// Simulation Class
+	// (Required) Simulation Class Name.
 	// +kubebuilder:validation:Required
 	SimulationClass string `json:"simulationClass"`
 
-	// Simulation Data
+	// (Optional) Simulation Data.
 	// +kubebuilder:validation:Optional
 	SimulationData map[string]string `json:"simulationData,omitempty"`
 
-	// Resource Data
+	// (Optional) Resource Data.
 	// +kubebuilder:validation:Optional
 	ResourceData map[string]string `json:"resourceData,omitempty"`
 
-	// Gatling Configurations
+	// (Optional) Gatling Configurations.
 	// +kubebuilder:validation:Optional
 	GatlingConf map[string]string `json:"gatlingConf,omitempty"`
 
-	// Environment variables used for running load testing scenario
+	// (Optional) Environment variables used for running load testing scenario.
 	// +optional
 	Env []corev1.EnvVar `json:"env,omitempty"`
 }
 
+// CloudStorageSpec defines Cloud Storage Provider specification.
 type CloudStorageSpec struct {
-	// Provider specifies the cloud provider that will be used.
-	// Supported providers: aws, gcp
-	// +kubebuilder:validation:Optional
+	// (Required) Provider specifies the cloud provider that will be used.
+	// Supported providers: `aws`, `gcp`
+	// +kubebuilder:validation:Required
 	Provider string `json:"provider"`
 
-	// Bucket Name
+	// (Required) Storage Bucket Name.
 	// +kubebuilder:validation:Required
 	Bucket string `json:"bucket"`
 
-	// Region
+	// (Optional) Region Name.
 	// +kubebuilder:validation:Optional
 	Region string `json:"region,omitempty"`
 
-	// Environment variables used for connecting to the cloud providers.
+	// (Optional) Environment variables used for connecting to the cloud providers.
 	// +kubebuilder:validation:Optional
 	Env []corev1.EnvVar `json:"env,omitempty"`
 }
 
+// NotificationServiceSpec defines Notification Service Provider specification.
 type NotificationServiceSpec struct {
-	// Provider specifies notification service provider
-	// Supported providers: slack
+	// (Required) Provider specifies notification service provider.
+	// Supported providers: `slack`
 	// +kubebuilder:validation:Required
 	Provider string `json:"provider"`
 
-	// The name of secret in which all key/value sets needed for the notification are stored
+	// (Required) The name of secret in which all key/value sets needed for the notification are stored.
 	// +kubebuilder:validation:Required
 	SecretName string `json:"secretName"`
 }
@@ -231,7 +232,9 @@ type Gatling struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   GatlingSpec   `json:"spec,omitempty"`
+	// GatlingSpec defines the desired state of Gatling
+	Spec GatlingSpec `json:"spec,omitempty"`
+	// GatlingStatus defines the observed state of Gatling
 	Status GatlingStatus `json:"status,omitempty"`
 }
 
