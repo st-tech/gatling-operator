@@ -45,7 +45,7 @@ spec:
                 description: (Optional) Cloud Storage Provider specification.
                 properties:
                   bucket:
-                    description: Storage Bucket Name.
+                    description: (Required) Storage Bucket Name.
                     type: string
                   env:
                     description: (Optional) Environment variables used for connecting
@@ -158,8 +158,8 @@ spec:
                       type: object
                     type: array
                   provider:
-                    description: 'Provider specifies the cloud provider that will
-                      be used. Supported providers: `aws`, `gcp`'
+                    description: '(Required) Provider specifies the cloud provider
+                      that will be used. Supported providers: `aws`, `gcp`'
                     type: string
                   region:
                     description: (Optional) Region Name.
@@ -177,12 +177,12 @@ spec:
                 description: (Optional) Notification Service specification.
                 properties:
                   provider:
-                    description: 'Provider specifies notification service provider.
-                      Supported providers: `slack`'
+                    description: '(Required) Provider specifies notification service
+                      provider. Supported providers: `slack`'
                     type: string
                   secretName:
-                    description: The name of secret in which all key/value sets needed
-                      for the notification are stored.
+                    description: (Required) The name of secret in which all key/value
+                      sets needed for the notification are stored.
                     type: string
                 required:
                 - provider
@@ -894,7 +894,7 @@ spec:
                     type: array
                 type: object
               testScenarioSpec:
-                description: Test Scenario specification
+                description: (Required) Test Scenario specification
                 properties:
                   env:
                     description: (Optional) Environment variables used for running
@@ -1032,7 +1032,7 @@ spec:
                       are stored. Defaults to `/opt/gatling/results`
                     type: string
                   simulationClass:
-                    description: Simulation Class Name.
+                    description: (Required) Simulation Class Name.
                     type: string
                   simulationData:
                     additionalProperties:

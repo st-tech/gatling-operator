@@ -17,15 +17,15 @@ Package v1alpha1 contains API Schema definitions for the gatling-operator v1alph
 
 
 
-(Optional) CloudStorageSpec defines Cloud Storage Provider specification.
+CloudStorageSpec defines Cloud Storage Provider specification.
 
 _Appears in:_
 - [GatlingSpec](#gatlingspec)
 
 | Field | Description |
 | --- | --- |
-| `provider` _string_ | Provider specifies the cloud provider that will be used. Supported providers: `aws`, `gcp` |
-| `bucket` _string_ | Storage Bucket Name. |
+| `provider` _string_ | (Required) Provider specifies the cloud provider that will be used. Supported providers: `aws`, `gcp` |
+| `bucket` _string_ | (Required) Storage Bucket Name. |
 | `region` _string_ | (Optional) Region Name. |
 | `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core) array_ | (Optional) Environment variables used for connecting to the cloud providers. |
 
@@ -63,7 +63,7 @@ _Appears in:_
 | `podSpec` _[PodSpec](#podspec)_ | (Optional) Gatling Pod specification. |
 | `cloudStorageSpec` _[CloudStorageSpec](#cloudstoragespec)_ | (Optional) Cloud Storage Provider specification. |
 | `notificationServiceSpec` _[NotificationServiceSpec](#notificationservicespec)_ | (Optional) Notification Service specification. |
-| `testScenarioSpec` _[TestScenarioSpec](#testscenariospec)_ | Test Scenario specification |
+| `testScenarioSpec` _[TestScenarioSpec](#testscenariospec)_ | (Required) Test Scenario specification |
 
 
 
@@ -72,22 +72,22 @@ _Appears in:_
 
 
 
-(Optional) NotificationServiceSpec defines Notification Service Provider specification.
+NotificationServiceSpec defines Notification Service Provider specification.
 
 _Appears in:_
 - [GatlingSpec](#gatlingspec)
 
 | Field | Description |
 | --- | --- |
-| `provider` _string_ | Provider specifies notification service provider. Supported providers: `slack` |
-| `secretName` _string_ | The name of secret in which all key/value sets needed for the notification are stored. |
+| `provider` _string_ | (Required) Provider specifies notification service provider. Supported providers: `slack` |
+| `secretName` _string_ | (Required) The name of secret in which all key/value sets needed for the notification are stored. |
 
 
 #### PodSpec
 
 
 
-(Optional) PodSpec defines type to configure Gatling Pod specification. For the idea of PodSpec, refer to [bitpoke/mysql-operator](https://github.com/bitpoke/mysql-operator/blob/master/pkg/apis/mysql/v1alpha1/mysqlcluster_types.go)
+PodSpec defines type to configure Gatling Pod specification. For the idea of PodSpec, refer to [bitpoke/mysql-operator](https://github.com/bitpoke/mysql-operator/blob/master/pkg/apis/mysql/v1alpha1/mysqlcluster_types.go)
 
 _Appears in:_
 - [GatlingSpec](#gatlingspec)
@@ -118,7 +118,7 @@ _Appears in:_
 | `simulationsDirectoryPath` _string_ | (Optional) Gatling Resources directory path where simulation files are stored. Defaults to `/opt/gatling/user-files/simulations` |
 | `resourcesDirectoryPath` _string_ | (Optional) Gatling Simulation directory path where resources are stored. Defaults to `/opt/gatling/user-files/resources` |
 | `resultsDirectoryPath` _string_ | (Optional) Gatling Results directory path where results are stored. Defaults to `/opt/gatling/results` |
-| `simulationClass` _string_ | Simulation Class Name. |
+| `simulationClass` _string_ | (Required) Simulation Class Name. |
 | `simulationData` _object (keys:string, values:string)_ | (Optional) Simulation Data. |
 | `resourceData` _object (keys:string, values:string)_ | (Optional) Resource Data. |
 | `gatlingConf` _object (keys:string, values:string)_ | (Optional) Gatling Configurations. |

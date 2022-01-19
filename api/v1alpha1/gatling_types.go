@@ -56,12 +56,12 @@ type GatlingSpec struct {
 	// +kubebuilder:validation:Optional
 	NotificationServiceSpec NotificationServiceSpec `json:"notificationServiceSpec,omitempty"`
 
-	// Test Scenario specification
+	// (Required) Test Scenario specification
 	// +kubebuilder:validation:Required
 	TestScenarioSpec TestScenarioSpec `json:"testScenarioSpec"`
 }
 
-// (Optional) PodSpec defines type to configure Gatling Pod specification. For the idea of PodSpec, refer to [bitpoke/mysql-operator](https://github.com/bitpoke/mysql-operator/blob/master/pkg/apis/mysql/v1alpha1/mysqlcluster_types.go)
+// PodSpec defines type to configure Gatling Pod specification. For the idea of PodSpec, refer to [bitpoke/mysql-operator](https://github.com/bitpoke/mysql-operator/blob/master/pkg/apis/mysql/v1alpha1/mysqlcluster_types.go)
 type PodSpec struct {
 	// (Optional) The image that will be used for Gatling container. Defaults to `denvazh/gatling:latest`
 	// +kubebuilder:validation:Optional
@@ -112,7 +112,7 @@ type TestScenarioSpec struct {
 	// +kubebuilder:validation:Optional
 	ResultsDirectoryPath string `json:"resultsDirectoryPath,omitempty"`
 
-	// Simulation Class Name.
+	// (Required) Simulation Class Name.
 	// +kubebuilder:validation:Required
 	SimulationClass string `json:"simulationClass"`
 
@@ -133,14 +133,14 @@ type TestScenarioSpec struct {
 	Env []corev1.EnvVar `json:"env,omitempty"`
 }
 
-// (Optional) CloudStorageSpec defines Cloud Storage Provider specification.
+// CloudStorageSpec defines Cloud Storage Provider specification.
 type CloudStorageSpec struct {
-	// Provider specifies the cloud provider that will be used.
+	// (Required) Provider specifies the cloud provider that will be used.
 	// Supported providers: `aws`, `gcp`
 	// +kubebuilder:validation:Required
 	Provider string `json:"provider"`
 
-	// Storage Bucket Name.
+	// (Required) Storage Bucket Name.
 	// +kubebuilder:validation:Required
 	Bucket string `json:"bucket"`
 
@@ -153,14 +153,14 @@ type CloudStorageSpec struct {
 	Env []corev1.EnvVar `json:"env,omitempty"`
 }
 
-// (Optional) NotificationServiceSpec defines Notification Service Provider specification.
+// NotificationServiceSpec defines Notification Service Provider specification.
 type NotificationServiceSpec struct {
-	// Provider specifies notification service provider.
+	// (Required) Provider specifies notification service provider.
 	// Supported providers: `slack`
 	// +kubebuilder:validation:Required
 	Provider string `json:"provider"`
 
-	// The name of secret in which all key/value sets needed for the notification are stored.
+	// (Required) The name of secret in which all key/value sets needed for the notification are stored.
 	// +kubebuilder:validation:Required
 	SecretName string `json:"secretName"`
 }
