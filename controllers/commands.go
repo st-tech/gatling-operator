@@ -6,7 +6,7 @@ import (
 
 func getGatlingRunnerCommand(
 	simulationsDirectoryPath string, tempSimulationsDirectoryPath string, resourcesDirectoryPath string,
-	resultsDirectoryPath string, startTime string, simulationClass string) string {
+	resultsDirectoryPath string, startTime string, simulationClass string, generateLocalReport bool) string {
 
 	template := `
 SIMULATIONS_DIR_PATH=%s
@@ -38,15 +38,21 @@ fi
 if [ ! -d ${RESULTS_DIR_PATH} ]; then
   mkdir -p ${RESULTS_DIR_PATH}
 fi
-gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} -nr
+gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} %s
 `
+	generateLocalReportOption := "-nr"
+	if generateLocalReport {
+		generateLocalReportOption = ""
+	}
+
 	return fmt.Sprintf(template,
 		simulationsDirectoryPath,
 		tempSimulationsDirectoryPath,
 		resourcesDirectoryPath,
 		resultsDirectoryPath,
 		startTime,
-		simulationClass)
+		simulationClass,
+		generateLocalReportOption)
 }
 
 func getGatlingTransferResultCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {

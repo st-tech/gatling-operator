@@ -168,6 +168,11 @@ spec:
                 - bucket
                 - provider
                 type: object
+              generateLocalReport:
+                default: false
+                description: (Optional) The flag of generating gatling report at each
+                  pod
+                type: boolean
               generateReport:
                 default: false
                 description: (Optional) The flag of generating gatling report.  Defaults

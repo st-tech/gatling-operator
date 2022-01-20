@@ -58,6 +58,7 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `generateReport` _boolean_ | (Optional) The flag of generating gatling report.  Defaults to `false` |
+| `generateLocalReport` _boolean_ | (Optional) The flag of generating gatling report at each pod |
 | `notifyReport` _boolean_ | (Optional) The flag of notifying gatling report. Defaults to `false` |
 | `cleanupAfterJobDone` _boolean_ | (Optional) The flag of cleanup gatling resources after the job done. Defaults to `false` |
 | `podSpec` _[PodSpec](#podspec)_ | (Optional) Gatling Pod specification. |

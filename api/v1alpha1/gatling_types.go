@@ -34,6 +34,11 @@ type GatlingSpec struct {
 	// +kubebuilder:validation:Optional
 	GenerateReport bool `json:"generateReport,omitempty"`
 
+	// (Optional) The flag of generating gatling report at each pod
+	// +kubebuilder:default=false
+	// +kubebuilder:validation:Optional
+	GenerateLocalReport bool `json:"generateLocalReport,omitempty"`
+
 	// (Optional) The flag of notifying gatling report. Defaults to `false`
 	// +kubebuilder:default=false
 	// +kubebuilder:validation:Optional
