@@ -100,7 +100,7 @@ _Appears in:_
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#resourcerequirements-v1-core)_ | (Optional) Resources specifies the resource limits of the container. |
 | `affinity` _[Affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#affinity-v1-core)_ | (Optional) Affinity specification. |
 | `tolerations` _[Toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#toleration-v1-core) array_ | (Optional) Tolerations specification. |
-| `serviceAccountName` _string_ | (Optional) ServiceAccountName specification. |
+| `serviceAccountName` _string_ | (Required) ServiceAccountName specification. |
 
 
 #### TestScenarioSpec

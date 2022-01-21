@@ -854,7 +854,7 @@ spec:
                         type: object
                     type: object
                   serviceAccountName:
-                    description: (Optional) ServiceAccountName specification.
+                    description: (Required) ServiceAccountName specification.
                     type: string
                   tolerations:
                     description: (Optional) Tolerations specification.
@@ -897,6 +897,8 @@ spec:
                           type: string
                       type: object
                     type: array
+                required:
+                - serviceAccountName
                 type: object
               testScenarioSpec:
                 description: (Required) Test Scenario specification
