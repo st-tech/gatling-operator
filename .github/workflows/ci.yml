@@ -3,7 +3,8 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - support-auto-release-note-generation-in-ci
+      #- main
     tags:
       - "v*.*.*"
   pull_request:
