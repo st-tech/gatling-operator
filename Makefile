@@ -5,6 +5,8 @@ IMAGE_TAG := $(shell /bin/date "+%Y%m%d-%H%M%S")
 IMG ?= gatling-operator:$(IMAGE_TAG)
 # Image URL should be like this when it gets to open sourced: ghcr.io/st-tech/gatling:$(IMAGE_TAG)
 SAMPLE_IMG := gatling:$(IMAGE_TAG)
+# Release version
+VERSION := latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 KIND_CLUSTER_NAME ?= "gatling-cluster"
@@ -62,7 +64,11 @@ generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and
 
 manifests-release: manifests kustomize ## Generate all-in-one manifest for release
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+ifeq ("latest","${VERSION}")
 	$(KUSTOMIZE) build config/default > gatling-operator.yaml
+else
+	$(KUSTOMIZE) build config/default > gatling-operator-${VERSION}.yaml
+endif
 
 docs: crd-ref-docs ## Generate API reference documentation from CRD types
 	cd config/crd-ref-docs

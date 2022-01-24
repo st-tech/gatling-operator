@@ -3,7 +3,8 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - support-auto-release-note-generation-in-ci
+      #- main
     tags:
       - "v*.*.*"
   pull_request:
@@ -90,8 +91,7 @@ jobs:
           VERSION: ${{ steps.get_version.outputs.VERSION }}      
         run: |
           IMAGE_ID=$REGISTRY/$IMAGE_NAME
-          make manifests-release IMG=$IMAGE_ID:$VERSION
-          mv gatling-operator.yaml gatling-operator-${VERSION}.yaml
+          make manifests-release IMG=$IMAGE_ID:$VERSION VERSION=$VERSION
 
       - name: Publish images to the registry
         env:
