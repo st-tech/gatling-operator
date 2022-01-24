@@ -27,10 +27,10 @@ The desired state of a distributed load testing with Gatling is described throug
   - `Affinity` (such as Node affinity) and `Tolerations` to be used by the scheduler to decide where a pod can be placed in the cluster
   - `Service accounts` for Pods
 - Reports
-  - Automated generating aggregated Gatling reports and storing them to remote cloud storages such as AWS S3, Google Cloud Storage, etc via [rclone](https://rclone.org/)
+  - Automated generating aggregated Gatling reports and storing them to remote cloud storages such as AWS S3, Google Cloud Storage, etc. via [rclone](https://rclone.org/)
   - Allows credentails info for accessing the remote storage to be specified via Secret resource
 - Notification
-  - Automated posting webhook message and sending Gatling load testing result via notification providers such as slack
+  - Automated posting webhook message and sending Gatling load testing result via notification providers such as Slack
   - Allows webhook URL info to be specified via Secret resource
 - Automated cleaning up Gatling resouces
 
