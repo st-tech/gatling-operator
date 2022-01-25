@@ -417,6 +417,13 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 	labels := map[string]string{
 		"app": gatling.Name,
 	}
+
+	gatlingWaiterCommand := getGatlingWaiterCommand(
+		r.getGatlingRunnerJobParallelism(gatling),
+		gatling.Namespace,
+		gatling.Name,
+	)
+
 	gatlingRunnerCommand := getGatlingRunnerCommand(
 		r.getSimulationsDirectoryPath(gatling),
 		r.getTempSimulationsDirectoryPath(gatling),
@@ -457,6 +464,19 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 						Tolerations:        r.getPodTolerations(gatling),
 						ServiceAccountName: r.getPodServiceAccountName(gatling),
 						InitContainers: []corev1.Container{
+							{
+								Name:      "gatling-waiter",
+								Image:     "bitnami/kubectl:1.21.8",
+								Command:   []string{"/bin/sh", "-c"},
+								Args:      []string{gatlingWaiterCommand},
+								Resources: r.getPodResources(gatling),
+								VolumeMounts: []corev1.VolumeMount{
+									{
+										Name:      "pod-info",
+										MountPath: "/etc/pod-info",
+									},
+								},
+							},
 							{
 								Name:         "gatling-runner",
 								Image:        r.getGatlingContainerImage(gatling),
@@ -504,6 +524,21 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 					Affinity:           r.getPodAffinity(gatling),
 					Tolerations:        r.getPodTolerations(gatling),
 					ServiceAccountName: r.getPodServiceAccountName(gatling),
+					InitContainers: []corev1.Container{
+						{
+							Name:      "gatling-waiter",
+							Image:     "bitnami/kubectl:1.21.8",
+							Command:   []string{"/bin/sh", "-c"},
+							Args:      []string{gatlingWaiterCommand},
+							Resources: r.getPodResources(gatling),
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "pod-info",
+									MountPath: "/etc/pod-info",
+								},
+							},
+						},
+					},
 					Containers: []corev1.Container{
 						{
 							Name:         "gatling-runner",
@@ -677,6 +712,22 @@ func (r *GatlingReconciler) getGatlingRunnerJobVolumes(gatling *gatlingv1alpha1.
 			},
 		})
 	}
+
+	volumes = append(volumes, corev1.Volume{
+		Name: "pod-info",
+		VolumeSource: corev1.VolumeSource{
+			DownwardAPI: &corev1.DownwardAPIVolumeSource{
+				Items: []corev1.DownwardAPIVolumeFile{
+					{
+						Path: "name",
+						FieldRef: &corev1.ObjectFieldSelector{
+							FieldPath: "metadata.name",
+						},
+					},
+				},
+			},
+		},
+	})
 	return volumes
 }
 
