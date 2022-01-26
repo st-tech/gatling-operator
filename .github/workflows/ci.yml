@@ -3,7 +3,8 @@ name: CI
 on:
   push:
     branches:
-      - main
+      # - main
+      - fix_release_image_name
     tags:
       - "v*.*.*"
   pull_request:
@@ -11,7 +12,7 @@ on:
       - main
     paths-ignore:
       - '**.md'
-      - '.gitignore'    
+      - '.gitignore'
   workflow_dispatch:
 
 env:
@@ -87,14 +88,14 @@ jobs:
 
       - name: Create release YAML (gatling-operator.yaml)
         env:
-          VERSION: ${{ steps.get_version.outputs.VERSION }}      
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
         run: |
           IMAGE_ID=$REGISTRY/$IMAGE_NAME
-          make manifests-release IMG=$IMAGE_ID:$VERSION VERSION=$VERSION
+          make manifests-release IMG=$IMAGE_ID:$VERSION
 
       - name: Publish images to the registry
         env:
-          VERSION: ${{ steps.get_version.outputs.VERSION }}      
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
         run: |
           IMAGE_ID=$REGISTRY/$IMAGE_NAME
           echo IMAGE_ID=$IMAGE_ID

@@ -48,9 +48,9 @@ help: ## Display this help.
 
 kind-create: ## Create a kind cluster named ${KIND_CLUSTER_NAME} locally if necessary
 ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l | tr -d ' '))
-	@echo "Cluster already exists" 
+	@echo "Cluster already exists"
 else
-	@echo "Creating Cluster"	
+	@echo "Creating Cluster"
 	kind create cluster --name ${KIND_CLUSTER_NAME} --image=kindest/node:${K8S_NODE_IMAGE} --config ${KIND_CONFIG_DIR}/cluster.yaml
 endif
 
@@ -64,11 +64,7 @@ generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and
 
 manifests-release: manifests kustomize ## Generate all-in-one manifest for release
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-ifeq ("latest","${VERSION}")
 	$(KUSTOMIZE) build config/default > gatling-operator.yaml
-else
-	$(KUSTOMIZE) build config/default > gatling-operator-${VERSION}.yaml
-endif
 
 docs: crd-ref-docs ## Generate API reference documentation from CRD types
 	cd config/crd-ref-docs
@@ -101,14 +97,14 @@ docker-push: docker-build ## Push docker image with the manager.
 
 kind-load-image: kind-create docker-build ## Load local docker image into the kind cluster
 	@echo "Loading image into kind"
-	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME} -v 1 
+	kind load docker-image ${IMG} --name ${KIND_CLUSTER_NAME} -v 1
 
 kind-load-sample-image: kind-create sample-docker-build ## Load local docker image for sample Gatling into the kind cluster
 	@echo "Loading sample image into kind"
-	kind load docker-image ${SAMPLE_IMG} --name ${KIND_CLUSTER_NAME} -v 1 
+	kind load docker-image ${SAMPLE_IMG} --name ${KIND_CLUSTER_NAME} -v 1
 
 sample-docker-build: ## Build docker image for sample Gatling
-	cd gatling && docker build -t ${SAMPLE_IMG} .	
+	cd gatling && docker build -t ${SAMPLE_IMG} .
 
 sample-docker-push: sample-docker-build ## Push docker image for sample Gatling
 	docker push ${SAMPLE_IMG}
