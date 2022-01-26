@@ -820,7 +820,7 @@ spec:
                     type: object
                   gatlingImage:
                     description: (Optional) The image that will be used for Gatling
-                      container. Defaults to `denvazh/gatling:latest`
+                      container. Defaults to `ghcr.io/st-tech/gatling:latest`
                     type: string
                   rcloneImage:
                     description: (Optional) The image that will be used for rclone
