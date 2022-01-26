@@ -68,7 +68,7 @@ type GatlingSpec struct {
 
 // PodSpec defines type to configure Gatling Pod specification. For the idea of PodSpec, refer to [bitpoke/mysql-operator](https://github.com/bitpoke/mysql-operator/blob/master/pkg/apis/mysql/v1alpha1/mysqlcluster_types.go)
 type PodSpec struct {
-	// (Optional) The image that will be used for Gatling container. Defaults to `denvazh/gatling:latest`
+	// (Optional) The image that will be used for Gatling container. Defaults to `ghcr.io/st-tech/gatling:latest`
 	// +kubebuilder:validation:Optional
 	GatlingImage string `json:"gatlingImage,omitempty"`
 
