@@ -7,7 +7,7 @@ spec:
   notifyReport: false                                     # The flag of notifying gatling report
   cleanupAfterJobDone: true                               #  The flag of cleaning up gatling jobs resources after the job done
   podSpec:
-    gatlingImage: denvazh/gatling:latest                  # Optional. Default: denvazh/gatling:latest. The image that will be used for Gatling container.
+    gatlingImage: ghcr.io/st-tech/gatling:latest           # Optional. Default: ghcr.io/st-tech/gatling:latest. The image that will be used for Gatling container.
     rcloneImage: rclone/rclone                            # Optional. Default: rclone/rclone:latest. The image that will be used for rclone conatiner.
     resources:                                            # Optional. Resources specifies the resource limits of the container.
       limits:
