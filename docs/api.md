@@ -95,7 +95,7 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `gatlingImage` _string_ | (Optional) The image that will be used for Gatling container. Defaults to `denvazh/gatling:latest` |
+| `gatlingImage` _string_ | (Optional) The image that will be used for Gatling container. Defaults to `ghcr.io/st-tech/gatling:latest` |
 | `rcloneImage` _string_ | (Optional) The image that will be used for rclone conatiner. Defaults to `rclone/rclone:latest` |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#resourcerequirements-v1-core)_ | (Optional) Resources specifies the resource limits of the container. |
 | `affinity` _[Affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#affinity-v1-core)_ | (Optional) Affinity specification. |
