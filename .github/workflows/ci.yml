@@ -109,4 +109,4 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
-          files: gatling-operator-${{ steps.get_version.outputs.VERSION }}.yaml
+          files: gatling-operator.yaml
