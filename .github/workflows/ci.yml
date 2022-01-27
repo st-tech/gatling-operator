@@ -11,7 +11,7 @@ on:
       - main
     paths-ignore:
       - '**.md'
-      - '.gitignore'    
+      - '.gitignore'
   workflow_dispatch:
 
 env:
@@ -87,14 +87,14 @@ jobs:
 
       - name: Create release YAML (gatling-operator.yaml)
         env:
-          VERSION: ${{ steps.get_version.outputs.VERSION }}      
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
         run: |
           IMAGE_ID=$REGISTRY/$IMAGE_NAME
-          make manifests-release IMG=$IMAGE_ID:$VERSION VERSION=$VERSION
+          make manifests-release IMG=$IMAGE_ID:$VERSION
 
       - name: Publish images to the registry
         env:
-          VERSION: ${{ steps.get_version.outputs.VERSION }}      
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
         run: |
           IMAGE_ID=$REGISTRY/$IMAGE_NAME
           echo IMAGE_ID=$IMAGE_ID
@@ -108,4 +108,4 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
-          files: gatling-operator-${{ steps.get_version.outputs.VERSION }}.yaml
+          files: gatling-operator.yaml
