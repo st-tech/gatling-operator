@@ -4,6 +4,7 @@ metadata:
   name: gatling-sample01
 spec:
   generateReport: false                                   # The flag of generating gatling report
+  generateLocalReport: false                              # The flag of generating gatling report for each pod
   notifyReport: false                                     # The flag of notifying gatling report
   cleanupAfterJobDone: true                               #  The flag of cleaning up gatling jobs resources after the job done
   podSpec:
