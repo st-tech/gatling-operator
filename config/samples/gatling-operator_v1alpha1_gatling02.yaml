@@ -3,12 +3,13 @@ kind: Gatling
 metadata:
   name: gatling-sample02
 spec:
-  generateReport: true                                   # The flag of generating gatling report
+  generateReport: true                                    # The flag of generating gatling report
+  generateLocalReport: false                              # The flag of generating gatling report for each pod
   notifyReport: false                                     # The flag of notifying gatling report
   cleanupAfterJobDone: true                               #  The flag of cleaning up gatling jobs resources after the job done
   podSpec:
     serviceAccountName: "gatling-operator-worker"
-    gatlingImage: ghcr.io/st-tech/gatling:latest           # Optional. Default: ghcr.io/st-tech/gatling:latest. The image that will be used for Gatling container.
+    gatlingImage: ghcr.io/st-tech/gatling:latest          # Optional. Default: ghcr.io/st-tech/gatling:latest. The image that will be used for Gatling container.
     rcloneImage: rclone/rclone                            # Optional. Default: rclone/rclone:latest. The image that will be used for rclone conatiner.
     resources:                                            # Optional. Resources specifies the resource limits of the container.
       limits:
@@ -34,7 +35,7 @@ spec:
     #  - name: AWS_SECRET_ACCESS_KEY
     #    value: xxxxxxxxxxxxxxx
   notificationServiceSpec:
-    provider: "slack"                                     # Notification provider name. Supported provider: "slack" 
+    provider: "slack"                                     # Notification provider name. Supported provider: "slack"
     secretName: "gatling-notification-slack-secrets"      # The name of secret in which all key/value sets needed for the notification are stored
   testScenarioSpec:
     # startTime: 2021-09-10 08:45:31                      # Optional. Start time of running test scenario in UTC. Format: %Y-%m-%d %H:%M:%S
@@ -50,11 +51,6 @@ spec:
         value: "2"
       - name: DURATION
         value: "10"
-      - name: SECRET_KEY
-        valueFrom:
-          secretKeyRef:
-            name: gatling-basic-simulation-secrets
-            key: SECRET_KEY
     simulationData:                                      # Optional. Default: empty string map. Simulation Scala data to be created as ConfigMap that is mounted on simulations dir
       MyBasicSimulation.scala: |
         // Sample originally from https://github.com/gatling/gatling/blob/400a125d7995d1b895c4cc4847ff15059d252948/gatling-bundle/src/main/scala/computerdatabase/BasicSimulation.scala
