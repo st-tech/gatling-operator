@@ -128,7 +128,7 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 kind-deploy: kind-load-image deploy ## Deploy controller to the kind cluster specified in ~/.kube/config.
 
 sample-deploy: kustomize ## Install sample Gatling CR into the k8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/samples | sed -e "s,GATLING_IMAGE,${SAMPLE_IMG},g" | kubectl apply -f -
+	$(KUSTOMIZE) build config/samples | sed -e "s,^\([[:space:]]*gatlingImage: \).*,\1${SAMPLE_IMG},g" | kubectl apply -f -
 
 kind-sample-deploy: kind-load-sample-image sample-deploy ## Install sample Gatling CR into the kind cluster specified in ~/.kube/config.
 
