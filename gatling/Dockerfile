@@ -25,7 +25,7 @@ RUN apk add --update wget bash libc6-compat && \
   mkdir -p /tmp/archive && cd /tmp/archive && \
   unzip /tmp/downloads/gatling-$GATLING_VERSION.zip && \
   mv /tmp/archive/gatling-charts-highcharts-bundle-$GATLING_VERSION/* /opt/gatling/ && \
-  rm -rf /tmp/*
+  rm -rf /opt/gatling/user-files/simulations/computerdatabase /tmp/*
 
 # change context to gatling directory
 WORKDIR  /opt/gatling
@@ -36,7 +36,7 @@ VOLUME ["/opt/gatling/conf", "/opt/gatling/results", "/opt/gatling/user-files"]
 # copy local files to gatling directory
 COPY user-files/simulations user-files/simulations
 COPY user-files/resources user-files/resources
-COPY conf/gatling.conf conf/gatling.conf
+COPY conf conf
 
 # set environment variables
 ENV PATH /opt/gatling/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
