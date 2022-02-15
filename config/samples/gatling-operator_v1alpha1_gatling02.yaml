@@ -32,7 +32,10 @@ spec:
     #  - name: AWS_ACCESS_KEY_ID
     #    value: xxxxxxxxxxxxxxx
     #  - name: AWS_SECRET_ACCESS_KEY
-    #    value: xxxxxxxxxxxxxxx
+    #    valueFrom:
+    #      secretKeyRef:
+    #        name: aws-credentail-secrets
+    #        key: AWS_SECRET_ACCESS_KEY
   notificationServiceSpec:
     provider: "slack"                                     # Notification provider name. Supported provider: "slack" 
     secretName: "gatling-notification-slack-secrets"      # The name of secret in which all key/value sets needed for the notification are stored
