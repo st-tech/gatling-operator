@@ -1,26 +1,24 @@
 # Gatling Operator
 
-[Gatling](https://gatling.io/) is an open source load testing tool that allows to analyze and measure the performance of a variety of services. [Gatling Operator](https://github.com/st-tech/gatling-operator) is a Kubernetes Operator for running automated distributed load testing with Gatling.
+[Gatling](https://gatling.io/) is an open source load testing tool that allows to analyze and measure the performance of a variety of services. [Gatling Operator](https://github.com/st-tech/gatling-operator) is a Kubernetes Operator for running automated distributed Gatling load testing.
 
 ## How Gatling Operator works
 
-The desired state of a distributed load testing with Gatling is described through a Kubernetes Custom Resource named Gatling (CR). Based on Gatling resources, all related actions such as running load testing, generating reports, sending notification message, and cleaning up the resources are performed by the Galting Operator.
+The desired state of a distributed Gatling load testing is described through a Kubernetes custom resource (`Gatling CR` in figure below). Based on Gatling custom resources, all related actions such as running load testing, generating reports, sending notification message, and cleaning up the resources are performed by relevant custom controller (`Gatling Controller` in figure below).
 
 ![](assets/gatling-operator-arch.svg)
 
 ## Features
 
-- Allows Gatling load testing senarios, resources, Gatling configurations files to be specified
-  - In a Gatling container where all scenarios, resources, and configurations files are bundled along with Gatling runtime
-  - In `ConfigMap` resources
+- Allows Gatling load testing senarios, resources, Gatling configurations files to be added in 2 ways:
+  - Bundle them with Gatling runtime pakcages in a Gatling container
+  - Add them as multi-line definition in Gatling CR
 - Scaling Gatling load testing
-  - Gatling runs as a Job which creates multiple Pods and run Gatling load testing in parallel
-  - Horizontal scaling: parallelism (number of pods running during a load testing) can be set
-  - Vertical scaling: CPU and RAM resource allocation for Gatling runner Pod can be set (see also Configuring Gatling runner Pods below)
+  - Horizontal scaling: number of pods running in parallel during a load testing can be configured
+  - Vertical scaling: CPU and RAM resource allocation for Gatling runner Pod can be configured
 - Allows Gatling load testing to start running at a specific time
-  - By default, the Gatling load testing starts running as soon as the runner Pod's init container gets ready
-  - By specifing the start time, the Gatling load testing waits to start running until the specified time
-- Configurable Gatling Pod attributions
+  - By default, the Gatling load testing starts running as soon as the runner Pod's init container gets ready. By specifing the start time, the Gatling load testing waits to start running until the specified time
+- Gatling Pod attributions
   - Gatling runtime container image
   - [rclone](https://rclone.org/) conatiner image
   - CPU and RAM resource allocation request and limit
@@ -45,9 +43,8 @@ The desired state of a distributed load testing with Gatling is described throug
 - [Quick Start Guide](docs/quickstart-guide.md)
 ## Documentations
 
-- [Gatling API reference](docs/api.md)
-- Custom Resource Examples :construction:
-- Developer Guide :construction:
+- [Gatling CRD Reference](docs/api.md)
+- [User Guide](docs/user-guide.md)
 
 ## Contributing
 
