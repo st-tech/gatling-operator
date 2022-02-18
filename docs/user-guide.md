@@ -7,6 +7,7 @@
 	- [Gatling Load Testing Configuration and Deployment](#gatling-load-testing-configuration-and-deployment)
 		- [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files)
 		- [Add Gatling Load Testing Files in Gatling CR](#add-gatling-load-testing-files-in-gatling-cr)
+		- [Debug and Trace Gatling Load Testing](#debug-and-trace-gatling-load-testing)
 	- [Gatling Custom Resource Examples](#gatling-custom-resource-examples)
 		- [Choose Execution Phases](#choose-execution-phases)
 		- [Configure Gatling Runner Pod](#configure-gatling-runner-pod)
@@ -198,6 +199,40 @@ spec:
 
 For a full sample manifest, please check [this](../config/samples/gatling-operator_v1alpha1_gatling02.yaml).
 
+
+### Debug and Trace Gatling Load Testing
+
+As you can see in the section of [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files), you can check the logging output of each Gatling load testing via container log. But if you want to know more details on what's going on in Gatling load testing, you can leverage `logback.xml`.
+You can debug Gatling with `logback.xml` which is supposed to be located in the Gatling conf directory (see [gatling/conf/logback.xml](https://github.com/st-tech/gatling-operator/blob/main/gatling/conf/logback.xml)).
+
+For example, here is default logback configuration which allows to print debuggin information to the console.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%-5level] %logger{15} - %msg%n%rEx</pattern>
+		</encoder>
+		<immediateFlush>false</immediateFlush>
+	</appender>
+
+	<root level="WARN">
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+</configuration>
+```
+
+You add the following tag in order to log all HTTP requests and responses.
+
+```xml
+<logger name="io.gatling.http.engine.response" level="TRACE" />
+```
+To know more on logback configuration in Gatling, please check [the Gatling official guide](https://gatling.io/docs/gatling/guides/debugging/).
+
+Once you finish updating `logback.xml`, you rebuild the Gatling image and push it to your registry, so you can use the image in your Gatling load testing.
 ## Gatling Custom Resource Examples
 
 You can configure the various features and parameters of the distributed Gatling load testing using Gatling CR.
