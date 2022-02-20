@@ -3,24 +3,24 @@
 <!-- TOC -->
 
 - [Gatling Operator User Guide](#gatling-operator-user-guide)
-	- [Configuration Overview](#configuration-overview)
-	- [Gatling Load Testing Configuration and Deployment](#gatling-load-testing-configuration-and-deployment)
-		- [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files)
-		- [Add Gatling Load Testing Files in Gatling CR](#add-gatling-load-testing-files-in-gatling-cr)
-		- [Debug and Trace Gatling Load Testing](#debug-and-trace-gatling-load-testing)
-	- [Gatling Custom Resource Examples](#gatling-custom-resource-examples)
-		- [Choose Execution Phases](#choose-execution-phases)
-		- [Configure Gatling Runner Pod](#configure-gatling-runner-pod)
-			- [Resource Allocation and Scheduling for Gatling Runner Pod](#resource-allocation-and-scheduling-for-gatling-runner-pod)
-			- [Service Account for Gatling Runner Pod](#service-account-for-gatling-runner-pod)
-		- [Configure Gatling Load Testing Scenario and How It's Executed](#configure-gatling-load-testing-scenario-and-how-its-executed)
-			- [Start Time of Gatling Load Testing](#start-time-of-gatling-load-testing)
-			- [Parallel Number of Gatling Load Testing](#parallel-number-of-gatling-load-testing)
-		- [Configure Cloud Storage Provider](#configure-cloud-storage-provider)
-			- [Set Amazon S3 as Cloud Storage](#set-amazon-s3-as-cloud-storage)
-			- [Set Google Cloud Storage as Cloud Storage](#set-google-cloud-storage-as-cloud-storage)
-		- [Configure Notification Service Provider](#configure-notification-service-provider)
-			- [Set Slack as Notification Service](#set-slack-as-notification-service)
+  - [Configuration Overview](#configuration-overview)
+  - [Gatling Load Testing Configuration and Deployment](#gatling-load-testing-configuration-and-deployment)
+    - [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files)
+    - [Add Gatling Load Testing Files in Gatling CR](#add-gatling-load-testing-files-in-gatling-cr)
+    - [Debug and Trace Gatling Load Testing](#debug-and-trace-gatling-load-testing)
+  - [Gatling Custom Resource Examples](#gatling-custom-resource-examples)
+    - [Choose Execution Phases](#choose-execution-phases)
+    - [Configure Gatling Runner Pod](#configure-gatling-runner-pod)
+      - [Resource Allocation and Scheduling for Gatling Runner Pod](#resource-allocation-and-scheduling-for-gatling-runner-pod)
+      - [Service Account for Gatling Runner Pod](#service-account-for-gatling-runner-pod)
+    - [Configure Gatling Load Testing Scenario and How It's Executed](#configure-gatling-load-testing-scenario-and-how-its-executed)
+      - [Start Time of Gatling Load Testing](#start-time-of-gatling-load-testing)
+      - [Parallel Number of Gatling Load Testing](#parallel-number-of-gatling-load-testing)
+    - [Configure Cloud Storage Provider](#configure-cloud-storage-provider)
+      - [Set Amazon S3 as Cloud Storage](#set-amazon-s3-as-cloud-storage)
+      - [Set Google Cloud Storage as Cloud Storage](#set-google-cloud-storage-as-cloud-storage)
+    - [Configure Notification Service Provider](#configure-notification-service-provider)
+      - [Set Slack as Notification Service](#set-slack-as-notification-service)
 
 <!-- /TOC -->
 
@@ -325,7 +325,7 @@ spec:
 You also can set container images for Gatling load testing and rclone respectively in `.spec.podSpec.gatlingImage` and `.spec.podSpec.rcloneImage`.
 
 - `.spec.podSpec.gatlingImage`: It's an optional field for Gatling load testing container image and defaults to `ghcr.io/st-tech/gatling:latest`. You can add your custom image here.
-- `.spec.podSpec.rcloneImage`: It's an optional field for [rclone](https://rclone.org/) container image and defaults to `rclone/rclone:latest`. The rclone is used for uploading Gatling report files to and downloading them from cloud storages. You can add your custom image here.
+- `.spec.podSpec.rcloneImage`: It's an optional field for [rclone](https://rclone.org/) container image and defaults to `rclone/rclone:latest`. The rclone is used for uploading Gatling report files to and downloading them from Cloud Storages. You can add your custom image here.
 
 #### Service Account for Gatling Runner Pod
 
@@ -482,7 +482,7 @@ TBU
 In `.spec.notificationServiceSpec` you can configure Notification Service Provider to which you post webhook message in order to notify Gatling load testing result. Here are main fields to set in `.spec.notificationServiceSpec`.
 
 - `.spec.notificationServiceSpec.provider`: It's a required field for the notification service provider to use. Supported value on the field is currently `slack` (for [Slack](https://slack.com/)) only.
-- `.spec.cloudStorageSpec.secretName`: It's a required field for the name of Kubernetes Secret that contains all key/value sets needed for posting webhook message to the provider. 
+- `.spec.cloudStorageSpec.secretName`: It's a required field for the name of Kubernetes Secret that contains all key/value sets needed for posting webhook message to the provider.
 
 #### Set Slack as Notification Service
 

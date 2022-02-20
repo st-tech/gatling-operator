@@ -4,7 +4,7 @@
 
 ## How Gatling Operator works
 
-The desired state of a distributed Gatling load testing is described through a Kubernetes custom resource (`Gatling CR` in figure below). Based on Gatling custom resources, all related actions such as running load testing, generating reports, sending notification message, and cleaning up the resources are performed by relevant custom controller (`Gatling Controller` in figure below).
+The desired state of a distributed Gatling load testing is described through a Kubernetes custom resource (`Gatling CR` in figure below). Based on Gatling CR, actions in the lifecycle of distributed Gatling load testing such as running load testing, generating reports, sending notification message, and cleaning up the resources are executed by relevant custom controller (`Gatling Controller` in figure below).
 
 ![](assets/gatling-operator-arch.svg)
 
@@ -43,6 +43,7 @@ The desired state of a distributed Gatling load testing is described through a K
 - [Quick Start Guide](docs/quickstart-guide.md)
 ## Documentations
 
+- [Architecture](docs/architecture.md)
 - [Gatling CRD Reference](docs/api.md)
 - [User Guide](docs/user-guide.md)
 
