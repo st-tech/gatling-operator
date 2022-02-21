@@ -7,6 +7,7 @@
 	- [Gatling Load Testing Configuration and Deployment](#gatling-load-testing-configuration-and-deployment)
 		- [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files)
 		- [Add Gatling Load Testing Files in Gatling CR](#add-gatling-load-testing-files-in-gatling-cr)
+		- [Debug and Trace Gatling Load Testing](#debug-and-trace-gatling-load-testing)
 	- [Gatling Custom Resource Examples](#gatling-custom-resource-examples)
 		- [Choose Execution Phases](#choose-execution-phases)
 		- [Configure Gatling Runner Pod](#configure-gatling-runner-pod)
@@ -198,6 +199,41 @@ spec:
 
 For a full sample manifest, please check [this](../config/samples/gatling-operator_v1alpha1_gatling02.yaml).
 
+📝 **Caution**: Please be noted that the data stored in a ConfigMap cannot exceed 1 MiB (ref [this](https://kubernetes.io/docs/concepts/configuration/configmap/)). If you need to store files that are larger than this limit, you may want to consider create Custom Gatling Image to bundle them in the container.
+
+### Debug and Trace Gatling Load Testing
+
+As you can see in the section of [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files), you can check the logging output of each Gatling load testing via container log. But if you want to know more details on what's going on in Gatling load testing, you can leverage `logback.xml`.
+You can debug Gatling with `logback.xml` which is supposed to be located in the Gatling conf directory (see [gatling/conf/logback.xml](https://github.com/st-tech/gatling-operator/blob/main/gatling/conf/logback.xml)).
+
+For example, here is default logback configuration which allows to print debugging information to the console.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%-5level] %logger{15} - %msg%n%rEx</pattern>
+		</encoder>
+		<immediateFlush>false</immediateFlush>
+	</appender>
+
+	<root level="WARN">
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+</configuration>
+```
+
+You add the following tag in order to log all HTTP requests and responses.
+
+```xml
+<logger name="io.gatling.http.engine.response" level="TRACE" />
+```
+To know more on logback configuration in Gatling, please check [the Gatling official guide](https://gatling.io/docs/gatling/guides/debugging/).
+
+Once you finish updating `logback.xml`, you rebuild the Gatling image and push it to your registry, so you can use the image in your Gatling load testing.
 ## Gatling Custom Resource Examples
 
 You can configure the various features and parameters of the distributed Gatling load testing using Gatling CR.
@@ -290,7 +326,7 @@ spec:
 You also can set container images for Gatling load testing and rclone respectively in `.spec.podSpec.gatlingImage` and `.spec.podSpec.rcloneImage`.
 
 - `.spec.podSpec.gatlingImage`: It's an optional field for Gatling load testing container image and defaults to `ghcr.io/st-tech/gatling:latest`. You can add your custom image here.
-- `.spec.podSpec.rcloneImage`: It's an optional field for [rclone](https://rclone.org/) container image and defaults to `rclone/rclone:latest`. The rclone is used for uploading Gatling report files to and downloading them from cloud storages. You can add your custom image here.
+- `.spec.podSpec.rcloneImage`: It's an optional field for [rclone](https://rclone.org/) container image and defaults to `rclone/rclone:latest`. The rclone is used for uploading Gatling report files to and downloading them from Cloud Storages. You can add your custom image here.
 
 #### Service Account for Gatling Runner Pod
 
@@ -447,7 +483,7 @@ TBU
 In `.spec.notificationServiceSpec` you can configure Notification Service Provider to which you post webhook message in order to notify Gatling load testing result. Here are main fields to set in `.spec.notificationServiceSpec`.
 
 - `.spec.notificationServiceSpec.provider`: It's a required field for the notification service provider to use. Supported value on the field is currently `slack` (for [Slack](https://slack.com/)) only.
-- `.spec.cloudStorageSpec.secretName`: It's a required field for the name of Kubernetes Secret that contains all key/value sets needed for posting webhook message to the provider. 
+- `.spec.cloudStorageSpec.secretName`: It's a required field for the name of Kubernetes Secret that contains all key/value sets needed for posting webhook message to the provider.
 
 #### Set Slack as Notification Service
 
