@@ -206,7 +206,7 @@ For a full sample manifest, please check [this](../config/samples/gatling-operat
 As you can see in the section of [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files), you can check the logging output of each Gatling load testing via container log. But if you want to know more details on what's going on in Gatling load testing, you can leverage `logback.xml`.
 You can debug Gatling with `logback.xml` which is supposed to be located in the Gatling conf directory (see [gatling/conf/logback.xml](https://github.com/st-tech/gatling-operator/blob/main/gatling/conf/logback.xml)).
 
-For example, here is default logback configuration which allows to print debuggin information to the console.
+For example, here is default logback configuration which allows to print debugging information to the console.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
