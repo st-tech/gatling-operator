@@ -3,24 +3,24 @@
 <!-- TOC -->
 
 - [Gatling Operator User Guide](#gatling-operator-user-guide)
-  - [Configuration Overview](#configuration-overview)
-  - [Gatling Load Testing Configuration and Deployment](#gatling-load-testing-configuration-and-deployment)
-    - [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files)
-    - [Add Gatling Load Testing Files in Gatling CR](#add-gatling-load-testing-files-in-gatling-cr)
-    - [Debug and Trace Gatling Load Testing](#debug-and-trace-gatling-load-testing)
-  - [Gatling Custom Resource Examples](#gatling-custom-resource-examples)
-    - [Choose Execution Phases](#choose-execution-phases)
-    - [Configure Gatling Runner Pod](#configure-gatling-runner-pod)
-      - [Resource Allocation and Scheduling for Gatling Runner Pod](#resource-allocation-and-scheduling-for-gatling-runner-pod)
-      - [Service Account for Gatling Runner Pod](#service-account-for-gatling-runner-pod)
-    - [Configure Gatling Load Testing Scenario and How It's Executed](#configure-gatling-load-testing-scenario-and-how-its-executed)
-      - [Start Time of Gatling Load Testing](#start-time-of-gatling-load-testing)
-      - [Parallel Number of Gatling Load Testing](#parallel-number-of-gatling-load-testing)
-    - [Configure Cloud Storage Provider](#configure-cloud-storage-provider)
-      - [Set Amazon S3 as Cloud Storage](#set-amazon-s3-as-cloud-storage)
-      - [Set Google Cloud Storage as Cloud Storage](#set-google-cloud-storage-as-cloud-storage)
-    - [Configure Notification Service Provider](#configure-notification-service-provider)
-      - [Set Slack as Notification Service](#set-slack-as-notification-service)
+	- [Configuration Overview](#configuration-overview)
+	- [Gatling Load Testing Configuration and Deployment](#gatling-load-testing-configuration-and-deployment)
+		- [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files)
+		- [Add Gatling Load Testing Files in Gatling CR](#add-gatling-load-testing-files-in-gatling-cr)
+		- [Debug and Trace Gatling Load Testing](#debug-and-trace-gatling-load-testing)
+	- [Gatling Custom Resource Examples](#gatling-custom-resource-examples)
+		- [Choose Execution Phases](#choose-execution-phases)
+		- [Configure Gatling Runner Pod](#configure-gatling-runner-pod)
+			- [Resource Allocation and Scheduling for Gatling Runner Pod](#resource-allocation-and-scheduling-for-gatling-runner-pod)
+			- [Service Account for Gatling Runner Pod](#service-account-for-gatling-runner-pod)
+		- [Configure Gatling Load Testing Scenario and How It's Executed](#configure-gatling-load-testing-scenario-and-how-its-executed)
+			- [Start Time of Gatling Load Testing](#start-time-of-gatling-load-testing)
+			- [Parallel Number of Gatling Load Testing](#parallel-number-of-gatling-load-testing)
+		- [Configure Cloud Storage Provider](#configure-cloud-storage-provider)
+			- [Set Amazon S3 as Cloud Storage](#set-amazon-s3-as-cloud-storage)
+			- [Set Google Cloud Storage as Cloud Storage](#set-google-cloud-storage-as-cloud-storage)
+		- [Configure Notification Service Provider](#configure-notification-service-provider)
+			- [Set Slack as Notification Service](#set-slack-as-notification-service)
 
 <!-- /TOC -->
 
@@ -199,6 +199,7 @@ spec:
 
 For a full sample manifest, please check [this](../config/samples/gatling-operator_v1alpha1_gatling02.yaml).
 
+📝 **Caution**: Please be noted that the data stored in a ConfigMap cannot exceed 1 MiB (ref [this](https://kubernetes.io/docs/concepts/configuration/configmap/)). If you need to store files that are larger than this limit, you may want to consider create Custom Gatling Image to bundle them in the container.
 
 ### Debug and Trace Gatling Load Testing
 
