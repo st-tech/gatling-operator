@@ -11,7 +11,7 @@
 ## Architecture Overview
 
 The diagram below shows how Gatling Operator works in conjunction with Gatling Custom Resource (CR).
-Based on Gatling CR, actions in the lifecycle of distributed Gatling load testing such as running load testing, generating reports, sending notification message, and cleaning up the resources are executed by relevant custom controller (`Gatling Controller` in figure below).
+Based on Gatling CR, actions in the lifecycle of distributed Gatling load testing (such as running load testing, generating reports, sending notification message, and cleaning up the resources) are executed by relevant custom controller (`Gatling Controller` in figure below).
 
 ![](../assets/gatling-operator-arch.svg)
 
