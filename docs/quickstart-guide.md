@@ -2,147 +2,140 @@
 
 The quick start guide helps to quickly deploy Gatling Operator and start a simple distributed load testing using Gatling Operator.
 
-First of all, clone the repo:
-```bash
-git clone git@github.com:st-tech/gatling-operator.git
-cd gatling-operator
-```
+## Prerequisites
 
-With`GNU make`, you can proceed all steps need to get started like building, testing, and deploying. Here are all rules that you can use with make for the Operator:
+- Installed [kubectl](https://kubernetes.io/docs/tasks/tools/) and [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- Cloned the [gatling-operator](https://github.com/st-tech/gatling-operator) repository
 
-```
-Usage:
-  make <target>
-
-General
-  help             Display this help.
-  kind-create      Create a kind cluster named ${KIND_CLUSTER_NAME} locally if necessary
-
-Development
-  manifests        Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-  generate         Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-  manifests-release  Generate all-in-one manifest for release
-  docs             Generate API reference documentation from CRD types
-  fmt              Run go fmt against code.
-  vet              Run go vet against code.
-  test             Run tests.
-
-Build
-  build            Build manager binary.
-  run              Run a controller from your host.
-  docker-build     Build docker image with the manager.
-  docker-push      Push docker image with the manager.
-  kind-load-image  Load local docker image into the kind cluster
-  kind-load-sample-image  Load local docker image for sample Gatling into the kind cluster
-  sample-docker-build  Build docker image for sample Gatling
-  sample-docker-push  Push docker image for sample Gatling
-
-Deployment
-  install-crd      Install CRDs into the K8s cluster specified in ~/.kube/config.
-  uninstall-crd    Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
-  deploy           Deploy controller to the K8s cluster specified in ~/.kube/config.
-  kind-deploy      Deploy controller to the kind cluster specified in ~/.kube/config.
-  sample-deploy    Install sample Gatling CR into the k8s cluster specified in ~/.kube/config.
-  kind-sample-deploy  Install sample Gatling CR into the kind cluster specified in ~/.kube/config.
-  undeploy         Undeploy controller from the K8s cluster specified in ~/.kube/config.
-  controller-gen   Download controller-gen locally if necessary.
-  kustomize        Download kustomize locally if necessary.
-  crd-ref-docs     Download crd-ref-docs locally if necessary.
-```
-> The above is an output of running `make help`
-
-## Deploying locally
-
-Here we use a local Kubernetes Cluster provided by the [KIND tool](https://github.com/kubernetes-sigs/kind) to run the operator locally for development or testing.
-
-To deploy to a local Kubernetes cluster/Kind instance:
-
-```
-make kind-deploy
-```
-
-The command above will create the Kind instance if necessary, build docker image, load the image into the cluster, and finally deploy the operator to the cluster.
+## Create a Cluster
+Create a cluster using kind.
+It is recommended to use 1.18 or higher for clusters created with kind. The Image version of Node used in kind can be found in the [release notes](https://github.com/kubernetes-sigs/kind/releases).
 
 ```bash
-# Check if the cluster named "gatling-cluster" is created (if necessary)
-kind get clusters
-# Check if the operator manager pod named "gatling-operator-controller-manager-xxxx" in "gatling-system" namespace is running 
-kubectl get pods -n gatling-system
+kind create cluster
 ```
-## Deploying to a remote cluster
 
-### Pushing the image to container registry
+## Install Gatling Operator
 
 ```bash
-make docker-push IMG=<your-registry>/gatling-operator:<tag>
+kubectl apply -f https://github.com/st-tech/gatling-operator/releases/download/v0.5.0/gatling-operator.yaml
 ```
 
-> :memo: Ensure that you're logged into your docker container registry that you will be using as the image store for your K8s cluster if not yet done!
-
-### Deploying
-
-Deploy the operator to your cluster:
+The output is similar to:
 
 ```bash
-make deploy IMG=<your-registry>/gatling-operator:<tag>
+namespace/gatling-system created
+customresourcedefinition.apiextensions.k8s.io/gatlings.gatling-operator.tech.zozo.com created
+serviceaccount/gatling-operator-controller-manager created
+role.rbac.authorization.k8s.io/gatling-operator-leader-election-role created
+clusterrole.rbac.authorization.k8s.io/gatling-operator-manager-role created
+rolebinding.rbac.authorization.k8s.io/gatling-operator-leader-election-rolebinding created
+clusterrolebinding.rbac.authorization.k8s.io/gatling-operator-manager-rolebinding created
+deployment.apps/gatling-operator-controller-manager created
 ```
 
-Or you can create all-in-one manifest and apply it to the cluster:
+The CRD, Manager, and other resources are deployed and ready to run Gatling CR.
+
+The example uses a manifest of v0.5.0. Please change the version if necessary. You can check the version from the [Release page](https://github.com/st-tech/gatling-operator/releases).
+
+## Deploy Gatling CR
+Deploy the Gatling CR using the [example](https://github.com/st-tech/gatling-operator/tree/main/config/samples) in the gatling-operator repository.
+```
+kustomize build config/samples | kubectl apply -f -
+```
+
+The output is similar to:
 
 ```bash
-# Generate all-in-one manifest that will be outputed as gatling-operator.yaml
-make manifests-release IMG=<your-registry>/gatling-operator:<tag>
-# Apply the manifest generated in the step above to the cluster
-kubectl apply -f gatling-operator.yaml
+serviceaccount/gatling-operator-worker unchanged
+role.rbac.authorization.k8s.io/pod-reader unchanged
+rolebinding.rbac.authorization.k8s.io/read-pods configured
+secret/gatling-notification-slack-secrets unchanged
+gatling.gatling-operator.tech.zozo.com/gatling-sample01 created
 ```
 
-> :memo: Ensure you're connected to your K8s cluster
+After execution, the ServiceAccount and Gatling CR required to run the Gatling Runner Pod will be deployed.
 
-> :memo: Ensure your cluster has permissions to pull containers from your container registry
+After deploying the Gatling CR, the Gatling CR, Gatling Runner Job, and Gatling Runner Pod will be generated and the Gatling test scenario will be executed.
 
-Finally check if the operator manager pod named "gatling-operator-controller-manager-xxxx" in "gatling-system" namespace is running
+```
+$ kubectl get gatling,job,pod
+```
+
+The output is similar to:
+
+```
+NAME                                                      AGE
+gatling.gatling-operator.tech.zozo.com/gatling-sample01   10s
+
+NAME                                COMPLETIONS   DURATION   AGE
+job.batch/gatling-sample01-runner   0/3           9s         9s
+
+NAME                                READY   STATUS    RESTARTS   AGE
+pod/gatling-sample01-runner-8rhl4   1/1     Running   0          9s
+pod/gatling-sample01-runner-cg8rt   1/1     Running   0          9s
+pod/gatling-sample01-runner-tkplh   1/1     Running   0          9s
+```
+
+You can also see from the Pod logs that Gatling is running.
+
+```
+kubectl logs gatling-sample01-runner-tkplh -c gatling-runner -f
+```
+
+The output is similar to:
 
 ```bash
-kubectl get pods -n gatling-system
+Wait until 2022-02-25 06:07:25
+GATLING_HOME is set to /opt/gatling
+Simulation MyBasicSimulation started...
+
+================================================================================
+2022-02-25 06:08:31                                           5s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=2      KO=0     )
+> request_1                                                (OK=1      KO=0     )
+> request_1 Redirect 1                                     (OK=1      KO=0     )
+
+---- Scenario Name -------------------------------------------------------------
+[--------------------------------------------------------------------------]  0%
+          waiting: 0      / active: 1      / done: 0
+================================================================================
+
+
+================================================================================
+2022-02-25 06:08:36                                          10s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=3      KO=0     )
+> request_1                                                (OK=1      KO=0     )
+> request_1 Redirect 1                                     (OK=1      KO=0     )
+> request_2                                                (OK=1      KO=0     )
+
+---- Scenario Name -------------------------------------------------------------
+[--------------------------------------------------------------------------]  0%
+          waiting: 0      / active: 1      / done: 0
+================================================================================
+
+
+================================================================================
+2022-02-25 06:08:40                                          14s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=6      KO=0     )
+> request_1                                                (OK=1      KO=0     )
+> request_1 Redirect 1                                     (OK=1      KO=0     )
+> request_2                                                (OK=1      KO=0     )
+> request_3                                                (OK=1      KO=0     )
+> request_4                                                (OK=1      KO=0     )
+> request_4 Redirect 1                                     (OK=1      KO=0     )
+
+---- Scenario Name -------------------------------------------------------------
+[##########################################################################]100%
+          waiting: 0      / active: 0      / done: 1
+================================================================================
+
+Simulation MyBasicSimulation completed in 14 seconds
 ```
 
-## Running your first load testing
+In this example, the notification of Gatling result reports and the storage of the result reports in the cloud provider are not performed.
 
-Sample Gatling load testing data is provided in the gatling folder.
-Just like you do for the Operator, you can proceed all steps needed for deploying sample Gatling CR with GNU make.
-
-### Deploying and running the load testing locally
-
-To deploy sample Gatling CR to a local Kubernetes cluster/Kind instance:
-
-```bash
-make kind-sample-deploy
-```
-
-The command above will create the Kind instance if necessary, build a sample gatling image, load the image into the cluster, and finally deploy the Gatling CR to the cluster.
-
-Check if the sample Gatling CR named "gatling-sample01" in "default" namespace is deployed
-
-```bash
-kubectl get gatling
-```
-
-### Deploying and running the load testing in the remote cluster
-
-First, you need to push a sample gatling image to container registry
-
-```bash
-make sample-docker-push SAMPLE_IMG=<your-registry>/gatling:<tag>
-```
-
-> 📝  Ensure that you're logged into your docker container registry that you will be using as the image store for your K8s cluster if not yet done!
-
-After you push the sample gatling container, deploy the Gatling CR to your cluster:
-
-```bash
-make sample-deploy SAMPLE_IMG=<your-registry>/gatling:<tag>
-```
-
-> :memo: Ensure you're connected to your K8s cluster
-
-> :memo: Ensure your cluster has permissions to pull containers from your container registry
+This can be done by setting the .spec.cloudStorageSpec and .spec.notificationServiceSpec.
