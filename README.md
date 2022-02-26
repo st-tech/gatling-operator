@@ -1,5 +1,8 @@
 # Gatling Operator
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/st-tech/gatling-operator)](https://goreportcard.com/report/github.com/st-tech/gatling-operator) [![CI](https://github.com/st-tech/gatling-operator/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/st-tech/gatling-operator/actions/workflows/ci.yml) ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/st-tech/gatling-operator)
+
+
 [Gatling](https://gatling.io/) is an open source load testing tool that allows to analyze and measure the performance of a variety of services. [Gatling Operator](https://github.com/st-tech/gatling-operator) is a Kubernetes Operator for running automated distributed Gatling load testing.
 
 ## How Gatling Operator works
@@ -25,7 +28,7 @@ The desired state of a distributed Gatling load testing is described through a K
   - `Affinity` (such as Node affinity) and `Tolerations` to be used by the scheduler to decide where a pod can be placed in the cluster
   - `Service accounts` for Pods
 - Reports
-  - Automated generating aggregated Gatling reports and storing them to remote cloud storages such as AWS S3, Google Cloud Storage, etc. via [rclone](https://rclone.org/)
+  - Automated generating aggregated Gatling HTML reports and storing them to Cloud Storages such as AWS S3, Google Cloud Storage, etc. via [rclone](https://rclone.org/)
   - Allows credentails info for accessing the remote storage to be specified via Secret resource
 - Notification
   - Automated posting webhook message and sending Gatling load testing result via notification providers such as Slack
