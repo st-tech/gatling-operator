@@ -33,6 +33,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	gatlingv1alpha1 "github.com/st-tech/gatling-operator/api/v1alpha1"
+	cloudstorages "github.com/st-tech/gatling-operator/controllers/cloudstorages"
+	notificationservices "github.com/st-tech/gatling-operator/controllers/notificationservices"
+	utils "github.com/st-tech/gatling-operator/controllers/utils"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -195,7 +198,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 			return true, err
 		}
 		// Update Status
-		gatling.Status.RunnerStartTime = getEpocTime()
+		gatling.Status.RunnerStartTime = utils.GetEpocTime()
 		gatling.Status.RunnerJobName = runnerJob.GetName()
 		gatling.Status.Active = runnerJob.Status.Active
 		gatling.Status.Failed = runnerJob.Status.Failed
@@ -210,7 +213,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 	foundJob := &batchv1.Job{}
 	err := r.Get(ctx, client.ObjectKey{Name: gatling.Status.RunnerJobName, Namespace: req.Namespace}, foundJob)
 	if err != nil && apierr.IsNotFound(err) {
-		duration := getEpocTime() - gatling.Status.RunnerStartTime
+		duration := utils.GetEpocTime() - gatling.Status.RunnerStartTime
 		if duration > maxJobCreationWaitTimeInSeconds {
 			msg := fmt.Sprintf("Runs out of time (%d sec) in creating the runner job", maxJobCreationWaitTimeInSeconds)
 			log.Error(err, msg, "namespace", req.Namespace, "name", gatling.Status.RunnerJobName)
@@ -232,7 +235,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 	gatling.Status.Succeeded = foundJob.Status.Succeeded
 
 	// Check if the job runs out of time in running the job
-	duration := getEpocTime() - gatling.Status.RunnerStartTime
+	duration := utils.GetEpocTime() - gatling.Status.RunnerStartTime
 	if duration > maxJobRunWaitTimeInSeconds {
 		msg := fmt.Sprintf("Runs out of time (%d sec) in running the runner job", maxJobCreationWaitTimeInSeconds)
 		log.Error(nil, msg, "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
@@ -297,7 +300,7 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 			return true, err
 		}
 		// Update Status
-		gatling.Status.ReporterStartTime = getEpocTime()
+		gatling.Status.ReporterStartTime = utils.GetEpocTime()
 		gatling.Status.ReporterJobName = reporterJob.GetName()
 		gatling.Status.ReportCompleted = false
 		gatling.Status.NotificationCompleted = false
@@ -309,7 +312,7 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 	err = r.Get(ctx, client.ObjectKey{Name: gatling.Status.ReporterJobName, Namespace: req.Namespace}, foundJob)
 	if err != nil && apierr.IsNotFound(err) {
 		// Check if the job runs out of time in creating the job
-		duration := getEpocTime() - gatling.Status.ReporterStartTime
+		duration := utils.GetEpocTime() - gatling.Status.ReporterStartTime
 		if duration > maxJobCreationWaitTimeInSeconds {
 			msg := fmt.Sprintf("Runs out of time (%d sec) in creating the reporter job", maxJobCreationWaitTimeInSeconds)
 			log.Error(err, msg, "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
@@ -326,7 +329,7 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 		return true, err
 	}
 	// Check if the job runs out of time in running the job
-	duration := getEpocTime() - gatling.Status.ReporterStartTime
+	duration := utils.GetEpocTime() - gatling.Status.ReporterStartTime
 	if duration > maxJobRunWaitTimeInSeconds {
 		msg := fmt.Sprintf("Runs out of time (%d sec) in running the reporter job, and no longer requeue", maxJobCreationWaitTimeInSeconds)
 		log.Error(nil, msg, "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
@@ -740,17 +743,12 @@ func (r *GatlingReconciler) getCloudStorageInfo(ctx context.Context, gatling *ga
 	} else {
 		// Assign new Gatling Cloud Storage Path and report URL,
 		// and save them on Gatling Status fields
-		subDir := fmt.Sprint(hash(fmt.Sprintf("%s%d", gatling.Name, rand.Intn(math.MaxInt32))))
-		storagePath = getCloudStoragePath(
-			r.getCloudStorageProvider(gatling),
-			r.getCloudStorageBucket(gatling),
-			gatling.Name,
-			subDir)
-		reportURL = getCloudStorageReportURL(
-			r.getCloudStorageProvider(gatling),
-			gatling.Spec.CloudStorageSpec.Bucket,
-			gatling.Name,
-			subDir)
+		subDir := fmt.Sprint(utils.Hash(fmt.Sprintf("%s%d", gatling.Name, rand.Intn(math.MaxInt32))))
+		cspp := cloudstorages.GetProvider(r.getCloudStorageProvider(gatling))
+		if cspp != nil {
+			storagePath = (*cspp).GetCloudStoragePath(r.getCloudStorageBucket(gatling), gatling.Name, subDir)
+			reportURL = (*cspp).GetCloudStorageReportURL(r.getCloudStorageBucket(gatling), gatling.Name, subDir)
+		}
 		gatling.Status.ReportStoragePath = storagePath
 		gatling.Status.ReportUrl = reportURL
 		if err := r.updateGatlingStatus(ctx, gatling); err != nil {
@@ -767,21 +765,9 @@ func (r *GatlingReconciler) sendNotification(ctx context.Context, gatling *gatli
 		// secret is not found or failed to get the secret
 		return err
 	}
-	provider := r.getNotificationServiceProvider(gatling)
-	switch provider {
-	case "slack":
-		if webhookURL, exists := getMapValue("incoming-webhook-url", foundSecret.Data); exists {
-			payloadTextFormat := `
-[%s] Gatling has completed successfully!
-Report URL: %s
-`
-			payloadText := fmt.Sprintf(payloadTextFormat, gatling.Name, reportURL)
-			if err := slackNotify(webhookURL, payloadText); err != nil {
-				return err
-			}
-		}
-	default:
-		return errors.New(fmt.Sprintf("Not supported provider: %s", provider))
+	nspp := notificationservices.GetProvider(r.getNotificationServiceProvider(gatling))
+	if nspp != nil {
+		return (*nspp).Notify(gatling.Name, reportURL, foundSecret.Data)
 	}
 	return nil
 }

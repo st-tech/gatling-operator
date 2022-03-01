@@ -176,12 +176,12 @@ done
 		})
 	})
 
-	Context("Provider is azure", func() {
+	Context("Provider is non-supported one", func() {
 		BeforeEach(func() {
-			provider = "azure"
+			provider = "foo"
 			expectedValue = ""
 		})
-		It("Provide is azure", func() {
+		It("Provide is non-supported one", func() {
 			Expect(getGatlingTransferResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
@@ -241,12 +241,12 @@ rclone copy testStoragePath ${GATLING_AGGREGATE_DIR}
 		})
 	})
 
-	Context("Provider is azure", func() {
+	Context("Provider is non-supported one", func() {
 		BeforeEach(func() {
-			provider = "azure"
+			provider = "foo"
 			expectedValue = ""
 		})
-		It("Provide is azure", func() {
+		It("Provide is non-supported one", func() {
 			Expect(getGatlingAggregateResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
@@ -327,12 +327,12 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" testStoragePath
 		})
 	})
 
-	Context("Provider is azure", func() {
+	Context("Provider is non-supported one", func() {
 		BeforeEach(func() {
-			provider = "azure"
+			provider = "foo"
 			expectedValue = ""
 		})
-		It("Provide is azure", func() {
+		It("Provide is non-supported one", func() {
 			Expect(getGatlingTransferReportCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
