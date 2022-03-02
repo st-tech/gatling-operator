@@ -21,7 +21,7 @@ kind create cluster
 kubectl apply -f https://github.com/st-tech/gatling-operator/releases/download/v0.5.0/gatling-operator.yaml
 ```
 
-The output is similar to:
+Expected output would be like this:
 
 ```bash
 namespace/gatling-system created
