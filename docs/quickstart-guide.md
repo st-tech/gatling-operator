@@ -39,7 +39,7 @@ All resources required for the Gatling operator, such as CRD and controller mana
 The command above applies a Gatling Operator manifest of v0.5.0. Please change the version if necessary. You can check the version from the [Release page](https://github.com/st-tech/gatling-operator/releases).
 
 ## Deploy Gatling CR
-Deploy the Gatling CR using the [example](https://github.com/st-tech/gatling-operator/tree/main/config/samples) in the gatling-operator repository.
+Deploy a sample Gatling CR, as well as all resources required for the Gatling CR in the repository.
 ```
 kustomize build config/samples | kubectl apply -f -
 ```
