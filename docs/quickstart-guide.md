@@ -136,6 +136,6 @@ Simulation MyBasicSimulation started...
 Simulation MyBasicSimulation completed in 14 seconds
 ```
 
-In this example, the notification of Gatling result reports and the storage of the result reports in the cloud provider are not performed.
+As configured in [the sample manifest](https://github.com/st-tech/gatling-operator/blob/85e69840274214c47e63f65a5c807dd541dff245/config/samples/gatling-operator_v1alpha1_gatling01.yaml#L6-L8), an aggregated Gatling HTML report is not created, nor a notification message is posted.
 
 You can generate the Gatling HTML report by enabling `.spec.generateReport` flag and setting the `.spec.cloudStorageSpec`. Also you can posting the notification message by enabling `.spec. notifyReport ` and setting `.spec.notificationServiceSpec`. For more information about configuring Gatling CR, please refer to [User Guide](./user-guide.md)
