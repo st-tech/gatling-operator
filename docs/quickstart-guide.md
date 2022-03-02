@@ -4,8 +4,8 @@ The quick start guide helps to quickly deploy Gatling Operator and start a simpl
 
 ## Prerequisites
 
-- Installed [kubectl](https://kubernetes.io/docs/tasks/tools/) and [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
-- Cloned the [gatling-operator](https://github.com/st-tech/gatling-operator) repository
+- Install [kubectl](https://kubernetes.io/docs/tasks/tools/) and [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- Clone the [gatling-operator](https://github.com/st-tech/gatling-operator) repository
 
 ## Create a Cluster
 Create a cluster using kind.
