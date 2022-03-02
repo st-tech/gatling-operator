@@ -44,7 +44,7 @@ Deploy the Gatling CR using the [example](https://github.com/st-tech/gatling-ope
 kustomize build config/samples | kubectl apply -f -
 ```
 
-The output is similar to:
+Expected output would be like this:
 
 ```bash
 serviceaccount/gatling-operator-worker unchanged
