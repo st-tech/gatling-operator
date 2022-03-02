@@ -54,7 +54,6 @@ secret/gatling-notification-slack-secrets unchanged
 gatling.gatling-operator.tech.zozo.com/gatling-sample01 created
 ```
 
-After execution, the ServiceAccount and Gatling CR required to run the Gatling Runner Pod will be deployed.
 
 After deploying the Gatling CR, the Gatling CR, Gatling Runner Job, and Gatling Runner Pod will be generated and the Gatling test scenario will be executed.
 
