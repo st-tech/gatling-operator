@@ -34,7 +34,7 @@ clusterrolebinding.rbac.authorization.k8s.io/gatling-operator-manager-rolebindin
 deployment.apps/gatling-operator-controller-manager created
 ```
 
-The CRD, Manager, and other resources are deployed and ready to run Gatling CR.
+All resources required for the Gatling operator, such as CRD and controller manager, are deployed using the command above. Now you're ready to deploy Gatling CR to run Gatling load testing.
 
 The example uses a manifest of v0.5.0. Please change the version if necessary. You can check the version from the [Release page](https://github.com/st-tech/gatling-operator/releases).
 
