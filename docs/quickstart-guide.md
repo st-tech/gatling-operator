@@ -138,4 +138,4 @@ Simulation MyBasicSimulation completed in 14 seconds
 
 In this example, the notification of Gatling result reports and the storage of the result reports in the cloud provider are not performed.
 
-This can be done by setting the .spec.cloudStorageSpec and .spec.notificationServiceSpec.
+You can generate the Gatling HTML report by enabling `.spec.generateReport` flag and setting the `.spec.cloudStorageSpec`. Also you can posting the notification message by enabling `.spec. notifyReport ` and setting `.spec.notificationServiceSpec`. For more information about configuring Gatling CR, please refer to [User Guide](./user-guide.md)
