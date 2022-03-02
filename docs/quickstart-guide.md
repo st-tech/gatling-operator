@@ -62,7 +62,7 @@ After deploying the Gatling CR, the Gatling CR, Gatling Runner Job, and Gatling 
 $ kubectl get gatling,job,pod
 ```
 
-The output is similar to:
+Expected output would be like this:
 
 ```
 NAME                                                      AGE
