@@ -9,7 +9,7 @@ The quick start guide helps to quickly deploy Gatling Operator and start a simpl
 
 ## Create a Cluster
 Create a cluster using kind.
-It is recommended to use 1.18 or higher for clusters created with kind. The Image version of Node used in kind can be found in the [release notes](https://github.com/kubernetes-sigs/kind/releases).
+1.18 or higher version is recommended for the Kubernetes cluster. Node Images for kind can be found in the [release notes](https://github.com/kubernetes-sigs/kind/releases).
 
 ```bash
 kind create cluster
