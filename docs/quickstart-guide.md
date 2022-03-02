@@ -83,7 +83,7 @@ You can also see from the Pod logs that Gatling is running.
 kubectl logs gatling-sample01-runner-tkplh -c gatling-runner -f
 ```
 
-The output is similar to:
+Expected output would be like this:
 
 ```bash
 Wait until 2022-02-25 06:07:25
