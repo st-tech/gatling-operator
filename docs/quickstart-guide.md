@@ -55,7 +55,7 @@ gatling.gatling-operator.tech.zozo.com/gatling-sample01 created
 ```
 
 
-After deploying the Gatling CR, the Gatling CR, Gatling Runner Job, and Gatling Runner Pod will be generated and the Gatling test scenario will be executed.
+After deploying the Gatling CR, Gatling Controller creates a Gatling Runner job. The job then runs the Gatling Runner pods to execute Gatling load test scenario in parallel.
 
 ```
 $ kubectl get gatling,job,pod
