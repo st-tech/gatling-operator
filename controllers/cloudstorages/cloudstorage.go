@@ -13,11 +13,8 @@ type CloudStorageProvider interface {
 	GetGatlingTransferReportCommand(resultsDirectoryPath string, region string, storagePath string) string
 }
 
-var (
-	cloudStorageProviders = map[string]*CloudStorageProvider{}
-	// use sync.Map to achieve thread safe read and write to map
-	cloudStorageProvidersSyncMap = &sync.Map{}
-)
+// use sync.Map to achieve thread safe read and write to map
+var cloudStorageProvidersSyncMap = &sync.Map{}
 
 func GetProvider(provider string) *CloudStorageProvider {
 	v, ok := cloudStorageProvidersSyncMap.Load(provider)

@@ -9,11 +9,8 @@ type NotificationServiceProvider interface {
 	Notify(gatlingName string, reportURL string, secretData map[string][]byte) error
 }
 
-var (
-	notificationServiceProviders = map[string]*NotificationServiceProvider{}
-	// use sync.Map to achieve thread safe read and write to map
-	notificationServiceProvidersSyncMap = &sync.Map{}
-)
+// use sync.Map to achieve thread safe read and write to map
+var notificationServiceProvidersSyncMap = &sync.Map{}
 
 func GetProvider(provider string) *NotificationServiceProvider {
 	v, ok := notificationServiceProvidersSyncMap.Load(provider)
