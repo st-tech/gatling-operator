@@ -118,7 +118,7 @@ rclone copy --s3-no-check-bucket --s3-env-auth testStoragePath ${GATLING_AGGREGA
 `
 	})
 	Context("Provider is aws", func() {
-		It("provider is aws", func() {
+		It("returns commands with s3 rclone config", func() {
 			csp := &AWSCloudStorageProvider{providerName: provider}
 			Expect(csp.GetGatlingAggregateResultCommand(resultsDirectoryPath, region, storagePath)).To(Equal(expectedValue))
 		})
@@ -145,7 +145,7 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3
 `
 	})
 	Context("Provider is aws", func() {
-		It("provider is aws", func() {
+		It("returns commands with s3 rclone config", func() {
 			csp := &AWSCloudStorageProvider{providerName: provider}
 			Expect(csp.GetGatlingTransferReportCommand(resultsDirectoryPath, region, storagePath)).To(Equal(expectedValue))
 		})

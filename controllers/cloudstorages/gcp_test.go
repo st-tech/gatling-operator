@@ -93,7 +93,7 @@ done
 `
 	})
 	Context("Provider is gcp", func() {
-		It("provider is gcp", func() {
+		It("returns commands with gcs rclone config", func() {
 			csp := &GCPCloudStorageProvider{providerName: provider}
 			Expect(csp.GetGatlingTransferResultCommand(resultsDirectoryPath, region, storagePath)).To(Equal(expectedValue))
 		})
@@ -121,7 +121,7 @@ rclone copy testStoragePath ${GATLING_AGGREGATE_DIR}
 `
 	})
 	Context("Provider is gcp", func() {
-		It("provider is gcp", func() {
+		It("returns commands with gcs rclone config", func() {
 			gcp := &GCPCloudStorageProvider{providerName: provider}
 			Expect(gcp.GetGatlingAggregateResultCommand(resultsDirectoryPath, region, storagePath)).To(Equal(expectedValue))
 		})
@@ -149,7 +149,7 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" testStoragePath
 `
 	})
 	Context("Provider is gcp", func() {
-		It("provider is gcp", func() {
+		It("returns commands with gcs rclone config", func() {
 			gcp := &GCPCloudStorageProvider{providerName: provider}
 			Expect(gcp.GetGatlingTransferReportCommand(resultsDirectoryPath, region, storagePath)).To(Equal(expectedValue))
 		})
