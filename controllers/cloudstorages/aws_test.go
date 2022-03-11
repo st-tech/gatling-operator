@@ -91,7 +91,7 @@ done
 `
 	})
 	Context("Provider is aws", func() {
-		It("provider is aws", func() {
+		It("returns commands with s3 rclone config", func() {
 			csp := &AWSCloudStorageProvider{providerName: provider}
 			Expect(csp.GetGatlingTransferResultCommand(resultsDirectoryPath, region, storagePath)).To(Equal(expectedValue))
 		})
