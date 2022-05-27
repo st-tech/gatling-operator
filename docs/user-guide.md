@@ -8,6 +8,9 @@
 		- [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files)
 		- [Add Gatling Load Testing Files in Gatling CR](#add-gatling-load-testing-files-in-gatling-cr)
 		- [Debug and Trace Gatling Load Testing](#debug-and-trace-gatling-load-testing)
+		- [How to Pull Gatling Runtime Image from Private Registry](#how-to-pull-gatling-runtime-image-from-private-registry)
+			- [Create an "image pull secret"](#create-an-image-pull-secret)
+			- [Add ImagePullSecrets to your service account](#add-imagepullsecrets-to-your-service-account)
 	- [Gatling Custom Resource Examples](#gatling-custom-resource-examples)
 		- [Choose Execution Phases](#choose-execution-phases)
 		- [Configure Gatling Runner Pod](#configure-gatling-runner-pod)
@@ -234,6 +237,56 @@ You add the following tag in order to log all HTTP requests and responses.
 To know more on logback configuration in Gatling, please check [the Gatling official guide](https://gatling.io/docs/gatling/guides/debugging/).
 
 Once you finish updating `logback.xml`, you rebuild the Gatling image and push it to your registry, so you can use the image in your Gatling load testing.
+
+
+### How to Pull Gatling Runtime Image from Private Registry
+
+Currently Adding `imagePullSecret` definition to Gatling CR isn't supported. But there is a workaround to pull the image from private registry. 
+
+Here is a procedure:
+
+#### Create an "image pull secret"
+
+First of all, create an "image pull secret" in the namespace to which you deploy your Gatling CR. Suppose you want to deploy the gatling CR named `gatling-sample01'` on `default` namespace, create an "image pull secret" like this:
+
+```bash
+PASS=xxxxxx
+NAMESPACE=default
+kubectl create secret docker-registry mysecret --docker-server=<registry server name> --docker-username=<registry-accout-name> --docker-password=$PASS --docker-email=your@mail.com -n $NAMESPACE
+```
+
+As a result, the image pull secret named `mysecret` will be created on `default` namespace
+
+#### Add ImagePullSecrets to your service account
+
+Secondly, add imagePullSecrets to your service account. Suppose you define the service account named `gatling-operator-worker` in your Gatling CR, modify the `gatling-operator-worker` service account for the namespace to use the secret as an imagePullSecret like this:
+
+```bash
+NAMESPACE=default
+kubectl patch serviceaccount gatling-operator-worker -p "{\"imagePullSecrets\": [{\"name\": \"mysecret\"}]}" -n $NAMESPACE
+```
+
+Now you're ready to deploy your galting CR where private image is defined.
+
+```yaml
+apiVersion: gatling-operator.tech.zozo.com/v1alpha1
+kind: Gatling
+metadata:
+  name: gatling-sample01
+spec:
+  generateReport: false
+  generateLocalReport: false
+  notifyReport: false
+  cleanupAfterJobDone: true
+  podSpec:
+    serviceAccountName: "gatling-operator-worker"
+    gatlingImage: myPriveteRepo.io/foo:latest
+```
+
+Here are the relevant pages:
+- https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ 
+- https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account
+
 ## Gatling Custom Resource Examples
 
 You can configure the various features and parameters of the distributed Gatling load testing using Gatling CR.
