@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
@@ -989,7 +990,7 @@ func (r *GatlingReconciler) getGenerateLocalReport(gatling *gatlingv1alpha1.Gatl
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *GatlingReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *GatlingReconciler) SetupWithManager(mgr ctrl.Manager, options controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&gatlingv1alpha1.Gatling{}).
 		WithEventFilter(predicate.Funcs{
@@ -999,5 +1000,6 @@ func (r *GatlingReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				return false
 			},
 		}).
+		WithOptions(options).
 		Complete(r)
 }

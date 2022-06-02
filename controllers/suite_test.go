@@ -31,6 +31,7 @@ import (
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -115,12 +116,12 @@ func SetupTest(ctx context.Context) *corev1.Namespace {
 		mgr, err := ctrl.NewManager(cfg, ctrl.Options{})
 		Expect(err).NotTo(HaveOccurred(), "failed to create manager")
 
-		controller := &GatlingReconciler{
+		controllers := &GatlingReconciler{
 			Client: mgr.GetClient(),
 			Scheme: mgr.GetScheme(),
 		}
 
-		err = controller.SetupWithManager(mgr)
+		err = controllers.SetupWithManager(mgr, controller.Options{MaxConcurrentReconciles: 1})
 		Expect(err).NotTo(HaveOccurred(), "failed to setup controller")
 
 		ctx, cancel := context.WithCancel(ctx)

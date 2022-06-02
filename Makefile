@@ -10,7 +10,7 @@ VERSION := latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 KIND_CLUSTER_NAME ?= "gatling-cluster"
-K8S_NODE_IMAGE ?= v1.19.11
+K8S_NODE_IMAGE ?= v1.21.10
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
