@@ -40,7 +40,7 @@ Gatling Runner Pod runs multiple containers. The diagram below shows how those c
 - gatling-runner
   - Executes Gatling load testing scenario
   - Stores its generated report file (`simulation.log`) to an emptyDir volume
-- gatling-result-transferer
+- gatling-result-transfer
   - Uploads the simulation.log file to to user-selected Cloud Storage (can be configured in `.spec.cloudStorageSpec`)
 
-📝 It is noted that gatling-wainter and gatling-runner run as init containers and gatling-result-transfer as a main container in Gatling Runner Pod in the case of generating an aggregated Gatling result report. However it's also noted that gatling-waitner runs as an init container and gatling-runner run as a main container in the case of not generating the report.
+📝 It is noted that gatling-waiter and gatling-runner run as init containers and gatling-result-transfer as a main container in Gatling Runner Pod in the case of generating an aggregated Gatling result report. However it's also noted that gatling-waitner runs as an init container and gatling-runner run as a main container in the case of not generating the report.
