@@ -115,7 +115,7 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `startTime` _string_ | (Optional) Test Start time. |
-| `parallelism` _integer_ | (Optional) Number of pods running at the same time. Defaults to `1` (Mininum `1`) |
+| `parallelism` _integer_ | (Optional) Number of pods running at the same time. Defaults to `1` (Minimum `1`) |
 | `simulationsDirectoryPath` _string_ | (Optional) Gatling Resources directory path where simulation files are stored. Defaults to `/opt/gatling/user-files/simulations` |
 | `resourcesDirectoryPath` _string_ | (Optional) Gatling Simulation directory path where resources are stored. Defaults to `/opt/gatling/user-files/resources` |
 | `resultsDirectoryPath` _string_ | (Optional) Gatling Results directory path where results are stored. Defaults to `/opt/gatling/results` |

@@ -383,7 +383,7 @@ You also can set container images for Gatling load testing and rclone respective
 
 #### Service Account for Gatling Runner Pod
 
-You must set service account for the Pod in `.spec.serviceAccountName` and configure its permission as it's neccessary for the Gatling runner Pod (actually `gatling-waiter` container in the Pod) to adjust the timing of load testing start.
+You must set service account for the Pod in `.spec.serviceAccountName` and configure its permission as it's necessary for the Gatling runner Pod (actually `gatling-waiter` container in the Pod) to adjust the timing of load testing start.
 
 Suppose you want to set a service account named `gatling-operator-worker` in `.spec.serviceAccountName` like the example above and deploy the Gatling CR into the default namespace (`default`), you must apply the following permissions into the same namespace (`default`).
 
@@ -494,7 +494,7 @@ There are multiple authentication methods that can be tried.
       - name: AWS_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
-            name: aws-credentail-secrets
+            name: aws-credential-secrets
             key: AWS_SECRET_ACCESS_KEY
 ```
 
@@ -540,7 +540,7 @@ In `.spec.notificationServiceSpec` you can configure Notification Service Provid
 
 #### Set Slack as Notification Service
 
-Suppose that you want to notify Gatling load testing result via Slack and you store credentail info (Slack webhook URL) in Kubernetes Secret named `gatling-notification-slack-secrets`, you configure each fields in `.spec.notificationServiceSpec` like this:
+Suppose that you want to notify Gatling load testing result via Slack and you store credential info (Slack webhook URL) in Kubernetes Secret named `gatling-notification-slack-secrets`, you configure each fields in `.spec.notificationServiceSpec` like this:
 
 ```yaml
 apiVersion: gatling-operator.tech.zozo.com/v1alpha1
