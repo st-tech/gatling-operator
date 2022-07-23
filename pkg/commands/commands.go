@@ -1,12 +1,12 @@
-package controllers
+package commands
 
 import (
 	"fmt"
 
-	cloudstorages "github.com/st-tech/gatling-operator/controllers/cloudstorages"
+	cloudstorages "github.com/st-tech/gatling-operator/pkg/cloudstorages"
 )
 
-func getGatlingWaiterCommand(parallelism *int32, gatlingNamespace string, gatlingName string) string {
+func GetGatlingWaiterCommand(parallelism *int32, gatlingNamespace string, gatlingName string) string {
 	template := `
 PARALLELISM=%d
 NAMESPACE=%s
@@ -31,7 +31,7 @@ done
 	)
 }
 
-func getGatlingRunnerCommand(
+func GetGatlingRunnerCommand(
 	simulationsDirectoryPath string, tempSimulationsDirectoryPath string, resourcesDirectoryPath string,
 	resultsDirectoryPath string, startTime string, simulationClass string, generateLocalReport bool) string {
 
@@ -82,7 +82,7 @@ gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RE
 		generateLocalReportOption)
 }
 
-func getGatlingTransferResultCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {
+func GetGatlingTransferResultCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {
 	var command string
 	cspp := cloudstorages.GetProvider(provider)
 	if cspp != nil {
@@ -91,7 +91,7 @@ func getGatlingTransferResultCommand(resultsDirectoryPath string, provider strin
 	return command
 }
 
-func getGatlingAggregateResultCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {
+func GetGatlingAggregateResultCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {
 	var command string
 	cspp := cloudstorages.GetProvider(provider)
 	if cspp != nil {
@@ -100,7 +100,7 @@ func getGatlingAggregateResultCommand(resultsDirectoryPath string, provider stri
 	return command
 }
 
-func getGatlingGenerateReportCommand(resultsDirectoryPath string) string {
+func GetGatlingGenerateReportCommand(resultsDirectoryPath string) string {
 	template := `
 GATLING_AGGREGATE_DIR=%s
 DIR_NAME=$(dirname ${GATLING_AGGREGATE_DIR})
@@ -110,7 +110,7 @@ gatling.sh -rf ${DIR_NAME} -ro ${BASE_NAME}
 	return fmt.Sprintf(template, resultsDirectoryPath)
 }
 
-func getGatlingTransferReportCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {
+func GetGatlingTransferReportCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {
 	var command string
 	cspp := cloudstorages.GetProvider(provider)
 	if cspp != nil {

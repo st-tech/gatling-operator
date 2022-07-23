@@ -1,11 +1,11 @@
-package controllers
+package commands
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("getGatlingWaiterCommand", func() {
+var _ = Describe("GetGatlingWaiterCommand", func() {
 	It("getExceptValue", func() {
 		expectedValue := `
 PARALLELISM=1
@@ -25,11 +25,11 @@ while true; do
 done
 `
 		var parallelism int32 = 1
-		Expect(getGatlingWaiterCommand(&parallelism, "gatling-system", "gatling-test")).To(Equal(expectedValue))
+		Expect(GetGatlingWaiterCommand(&parallelism, "gatling-system", "gatling-test")).To(Equal(expectedValue))
 	})
 })
 
-var _ = Describe("getGatlingRunnerCommand", func() {
+var _ = Describe("GetGatlingRunnerCommand", func() {
 	var (
 		simulationsDirectoryPath     string
 		tempSimulationsDirectoryPath string
@@ -50,7 +50,7 @@ var _ = Describe("getGatlingRunnerCommand", func() {
 		simulationClass = "testSimulationClass"
 	})
 
-	It("getCommandsWithLocalReport", func() {
+	It("GetCommandsWithLocalReport", func() {
 		generateLocalReport = true
 		expectedValue = `
 SIMULATIONS_DIR_PATH=testSimulationDirectoryPath
@@ -84,10 +84,10 @@ if [ ! -d ${RESULTS_DIR_PATH} ]; then
 fi
 gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s testSimulationClass -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} 
 `
-		Expect(getGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
+		Expect(GetGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
 	})
 
-	It("getCommandWithoutLocalReport", func() {
+	It("GetCommandWithoutLocalReport", func() {
 		generateLocalReport = false
 		expectedValue = `
 SIMULATIONS_DIR_PATH=testSimulationDirectoryPath
@@ -121,11 +121,11 @@ if [ ! -d ${RESULTS_DIR_PATH} ]; then
 fi
 gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s testSimulationClass -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} -nr
 `
-		Expect(getGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
+		Expect(GetGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
 	})
 })
 
-var _ = Describe("getGatlingTransferResultCommand", func() {
+var _ = Describe("GetGatlingTransferResultCommand", func() {
 	var (
 		resultsDirectoryPath string
 		provider             string
@@ -153,7 +153,7 @@ done
 `
 		})
 		It("provider is aws", func() {
-			Expect(getGatlingTransferResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingTransferResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 
@@ -172,7 +172,7 @@ done
 `
 		})
 		It("Provider is gcp", func() {
-			Expect(getGatlingTransferResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingTransferResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 
@@ -182,7 +182,7 @@ done
 			expectedValue = ""
 		})
 		It("Provide is non-supported one", func() {
-			Expect(getGatlingTransferResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingTransferResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 
@@ -192,12 +192,12 @@ done
 			expectedValue = ""
 		})
 		It("Provider is empty", func() {
-			Expect(getGatlingTransferResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingTransferResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 })
 
-var _ = Describe("getGatlingAggregateResultCommand", func() {
+var _ = Describe("GetGatlingAggregateResultCommand", func() {
 	var (
 		resultsDirectoryPath string
 		provider             string
@@ -222,7 +222,7 @@ rclone copy --s3-no-check-bucket --s3-env-auth testStoragePath ${GATLING_AGGREGA
 `
 		})
 		It("provider is aws", func() {
-			Expect(getGatlingAggregateResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingAggregateResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 
@@ -237,7 +237,7 @@ rclone copy testStoragePath ${GATLING_AGGREGATE_DIR}
 `
 		})
 		It("Provider is gcp", func() {
-			Expect(getGatlingAggregateResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingAggregateResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 
@@ -247,7 +247,7 @@ rclone copy testStoragePath ${GATLING_AGGREGATE_DIR}
 			expectedValue = ""
 		})
 		It("Provide is non-supported one", func() {
-			Expect(getGatlingAggregateResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingAggregateResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 
@@ -257,12 +257,12 @@ rclone copy testStoragePath ${GATLING_AGGREGATE_DIR}
 			expectedValue = ""
 		})
 		It("Provider is empty", func() {
-			Expect(getGatlingAggregateResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingAggregateResultCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 })
 
-var _ = Describe("getGatlingGenerateReportCommand", func() {
+var _ = Describe("GetGatlingGenerateReportCommand", func() {
 	var (
 		resultsDirectoryPath string
 		expectedValue        string
@@ -279,11 +279,11 @@ gatling.sh -rf ${DIR_NAME} -ro ${BASE_NAME}
 	})
 
 	It("getExceptValue", func() {
-		Expect(getGatlingGenerateReportCommand(resultsDirectoryPath)).To(Equal(expectedValue))
+		Expect(GetGatlingGenerateReportCommand(resultsDirectoryPath)).To(Equal(expectedValue))
 	})
 })
 
-var _ = Describe("getGatlingTransferReportCommand", func() {
+var _ = Describe("GetGatlingTransferReportCommand", func() {
 	var (
 		resultsDirectoryPath string
 		provider             string
@@ -308,7 +308,7 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3
 `
 		})
 		It("provider is aws", func() {
-			Expect(getGatlingTransferReportCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingTransferReportCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 
@@ -323,7 +323,7 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" testStoragePath
 `
 		})
 		It("Provider is gcp", func() {
-			Expect(getGatlingTransferReportCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingTransferReportCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 
@@ -333,7 +333,7 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" testStoragePath
 			expectedValue = ""
 		})
 		It("Provide is non-supported one", func() {
-			Expect(getGatlingTransferReportCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingTransferReportCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 
@@ -343,7 +343,7 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" testStoragePath
 			expectedValue = ""
 		})
 		It("Provider is empty", func() {
-			Expect(getGatlingTransferReportCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
+			Expect(GetGatlingTransferReportCommand(resultsDirectoryPath, provider, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
 })
