@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	utils "github.com/st-tech/gatling-operator/controllers/utils"
+	utils "github.com/st-tech/gatling-operator/pkg/utils"
 )
 
 type SlackNotificationServiceProvider struct {

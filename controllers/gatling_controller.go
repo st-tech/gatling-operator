@@ -34,9 +34,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	gatlingv1alpha1 "github.com/st-tech/gatling-operator/api/v1alpha1"
-	cloudstorages "github.com/st-tech/gatling-operator/controllers/cloudstorages"
-	notificationservices "github.com/st-tech/gatling-operator/controllers/notificationservices"
-	utils "github.com/st-tech/gatling-operator/controllers/utils"
+	cloudstorages "github.com/st-tech/gatling-operator/pkg/cloudstorages"
+	commands "github.com/st-tech/gatling-operator/pkg/commands"
+	notificationservices "github.com/st-tech/gatling-operator/pkg/notificationservices"
+	utils "github.com/st-tech/gatling-operator/pkg/utils"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -422,13 +423,13 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 		"app": gatling.Name,
 	}
 
-	gatlingWaiterCommand := getGatlingWaiterCommand(
+	gatlingWaiterCommand := commands.GetGatlingWaiterCommand(
 		r.getGatlingRunnerJobParallelism(gatling),
 		gatling.Namespace,
 		gatling.Name,
 	)
 
-	gatlingRunnerCommand := getGatlingRunnerCommand(
+	gatlingRunnerCommand := commands.GetGatlingRunnerCommand(
 		r.getSimulationsDirectoryPath(gatling),
 		r.getTempSimulationsDirectoryPath(gatling),
 		r.getResourcesDirectoryPath(gatling),
@@ -443,7 +444,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 		envVars = gatling.Spec.TestScenarioSpec.Env
 	}
 	if gatling.Spec.GenerateReport {
-		gatlingTransferResultCommand := getGatlingTransferResultCommand(
+		gatlingTransferResultCommand := commands.GetGatlingTransferResultCommand(
 			r.getResultsDirectoryPath(gatling),
 			r.getCloudStorageProvider(gatling),
 			r.getCloudStorageRegion(gatling),
@@ -566,17 +567,17 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 	labels := map[string]string{
 		"app": gatling.Name,
 	}
-	gatlingAggregateResultCommand := getGatlingAggregateResultCommand(
+	gatlingAggregateResultCommand := commands.GetGatlingAggregateResultCommand(
 		r.getResultsDirectoryPath(gatling),
 		r.getCloudStorageProvider(gatling),
 		r.getCloudStorageRegion(gatling),
 		storagePath)
 	log.Info("gatlingAggregateResultCommand", "command", gatlingAggregateResultCommand)
 
-	gatlingGenerateReportCommand := getGatlingGenerateReportCommand(r.getResultsDirectoryPath(gatling))
+	gatlingGenerateReportCommand := commands.GetGatlingGenerateReportCommand(r.getResultsDirectoryPath(gatling))
 	log.Info("gatlingGenerateReportCommand", "command", gatlingGenerateReportCommand)
 
-	gatlingTransferReportCommand := getGatlingTransferReportCommand(
+	gatlingTransferReportCommand := commands.GetGatlingTransferReportCommand(
 		r.getResultsDirectoryPath(gatling),
 		r.getCloudStorageProvider(gatling),
 		r.getCloudStorageRegion(gatling),
