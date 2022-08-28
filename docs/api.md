@@ -24,7 +24,7 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `provider` _string_ | (Required) Provider specifies the cloud provider that will be used. Supported providers: `aws`, `gcp` |
+| `provider` _string_ | (Required) Provider specifies the cloud provider that will be used. Supported providers: `aws`, `gcp`, and `azure` |
 | `bucket` _string_ | (Required) Storage Bucket Name. |
 | `region` _string_ | (Optional) Region Name. |
 | `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core) array_ | (Optional) Environment variables used for connecting to the cloud providers. |
@@ -115,7 +115,7 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `startTime` _string_ | (Optional) Test Start time. |
-| `parallelism` _integer_ | (Optional) Number of pods running at the same time. Defaults to `1` (Minimum `1`) |
+| `parallelism` _integer_ | (Optional) Number of pods running at the same time. Defaults to `1` (Mininum `1`) |
 | `simulationsDirectoryPath` _string_ | (Optional) Gatling Resources directory path where simulation files are stored. Defaults to `/opt/gatling/user-files/simulations` |
 | `resourcesDirectoryPath` _string_ | (Optional) Gatling Simulation directory path where resources are stored. Defaults to `/opt/gatling/user-files/resources` |
 | `resultsDirectoryPath` _string_ | (Optional) Gatling Results directory path where results are stored. Defaults to `/opt/gatling/results` |
@@ -123,6 +123,6 @@ _Appears in:_
 | `simulationData` _object (keys:string, values:string)_ | (Optional) Simulation Data. |
 | `resourceData` _object (keys:string, values:string)_ | (Optional) Resource Data. |
 | `gatlingConf` _object (keys:string, values:string)_ | (Optional) Gatling Configurations. |
-| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core)_ | (Optional) Environment variables used for running load testing scenario. |
+| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core) array_ | (Optional) Environment variables used for running load testing scenario. |
 
 
