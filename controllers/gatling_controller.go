@@ -439,10 +439,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 		r.getGenerateLocalReport(gatling))
 	log.Info("gatlingRunnerCommand:", "comand", gatlingRunnerCommand)
 
-	envVars := []corev1.EnvVar{}
-	if &gatling.Spec.TestScenarioSpec != nil && &gatling.Spec.TestScenarioSpec.Env != nil {
-		envVars = gatling.Spec.TestScenarioSpec.Env
-	}
+	envVars := gatling.Spec.TestScenarioSpec.Env
 	if gatling.Spec.GenerateReport {
 		gatlingTransferResultCommand := commands.GetGatlingTransferResultCommand(
 			r.getResultsDirectoryPath(gatling),
@@ -450,10 +447,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			r.getCloudStorageRegion(gatling),
 			storagePath)
 		log.Info("gatlingTransferResultCommand:", "command", gatlingTransferResultCommand)
-		cloudStorageEnvVars := []corev1.EnvVar{}
-		if &gatling.Spec.CloudStorageSpec != nil && &gatling.Spec.CloudStorageSpec.Env != nil {
-			cloudStorageEnvVars = gatling.Spec.CloudStorageSpec.Env
-		}
+		cloudStorageEnvVars := gatling.Spec.CloudStorageSpec.Env
 		return &batchv1.Job{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      gatling.Name + "-runner",
@@ -584,10 +578,7 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 		storagePath)
 	log.Info("gatlingTransferReportCommand", "command", gatlingTransferReportCommand)
 
-	cloudStorageEnvVars := []corev1.EnvVar{}
-	if &gatling.Spec.CloudStorageSpec != nil && &gatling.Spec.CloudStorageSpec.Env != nil {
-		cloudStorageEnvVars = gatling.Spec.CloudStorageSpec.Env
-	}
+	cloudStorageEnvVars := gatling.Spec.CloudStorageSpec.Env
 	//Non parallel job
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -746,7 +737,7 @@ func (r *GatlingReconciler) getCloudStorageInfo(ctx context.Context, gatling *ga
 		// Assign new Gatling Cloud Storage Path and report URL,
 		// and save them on Gatling Status fields
 		subDir := fmt.Sprint(utils.Hash(fmt.Sprintf("%s%d", gatling.Name, rand.Intn(math.MaxInt32))))
-		cspp := cloudstorages.GetProvider(r.getCloudStorageProvider(gatling))
+		cspp := cloudstorages.GetProvider(r.getCloudStorageProvider(gatling), gatling.Spec.CloudStorageSpec.Env)
 		if cspp != nil {
 			storagePath = (*cspp).GetCloudStoragePath(r.getCloudStorageBucket(gatling), gatling.Name, subDir)
 			reportURL = (*cspp).GetCloudStorageReportURL(r.getCloudStorageBucket(gatling), gatling.Name, subDir)

@@ -1,10 +1,14 @@
 package cloudstorages
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type GCPCloudStorageProvider struct {
 	providerName string
 }
+
+func (p *GCPCloudStorageProvider) init(args []EnvVars) { /* do nothinig */ }
 
 func (p *GCPCloudStorageProvider) GetName() string {
 	return p.providerName
