@@ -54,7 +54,7 @@ spec:
     #provider: "azure"
     #bucket: "gatling-operator-reports"                   # Azure Blob Storage container name on which Gatlilng report files are stored
     #env:                                                 # Optional. Environment variables to be used for connecting to the cloud providers
-    #  - name: AZUREBLOB_ACCOUNT                          # Azure Blob Storage Account Name. Leave blank to use SAS URL
+    #  - name: AZUREBLOB_ACCOUNT                          # Azure Blob Storage Account Name
     #    value: xxxxxxxxxxxxxxx
     #  - name: AZUREBLOB_KEY                              # Azure Blob Access Key. Leave blank to use SAS URL
     #    valueFrom:
