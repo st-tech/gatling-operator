@@ -141,7 +141,7 @@ type TestScenarioSpec struct {
 // CloudStorageSpec defines Cloud Storage Provider specification.
 type CloudStorageSpec struct {
 	// (Required) Provider specifies the cloud provider that will be used.
-	// Supported providers: `aws`, `gcp`
+	// Supported providers: `aws`, `gcp`, and `azure`
 	// +kubebuilder:validation:Required
 	Provider string `json:"provider"`
 
