@@ -3,10 +3,12 @@ kind: Gatling
 metadata:
   name: gatling-sample01
 spec:
-  generateReport: false                                   # The flag of generating gatling report
+  generateReport: true                                   # The flag of generating gatling report
+  #generateReport: false                                   # The flag of generating gatling report
   generateLocalReport: false                              # The flag of generating gatling report for each pod
   notifyReport: false                                     # The flag of notifying gatling report
-  cleanupAfterJobDone: true                               #  The flag of cleaning up gatling jobs resources after the job done
+  cleanupAfterJobDone: false                               #  The flag of cleaning up gatling jobs resources after the job done
+  #cleanupAfterJobDone: true                               #  The flag of cleaning up gatling jobs resources after the job done
   podSpec:
     serviceAccountName: "gatling-operator-worker"
     gatlingImage: ghcr.io/st-tech/gatling:latest          # Optional. Default: ghcr.io/st-tech/gatling:latest. The image that will be used for Gatling container.
@@ -30,10 +32,13 @@ spec:
         value: "non-kube-system"
         effect: "NoSchedule"
   cloudStorageSpec:
-    provider: "aws"                                       # Provider specifies the cloud provider that will be used. Supported providers: "aws", "gcp"
-    bucket: "gatling-operator-reports"                    # Bucket name in cloud storage service, on which Gatlilng report files are stored
+    #############################################################
+    #         Storage Provider - aws (AMAZON S3) 
+    #############################################################
+    provider: "aws"                                       # Provider specifies the cloud provider that will be used. Supported providers: "aws", "gcp", "azure"
+    bucket: "gatling-operator-reports"                    # S3 Bucket name on which Gatlilng report files are stored
     region: "ap-northeast-1"                              # Optional. Default: "ap-northeast-1" for aws provider. Region name
-    #env:                                                 # Optional. Environment variables to be used for connecting to the cloud providers
+    #env:                                                  # Optional. Environment variables to be used for connecting to the cloud providers
     #  # For S3 see also the env variables for auth: https://rclone.org/s3/#authentication
     #  - name: AWS_ACCESS_KEY_ID
     #    value: xxxxxxxxxxxxxxx
@@ -42,12 +47,39 @@ spec:
     #      secretKeyRef:
     #        name: aws-credentail-secrets
     #        key: AWS_SECRET_ACCESS_KEY
+    #
+    #############################################################
+    #        Storage Provider - gcp (Google Cloud Storage)
+    #############################################################
+    # provider: "gcp"
+    # bucket: "gatling-operator-reports"                  # GCS bucket name on which Gatlilng report files are stored
+    # bucket: "zozo-mlops-dev-gatling-operator-reports"   # レポート用のGCSバケット zozo-mlops-dev(stg)-gatling-operator-reports を定義しているのでそちらを指定してください
+    #
+    #############################################################
+    # .      Storage Provider - azure (Azure Blob Storage) ########
+    #############################################################
+    #provider: "azure"
+    #bucket: "gatling-operator-reports"                   # Azure Blob Storage container name on which Gatlilng report files are stored
+    #env:                                                 # Optional. Environment variables to be used for connecting to the cloud providers
+    #  - name: AZUREBLOB_ACCOUNT                          # Azure Blob Storage Account Name
+    #    value: xxxxxxxxxxxxxxx
+    #  - name: AZUREBLOB_KEY                              # Azure Blob Access Key. Leave blank to use SAS URL
+    #    valueFrom:
+    #      secretKeyRef:
+    #        name: azure-credentail-secrets
+    #        key: AZUREBLOBSS_KEY
+    #  - name: AZUREBLOB_SAS_URL                          # SAS URL. "Read, Write, List" permissions are required
+    #    valueFrom:
+    #      secretKeyRef:
+    #        name: azure-credentail-secrets
+    #        key: AZUREBLOB_SAS_URL
   notificationServiceSpec:
     provider: "slack"                                     # Notification provider name. Supported provider: "slack"
     secretName: "gatling-notification-slack-secrets"      # The name of secret in which all key/value sets needed for the notification are stored
   testScenarioSpec:
     # startTime: 2021-09-10 08:45:31                      # Optional. Start time of running test scenario in UTC. Format: %Y-%m-%d %H:%M:%S
-    parallelism: 3                                        # Optional. Default: 1. Number of pods running at any instant
+    parallelism: 1                                        # Optional. Default: 1. Number of pods running at any instant
+    #parallelism: 3                                        # Optional. Default: 1. Number of pods running at any instant
     # simulationsDirectoryPath: "/dir-path-to-simulation" # Optional. Default: /opt/gatling/user-files/simulations
     # resourcesDirectoryPath: "dir-path-to-resources"     # Optional. Default: /opt/gatling/user-files/resources
     # resultsDirectoryPath: "dir-path-to-results"         # Optional. Default: /opt/gatling/results.
