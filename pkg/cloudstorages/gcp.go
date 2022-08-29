@@ -8,7 +8,7 @@ type GCPCloudStorageProvider struct {
 	providerName string
 }
 
-func (p *GCPCloudStorageProvider) init(args []EnvVars) { /* do nothinig */ }
+func (p *GCPCloudStorageProvider) init(args []EnvVars) { /* do nothing */ }
 
 func (p *GCPCloudStorageProvider) GetName() string {
 	return p.providerName
