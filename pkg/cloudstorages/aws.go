@@ -8,7 +8,7 @@ type AWSCloudStorageProvider struct {
 	providerName string
 }
 
-func (p *AWSCloudStorageProvider) init(args []EnvVars) { /* do nothinig */ }
+func (p *AWSCloudStorageProvider) init(args []EnvVars) { /* do nothing */ }
 
 func (p *AWSCloudStorageProvider) GetName() string {
 	return p.providerName
