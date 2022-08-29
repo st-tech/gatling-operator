@@ -160,7 +160,7 @@ spec:
                     type: array
                   provider:
                     description: '(Required) Provider specifies the cloud provider
-                      that will be used. Supported providers: `aws`, `gcp`'
+                      that will be used. Supported providers: `aws`, `gcp`, and `azure`'
                     type: string
                   region:
                     description: (Optional) Region Name.
@@ -1263,7 +1263,7 @@ spec:
                   parallelism:
                     default: 1
                     description: (Optional) Number of pods running at the same time.
-                      Defaults to `1` (Mininum `1`)
+                      Defaults to `1` (Minimum `1`)
                     format: int32
                     minimum: 1
                     type: integer

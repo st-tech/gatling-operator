@@ -99,7 +99,7 @@ type TestScenarioSpec struct {
 	// +kubebuilder:validation:Optional
 	StartTime string `json:"startTime,omitempty"`
 
-	// (Optional) Number of pods running at the same time. Defaults to `1` (Mininum `1`)
+	// (Optional) Number of pods running at the same time. Defaults to `1` (Minimum `1`)
 	// +kubebuilder:default=1
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Optional
