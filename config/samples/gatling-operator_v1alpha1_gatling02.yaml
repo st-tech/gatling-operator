@@ -46,10 +46,9 @@ spec:
     #############################################################
     # provider: "gcp"
     # bucket: "gatling-operator-reports"                  # GCS bucket name on which Gatlilng report files are stored
-    # bucket: "zozo-mlops-dev-gatling-operator-reports"   # レポート用のGCSバケット zozo-mlops-dev(stg)-gatling-operator-reports を定義しているのでそちらを指定してください
     #
     #############################################################
-    # .      Storage Provider - azure (Azure Blob Storage) ########
+    #        Storage Provider - azure (Azure Blob Storage)
     #############################################################
     #provider: "azure"
     #bucket: "gatling-operator-reports"                   # Azure Blob Storage container name on which Gatlilng report files are stored

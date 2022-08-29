@@ -3,12 +3,10 @@ kind: Gatling
 metadata:
   name: gatling-sample01
 spec:
-  generateReport: true                                   # The flag of generating gatling report
-  #generateReport: false                                   # The flag of generating gatling report
+  generateReport: false                                   # The flag of generating gatling report
   generateLocalReport: false                              # The flag of generating gatling report for each pod
   notifyReport: false                                     # The flag of notifying gatling report
-  cleanupAfterJobDone: false                               #  The flag of cleaning up gatling jobs resources after the job done
-  #cleanupAfterJobDone: true                               #  The flag of cleaning up gatling jobs resources after the job done
+  cleanupAfterJobDone: true                               #  The flag of cleaning up gatling jobs resources after the job done
   podSpec:
     serviceAccountName: "gatling-operator-worker"
     gatlingImage: ghcr.io/st-tech/gatling:latest          # Optional. Default: ghcr.io/st-tech/gatling:latest. The image that will be used for Gatling container.
@@ -53,7 +51,6 @@ spec:
     #############################################################
     # provider: "gcp"
     # bucket: "gatling-operator-reports"                  # GCS bucket name on which Gatlilng report files are stored
-    # bucket: "zozo-mlops-dev-gatling-operator-reports"   # レポート用のGCSバケット zozo-mlops-dev(stg)-gatling-operator-reports を定義しているのでそちらを指定してください
     #
     #############################################################
     # .      Storage Provider - azure (Azure Blob Storage) ########
@@ -78,8 +75,7 @@ spec:
     secretName: "gatling-notification-slack-secrets"      # The name of secret in which all key/value sets needed for the notification are stored
   testScenarioSpec:
     # startTime: 2021-09-10 08:45:31                      # Optional. Start time of running test scenario in UTC. Format: %Y-%m-%d %H:%M:%S
-    parallelism: 1                                        # Optional. Default: 1. Number of pods running at any instant
-    #parallelism: 3                                        # Optional. Default: 1. Number of pods running at any instant
+    parallelism: 3                                        # Optional. Default: 1. Number of pods running at any instant
     # simulationsDirectoryPath: "/dir-path-to-simulation" # Optional. Default: /opt/gatling/user-files/simulations
     # resourcesDirectoryPath: "dir-path-to-resources"     # Optional. Default: /opt/gatling/user-files/resources
     # resultsDirectoryPath: "dir-path-to-results"         # Optional. Default: /opt/gatling/results.
