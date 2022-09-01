@@ -2,9 +2,14 @@ package cloudstorages
 
 import (
 	"sync"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
+type EnvVars []corev1.EnvVar
+
 type CloudStorageProvider interface {
+	init(args []EnvVars)
 	GetName() string
 	GetCloudStoragePath(bucket string, gatlingName string, subDir string) string
 	GetCloudStorageReportURL(bucket string, gatlingName string, subDir string) string
@@ -16,7 +21,7 @@ type CloudStorageProvider interface {
 // use sync.Map to achieve thread safe read and write to map
 var cloudStorageProvidersSyncMap = &sync.Map{}
 
-func GetProvider(provider string) *CloudStorageProvider {
+func GetProvider(provider string, args ...EnvVars) *CloudStorageProvider {
 	v, ok := cloudStorageProvidersSyncMap.Load(provider)
 	if !ok {
 		var csp CloudStorageProvider
@@ -25,9 +30,12 @@ func GetProvider(provider string) *CloudStorageProvider {
 			csp = &AWSCloudStorageProvider{providerName: provider}
 		case "gcp":
 			csp = &GCPCloudStorageProvider{providerName: provider}
+		case "azure":
+			csp = &AzureCloudStorageProvider{providerName: provider}
 		default:
 			return nil
 		}
+		csp.init(args)
 		v, _ = cloudStorageProvidersSyncMap.LoadOrStore(provider, &csp)
 	}
 	return v.(*CloudStorageProvider)

@@ -24,7 +24,7 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `provider` _string_ | (Required) Provider specifies the cloud provider that will be used. Supported providers: `aws`, `gcp` |
+| `provider` _string_ | (Required) Provider specifies the cloud provider that will be used. Supported providers: `aws`, `gcp`, and `azure` |
 | `bucket` _string_ | (Required) Storage Bucket Name. |
 | `region` _string_ | (Optional) Region Name. |
 | `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core) array_ | (Optional) Environment variables used for connecting to the cloud providers. |
@@ -123,6 +123,6 @@ _Appears in:_
 | `simulationData` _object (keys:string, values:string)_ | (Optional) Simulation Data. |
 | `resourceData` _object (keys:string, values:string)_ | (Optional) Resource Data. |
 | `gatlingConf` _object (keys:string, values:string)_ | (Optional) Gatling Configurations. |
-| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core)_ | (Optional) Environment variables used for running load testing scenario. |
+| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core) array_ | (Optional) Environment variables used for running load testing scenario. |
 
 

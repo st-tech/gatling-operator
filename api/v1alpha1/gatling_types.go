@@ -99,7 +99,7 @@ type TestScenarioSpec struct {
 	// +kubebuilder:validation:Optional
 	StartTime string `json:"startTime,omitempty"`
 
-	// (Optional) Number of pods running at the same time. Defaults to `1` (Mininum `1`)
+	// (Optional) Number of pods running at the same time. Defaults to `1` (Minimum `1`)
 	// +kubebuilder:default=1
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Optional
@@ -141,7 +141,7 @@ type TestScenarioSpec struct {
 // CloudStorageSpec defines Cloud Storage Provider specification.
 type CloudStorageSpec struct {
 	// (Required) Provider specifies the cloud provider that will be used.
-	// Supported providers: `aws`, `gcp`
+	// Supported providers: `aws`, `gcp`, and `azure`
 	// +kubebuilder:validation:Required
 	Provider string `json:"provider"`
 
