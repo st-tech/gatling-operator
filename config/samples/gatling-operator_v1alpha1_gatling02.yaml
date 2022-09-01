@@ -59,7 +59,7 @@ spec:
     #    valueFrom:
     #      secretKeyRef:
     #        name: azure-credentail-secrets
-    #        key: AZUREBLOBSS_KEY
+    #        key: AZUREBLOB_KEY
     #  - name: AZUREBLOB_SAS_URL                          # SAS URL. "Read, Write, List" permissions are required
     #    valueFrom:
     #      secretKeyRef:
