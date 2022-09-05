@@ -69,7 +69,7 @@ gatling.gatling-operator.tech.zozo.com/gatling-sample01 created
 ```
 
 
-After deploying the Gatling CR, Gatling Controller creates a Gatling Runner job. The job then runs the Gatling Runner pods to execute Gatling load test scenario in parallel.
+After deploying the Gatling CR, Gatling Controller creates a Gatling Runner job. The job then runs the Gatling Runner Pods to execute Gatling load test scenario in parallel.
 
 ```
 $ kubectl get gatling,job,pod
@@ -155,9 +155,9 @@ You can generate the Gatling HTML report by enabling `.spec.generateReport` flag
 
 ## Configure Cloud Storage Provider for storing Gatling reports
 
-As a next step, let's generate the Gatling HTML reports for your Gatling load testing.
+As a next step, let's generate the Gatling HTML reports for the Gatling load testing.
 
-First of all, set `.spec.generateReport` in Gatling CR to `true` in order to generate an aggregated Gatling report. In addition, set `.spec.cleanupAfterJobDone` to `true` in order not to cleanup Gatling resources after the job done for testing.
+First of all, set `.spec.generateReport` in Gatling CR to `true` in order to generate an aggregated Gatling report. In addition, set `.spec.cleanupAfterJobDone` to `true` in order not to cleanup Gatling resources after the Gatling job done.
 
 ```yaml
 apiVersion: gatling-operator.tech.zozo.com/v1alpha1
@@ -172,7 +172,7 @@ spec:
 ```
 
 Then, configure Cloud Storage Provider for storing Gatling reports in `.spec.cloudStorageSpec`. In this case, let's store the reports to Amazon S3 bucket.
-Suppose that you want to store the reports to a bucket named `gatling-operator-reports` of Amazon S3 located in `ap-northeast-1` region, you configure each fields in `.spec.cloudStorageSpec` like this:
+Suppose that you want to store the reports to a bucket named `gatling-operator-reports` of Amazon S3 located in `ap-northeast-1` region, configure each fields in `.spec.cloudStorageSpec` like this:
 
 ```yaml
 apiVersion: gatling-operator.tech.zozo.com/v1alpha1
@@ -188,7 +188,7 @@ spec:
 
 You might want to add more configurations in `.spec.cloudStorageSpec` for Gatling Pods to access the Amazon S3 bucket. It depends on S3 authentication methods you choose. Please check [Set Amazon S3 as Cloud Storage](user-guide.md#set-amazon-s3-as-cloud-storage) for more details.
 
-📝 **Note**: There are multiple Cloud Storage Provider options. Currently Amazon S3, Google Cloud Storage, and Azure Blob Storage are supported. Please check [User Guide](./user-guide.md) for more details.
+📝 **Note**: There are multiple Cloud Storage Provider options. Currently `Amazon S3`, `Google Cloud Storage`, and `Azure Blob Storage` are supported. Please check [User Guide](./user-guide.md) for more details.
 
 Once finish adding the Cloud Storage Provider configuration in the Gatling CR named `gatling-sample01`, deploy it and wait until it's done.
 
@@ -200,7 +200,6 @@ You can obtain the Gatling report URL (`reportUrl`) by checking `.status`.
 
 ```bash
 kubectl get gatling gatling-sample01 -o jsonpath='{@.status}' |jq
-
 
 {
   "reportCompleted": true
@@ -215,7 +214,7 @@ kubectl get gatling gatling-sample01 -o jsonpath='{@.status}' |jq
 }
 ```
 
-Here is a sample Gatling HTML report that you'll see by accessing the reportUrl:
+Here is a sample Gatling HTML report:
 
 ![](../assets/gatling-html-report.png)
 
