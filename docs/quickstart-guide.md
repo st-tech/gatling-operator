@@ -256,7 +256,7 @@ spec:
     secretName: "gatling-notification-slack-secrets"
 ```
 
-In the Secret, you need to set Slack webhook URL value (in base64 encoded string) for a Slack channel to which you want to deliver the message. The key name for the Slack webhook URL must be `incoming-webhook-url`.
+You need to set Slack webhook URL value (in base64 encoded string) in the Secret for a Slack channel to which you want to deliver the message. The key name for the Slack webhook URL must be `incoming-webhook-url`.
 
 ```yaml
 apiVersion: v1
