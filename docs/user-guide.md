@@ -568,7 +568,7 @@ Suppose that you want to store Gatling reports to a container named `gatling-ope
             key: AZUREBLOB_KEY
 ```
 
-Please blank Leave blank `AZUREBLOB_KEY` if you use SAS URL
+Please leave blank `AZUREBLOB_KEY` if you use SAS URL
 
 (2) Setting Azure Blob Account and SAS (Shared Access Signatures) URL with the following environment variable
 
