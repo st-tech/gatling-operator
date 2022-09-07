@@ -240,7 +240,7 @@ spec:
   generateReport: true                     # The flag of generating Gatling report
   generateLocalReport: false               # The flag of generating Gatling report for each pod
   notifyReport: true                       # The flag of notifying Gatling report
-  cleanupAfterJobDone: true                # flag of cleanup Gatling resources after the job done
+  cleanupAfterJobDone: true                # The flag of cleanup Gatling resources after the job done
 ```
 
 Then, configure Notification Service Provider in `.spec.notificationServiceSpec` to notify Gatling load testing result via Slack. Suppose that you want to store credential info (Slack webhook URL) in Kubernetes Secret named `gatling-notification-slack-secrets`, you configure each fields in `.spec.notificationServiceSpec` like this:
