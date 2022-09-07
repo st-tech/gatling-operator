@@ -22,6 +22,7 @@
 		- [Configure Cloud Storage Provider](#configure-cloud-storage-provider)
 			- [Set Amazon S3 as Cloud Storage](#set-amazon-s3-as-cloud-storage)
 			- [Set Google Cloud Storage as Cloud Storage](#set-google-cloud-storage-as-cloud-storage)
+			- [Set Azure Blob Storage as Cloud Storage](#set-azure-blob-storage-as-cloud-storage)
 		- [Configure Notification Service Provider](#configure-notification-service-provider)
 			- [Set Slack as Notification Service](#set-slack-as-notification-service)
 
@@ -180,7 +181,7 @@ spec:
 
 As explained previously, instead of bundling Gatling load testing files in the Gatling docker image, you can add them as multi-line definitions in `.spec.testScenatioSpec` of `Gatling CR`, based on which Gatling Controller automatically creates `ConfigMap` resources and injects Gatling runner Pod with the files.
 
-You can add a Gatling simulation file (scala), an external resource file, and gatling runtime config file (gatling.conf) respectively in `.spec.testScenarioSpec.simulationData`, `.spec.testScenarioSpec.resourceData`, and `.spec.testScenarioSpec.gatlingConf` like this:
+You can add a Gatling simulation file (scala), an external resource file, and Gatling runtime config file (gatling.conf) respectively in `.spec.testScenarioSpec.simulationData`, `.spec.testScenarioSpec.resourceData`, and `.spec.testScenarioSpec.gatlingConf` like this:
 
 ```yaml
 apiVersion: gatling-operator.tech.zozo.com/v1alpha1
@@ -247,7 +248,7 @@ Here is a procedure:
 
 #### Create an "image pull secret"
 
-First of all, create an "image pull secret" in the namespace to which you deploy your Gatling CR. Suppose you want to deploy the gatling CR named `gatling-sample01'` on `default` namespace, create an "image pull secret" like this:
+First of all, create an "image pull secret" in the namespace to which you deploy your Gatling CR. Suppose you want to deploy the Gatling CR named `gatling-sample01'` on `default` namespace, create an "image pull secret" like this:
 
 ```bash
 PASS=xxxxxx
@@ -333,10 +334,10 @@ spec:
   cleanupAfterJobDone: true
 ```
 
-- `.spec.generateReport`: It's an optional flag of generating an aggregated gatling report and defaults to false. You must configure `.spec.cloudStorageSpec` as well if the flag is set to true.
-- `.spec.generateLocalReport`: It's an optional flag of generating gatling report at each Pod and defaults to false.
-- `.spec.notifyReport`: It's an optional flag of notifying gatling report and defaults to false. You must configure `.spec.notificationServiceSpec` as well if the flag is set to true.
-- `.spec.cleanupAfterJobDone`: It's an optional flag of cleanup gatling resources after the job done and defaults to false. Please set the flag to true if you want to dig into logs of each Pod even after the job done.
+- `.spec.generateReport`: It's an optional flag of generating an aggregated Gatling report and defaults to false. You must configure `.spec.cloudStorageSpec` as well if the flag is set to true.
+- `.spec.generateLocalReport`: It's an optional flag of generating Gatling report at each Pod and defaults to false.
+- `.spec.notifyReport`: It's an optional flag of notifying Gatling report and defaults to false. You must configure `.spec.notificationServiceSpec` as well if the flag is set to true.
+- `.spec.cleanupAfterJobDone`: It's an optional flag of cleanup Gatling resources after the job done and defaults to false. Please set the flag to true if you want to dig into logs of each Pod even after the job done.
 
 ### Configure Gatling Runner Pod
 
@@ -454,7 +455,7 @@ spec:
 
 In `.spec.cloudStorageSpec` you can configure Cloud Storage Provider for storing Gatling reports. Here are main fields to set in `.spec.cloudStorageSpec`:
 
-- `.spec.cloudStorageSpec.provider`: It's a required field for the cloud storage provider to use. Supported value on the field are either `aws` (for [Amazon S3](https://aws.amazon.com/s3/)) or `gcp` (for [Google Cloud Storage](https://cloud.google.com/products/storage)).
+- `.spec.cloudStorageSpec.provider`: It's a required field for the cloud storage provider to use. Supported values on the field are `aws` (for [Amazon S3](https://aws.amazon.com/s3/)), `gcp` (for [Google Cloud Storage](https://cloud.google.com/products/storage)), or `azure` (for [Azure Blob Storage](https://azure.microsoft.com/en-us/services/storage/blobs/)).
 - `.spec.cloudStorageSpec.bucket`: It's a required field for the name of storage bucket.
 - `.spec.cloudStorageSpec.region`: It's an optional field for the name of region that the cloud storage belong to.
 
@@ -478,7 +479,7 @@ However, this is not enough. You must supply Gatling Pod (both Gatling Runner Po
 
 There are multiple authentication methods that can be tried.
 
-(1) Setting the following environment variables for Gatling Pod
+(1) Setting S3 Access Key ID and Secret Access Key with the following environment variables
 
 - Access Key ID: `AWS_ACCESS_KEY_ID` or `AWS_ACCESS_KEY`
 - Secret Access Key: `AWS_SECRET_ACCESS_KEY` or `AWS_SECRET_KEY`
@@ -529,7 +530,63 @@ Here is an IAM policy to attach for Gatling Pod to interact with Amazon S3 bucke
 
 #### Set Google Cloud Storage as Cloud Storage
 
-TBU
+Suppose that you want to store Gatling reports to a bucket named `gatling-operator-reports` of Google Cloud Storage, you configure each fields in `.spec.cloudStorageSpec` like this:
+
+```yaml
+apiVersion: gatling-operator.tech.zozo.com/v1alpha1
+kind: Gatling
+metadata:
+  name: gatling-sample
+spec:
+  cloudStorageSpec:
+    provider: "gcp"
+    bucket: "gatling-operator-reports"
+```
+
+Please make sure to supply Gatling Pod (both Gatling Runner Pod and Gatling Reporter Pod) with access permissions to the bucket.
+
+#### Set Azure Blob Storage as Cloud Storage
+
+Suppose that you want to store Gatling reports to a container named `gatling-operator-reports` of Azure Blob Storage, you can configure `.spec.cloudStorageSpec` to make it happen with multiple authentication methods.
+
+(1) Setting Azure Blob Account and Key with the following environment variables
+
+- Azure Blob Storage Account Name: `AZUREBLOB_ACCOUNT`
+- Azure Blob Storage Key: `AZUREBLOB_KEY`
+
+```yaml
+  cloudStorageSpec:
+    provider: "azure"
+    bucket: "gatling-operator-reports"
+    env:
+      - name: AZUREBLOB_ACCOUNT
+        value: <Azure Blob Storage Acccout Name>
+      - name: AZUREBLOB_KEY
+        valueFrom:
+          secretKeyRef:
+            name: azure-credentail-secrets
+            key: AZUREBLOB_KEY
+```
+
+Please leave blank `AZUREBLOB_KEY` if you use SAS URL
+
+(2) Setting Azure Blob Account and SAS (Shared Access Signatures) URL with the following environment variable
+
+- Azure Blob Storage Account Name: `AZUREBLOB_ACCOUNT`
+- SAS (Shared Access Signatures) URL: `AZUREBLOB_SAS_URL`
+
+An account level SAS URL or container level SAS URL can be obtained from the Azure portal or the Azure Storage Explorer. Please make sure that `Read`, `Write` and `List` permissions are given to the SAS. Please check [Create SAS tokens for storage containers](https://docs.microsoft.com/en-us/azure/applied-ai-services/form-recognizer/create-sas-tokens) for more details.
+
+```yaml
+  cloudStorageSpec:
+    provider: "azure"
+    bucket: "gatling-operator-reports"
+    env:
+      - name: AZUREBLOB_ACCOUNT
+        value: <Azure Blob Storage Acccout Name>
+      - name: AZUREBLOB_SAS_URL
+        value: "https://<account-name>.blob.core.windows.net/gatling-operator-reports?<sas-token-params>"
+```
 
 ### Configure Notification Service Provider
 
