@@ -168,7 +168,7 @@ spec:
   generateReport: true                     # The flag of generating Gatling report
   generateLocalReport: false               # The flag of generating Gatling report for each pod
   notifyReport: false                      # The flag of notifying Gatling report
-  cleanupAfterJobDone: true                # flag of cleanup Gatling resources after the job done
+  cleanupAfterJobDone: true                # The flag of cleanup Gatling resources after the job done
 ```
 
 Then, configure Cloud Storage Provider for storing Gatling reports in `.spec.cloudStorageSpec`. In this case, let's store the reports to Amazon S3 bucket.
