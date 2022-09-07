@@ -221,7 +221,7 @@ Here is a sample Gatling HTML report:
 Finally, cleanup the Gatling CR manually
 
 ```bash
-kubeclt delete gatling gatling-sample01
+kubectl delete gatling gatling-sample01
 ```
 
 
