@@ -93,15 +93,7 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Reconciling for running Gatling Jobs
 	if !gatling.Status.RunnerCompleted {
 		requeue, err := r.gatlingRunnerReconcile(ctx, req, gatling, log)
-		fmt.Println("--------")
-		fmt.Println(r.getObjectMeta(gatling).Name)
-		fmt.Println("--------")
-		fmt.Println("--------")
-		fmt.Println(r.getObjectMeta(gatling).Labels)
-		fmt.Println("--------")
-		fmt.Println(r.getObjectMeta(gatling).Annotations)
-		fmt.Println("--------")
-		// fmt.Print(r.getObjectMeta(gatling).Annotations)
+
 		if requeue {
 			return doRequeue(requeueIntervalInSeconds*time.Second, err)
 		}
@@ -529,8 +521,9 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			Completions: &gatling.Spec.TestScenarioSpec.Parallelism,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:   r.getObjectMeta(gatling).Name,
-					Labels: r.getObjectMeta(gatling).Labels,
+					Name:        r.getObjectMeta(gatling).Name,
+					Labels:      r.getObjectMeta(gatling).Labels,
+					Annotations: r.getObjectMeta(gatling).Annotations,
 				},
 				Spec: corev1.PodSpec{
 					Affinity:           r.getPodAffinity(gatling),
