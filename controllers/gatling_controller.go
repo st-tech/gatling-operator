@@ -937,7 +937,6 @@ func (r *GatlingReconciler) getPodResources(gatling *gatlingv1alpha1.Gatling) co
 
 func (r *GatlingReconciler) getObjectMeta(gatling *gatlingv1alpha1.Gatling) *metav1.ObjectMeta {
 	objectmeta := metav1.ObjectMeta{}
-	fmt.Print("test")
 	if &gatling != nil && &gatling.ObjectMeta != nil {
 		objectmeta = gatling.ObjectMeta
 	}
