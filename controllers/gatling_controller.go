@@ -93,6 +93,15 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Reconciling for running Gatling Jobs
 	if !gatling.Status.RunnerCompleted {
 		requeue, err := r.gatlingRunnerReconcile(ctx, req, gatling, log)
+		fmt.Println("--------")
+		fmt.Println(r.getObjectMeta(gatling).Name)
+		fmt.Println("--------")
+		fmt.Println("--------")
+		fmt.Println(r.getObjectMeta(gatling).Labels)
+		fmt.Println("--------")
+		fmt.Println(r.getObjectMeta(gatling).Annotations)
+		fmt.Println("--------")
+		// fmt.Print(r.getObjectMeta(gatling).Annotations)
 		if requeue {
 			return doRequeue(requeueIntervalInSeconds*time.Second, err)
 		}
@@ -458,6 +467,10 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 				Parallelism: r.getGatlingRunnerJobParallelism(gatling),
 				Completions: r.getGatlingRunnerJobParallelism(gatling),
 				Template: corev1.PodTemplateSpec{
+					// ObjectMeta: metav1.ObjectMeta{
+					// 	Name:   r.getObjectMeta(gatling).Name,
+					// 	Labels: r.getObjectMeta(gatling).Labels,
+					// },
 					Spec: corev1.PodSpec{
 						Affinity:           r.getPodAffinity(gatling),
 						Tolerations:        r.getPodTolerations(gatling),
@@ -519,6 +532,10 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			Parallelism: &gatling.Spec.TestScenarioSpec.Parallelism,
 			Completions: &gatling.Spec.TestScenarioSpec.Parallelism,
 			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:   r.getObjectMeta(gatling).Name,
+					Labels: r.getObjectMeta(gatling).Labels,
+				},
 				Spec: corev1.PodSpec{
 					Affinity:           r.getPodAffinity(gatling),
 					Tolerations:        r.getPodTolerations(gatling),
@@ -920,6 +937,15 @@ func (r *GatlingReconciler) getPodResources(gatling *gatlingv1alpha1.Gatling) co
 		resources = gatling.Spec.PodSpec.Resources
 	}
 	return resources
+}
+
+func (r *GatlingReconciler) getObjectMeta(gatling *gatlingv1alpha1.Gatling) *metav1.ObjectMeta {
+	objectmeta := metav1.ObjectMeta{}
+	fmt.Print("test")
+	if &gatling != nil && &gatling.ObjectMeta != nil {
+		objectmeta = gatling.ObjectMeta
+	}
+	return &objectmeta
 }
 
 func (r *GatlingReconciler) getPodAffinity(gatling *gatlingv1alpha1.Gatling) *corev1.Affinity {
