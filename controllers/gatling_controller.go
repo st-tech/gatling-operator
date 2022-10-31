@@ -81,7 +81,7 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	log.Info("Reconciling Gatling")
 	// r.dumpGatlingStatus(gatling, log)
 	if r.isGatlingCompleted(gatling) {
-		log.Info("Gatling job has completed!", "name", gatling.ObjectMeta.Name, "namespace", gatling.ObjectMeta.Namespace)
+		log.Info("Gatling job has completed!", "name", r.getObjectMeta(gatling).Name, "namespace", r.getObjectMeta(gatling).Namespace)
 
 		// Clean up Job resources if neccessary
 		if gatling.Spec.CleanupAfterJobDone {
