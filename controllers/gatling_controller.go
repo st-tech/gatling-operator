@@ -459,6 +459,11 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 				Parallelism: r.getGatlingRunnerJobParallelism(gatling),
 				Completions: r.getGatlingRunnerJobParallelism(gatling),
 				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        r.getObjectMeta(gatling).Name,
+						Labels:      r.getObjectMeta(gatling).Labels,
+						Annotations: r.getObjectMeta(gatling).Annotations,
+					},
 					Spec: corev1.PodSpec{
 						Affinity:           r.getPodAffinity(gatling),
 						Tolerations:        r.getPodTolerations(gatling),
