@@ -956,6 +956,12 @@ func add_labels_pods(pod_type string, pod_obectmeta map[string]string) map[strin
 		}
 		return pod_obectmeta
 	} else {
+		pod_obectmeta := map[string]string{}
+		if strings.Contains(pod_type, "runner") == true {
+			pod_obectmeta["type"] = "runner"
+		} else if strings.Contains(pod_type, "reporter") == true {
+			pod_obectmeta["type"] = "reporter"
+		}
 		return pod_obectmeta
 	}
 }
