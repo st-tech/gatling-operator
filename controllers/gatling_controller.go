@@ -94,7 +94,6 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Reconciling for running Gatling Jobs
 	if !gatling.Status.RunnerCompleted {
 		requeue, err := r.gatlingRunnerReconcile(ctx, req, gatling, log)
-
 		if requeue {
 			return doRequeue(requeueIntervalInSeconds*time.Second, err)
 		}
