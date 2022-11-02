@@ -948,12 +948,16 @@ func (r *GatlingReconciler) getObjectMeta(gatling *gatlingv1alpha1.Gatling) *met
 
 // Determine whether the label is attached to the runner or the reporter.
 func add_labels_pods(pod_type string, pod_obectmeta map[string]string) map[string]string {
-	if strings.Contains(pod_type, "runner") == true {
-		pod_obectmeta["type"] = "runner"
-	} else if strings.Contains(pod_type, "reporter") == true {
-		pod_obectmeta["type"] = "reporter"
+	if pod_obectmeta != nil {
+		if strings.Contains(pod_type, "runner") == true {
+			pod_obectmeta["type"] = "runner"
+		} else if strings.Contains(pod_type, "reporter") == true {
+			pod_obectmeta["type"] = "reporter"
+		}
+		return pod_obectmeta
+	} else {
+		return pod_obectmeta
 	}
-	return pod_obectmeta
 }
 
 func (r *GatlingReconciler) getPodAffinity(gatling *gatlingv1alpha1.Gatling) *corev1.Affinity {
