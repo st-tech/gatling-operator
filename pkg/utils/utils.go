@@ -24,7 +24,7 @@ func GetMapValue(key string, dataMap map[string][]byte) (string, bool) {
 	return "", false
 }
 
-// Determine whether the label is attached to the runner or the reporter.
+// Add key-value to map
 func AddMapValue(key string, value string, dataMap map[string]string, overwrite bool) map[string]string {
 	_, ok := dataMap[key]
 	if overwrite {
