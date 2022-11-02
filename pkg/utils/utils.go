@@ -2,7 +2,6 @@ package utils
 
 import (
 	"hash/fnv"
-	"strings"
 	"time"
 )
 
@@ -26,21 +25,11 @@ func GetMapValue(key string, dataMap map[string][]byte) (string, bool) {
 }
 
 // Determine whether the label is attached to the runner or the reporter.
-func Add_labels_pods(pod_type string, pod_obectmeta map[string]string) map[string]string {
-	if pod_obectmeta != nil {
-		if strings.Contains(pod_type, "runner") == true {
-			pod_obectmeta["type"] = "runner"
-		} else if strings.Contains(pod_type, "reporter") == true {
-			pod_obectmeta["type"] = "reporter"
-		}
-		return pod_obectmeta
+func AddMapValue(key string, value string, dataMap map[string]string, overwrite bool) map[string]string {
+	if overwrite {
+		dataMap[key] = value
+		return dataMap
 	} else {
-		pod_obectmeta := map[string]string{}
-		if strings.Contains(pod_type, "runner") == true {
-			pod_obectmeta["type"] = "runner"
-		} else if strings.Contains(pod_type, "reporter") == true {
-			pod_obectmeta["type"] = "reporter"
-		}
-		return pod_obectmeta
+		return dataMap
 	}
 }

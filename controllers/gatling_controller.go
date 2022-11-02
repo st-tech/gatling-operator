@@ -460,7 +460,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:        r.getObjectMeta(gatling).Name,
-						Labels:      utils.Add_labels_pods(gatling.Name+"-runner", r.getObjectMeta(gatling).Labels),
+						Labels:      utils.AddMapValue("type", "runner", r.getObjectMeta(gatling).Labels, true),
 						Annotations: r.getObjectMeta(gatling).Annotations,
 					},
 					Spec: corev1.PodSpec{
@@ -526,7 +526,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        r.getObjectMeta(gatling).Name,
-					Labels:      utils.Add_labels_pods(gatling.Name+"-runner", r.getObjectMeta(gatling).Labels),
+					Labels:      utils.AddMapValue("type", "runner", r.getObjectMeta(gatling).Labels, true),
 					Annotations: r.getObjectMeta(gatling).Annotations,
 				},
 				Spec: corev1.PodSpec{
@@ -600,7 +600,7 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        r.getObjectMeta(gatling).Name,
-					Labels:      utils.Add_labels_pods(gatling.Name+"-reporter", r.getObjectMeta(gatling).Labels),
+					Labels:      utils.AddMapValue("type", "-reporter", r.getObjectMeta(gatling).Labels, false),
 					Annotations: r.getObjectMeta(gatling).Annotations,
 				},
 				Spec: corev1.PodSpec{
