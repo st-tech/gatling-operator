@@ -39,6 +39,9 @@ func AddMapValue(key string, value string, dataMap map[string]string, overwrite 
 	} else {
 		if ok {
 			return dataMap
+		} else if dataMap != nil {
+			dataMap[key] = value
+			return dataMap
 		} else {
 			dataMap = map[string]string{}
 			dataMap[key] = value
