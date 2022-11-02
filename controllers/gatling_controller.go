@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -461,7 +460,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:        r.getObjectMeta(gatling).Name,
-						Labels:      add_labels_pods(gatling.Name+"-runner", r.getObjectMeta(gatling).Labels),
+						Labels:      utils.Add_labels_pods(gatling.Name+"-runner", r.getObjectMeta(gatling).Labels),
 						Annotations: r.getObjectMeta(gatling).Annotations,
 					},
 					Spec: corev1.PodSpec{
@@ -527,7 +526,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        r.getObjectMeta(gatling).Name,
-					Labels:      add_labels_pods(gatling.Name+"-runner", r.getObjectMeta(gatling).Labels),
+					Labels:      utils.Add_labels_pods(gatling.Name+"-runner", r.getObjectMeta(gatling).Labels),
 					Annotations: r.getObjectMeta(gatling).Annotations,
 				},
 				Spec: corev1.PodSpec{
@@ -601,7 +600,7 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        r.getObjectMeta(gatling).Name,
-					Labels:      add_labels_pods(gatling.Name+"-reporter", r.getObjectMeta(gatling).Labels),
+					Labels:      utils.Add_labels_pods(gatling.Name+"-reporter", r.getObjectMeta(gatling).Labels),
 					Annotations: r.getObjectMeta(gatling).Annotations,
 				},
 				Spec: corev1.PodSpec{
@@ -944,26 +943,6 @@ func (r *GatlingReconciler) getObjectMeta(gatling *gatlingv1alpha1.Gatling) *met
 		objectmeta = gatling.ObjectMeta
 	}
 	return &objectmeta
-}
-
-// Determine whether the label is attached to the runner or the reporter.
-func add_labels_pods(pod_type string, pod_obectmeta map[string]string) map[string]string {
-	if pod_obectmeta != nil {
-		if strings.Contains(pod_type, "runner") == true {
-			pod_obectmeta["type"] = "runner"
-		} else if strings.Contains(pod_type, "reporter") == true {
-			pod_obectmeta["type"] = "reporter"
-		}
-		return pod_obectmeta
-	} else {
-		pod_obectmeta := map[string]string{}
-		if strings.Contains(pod_type, "runner") == true {
-			pod_obectmeta["type"] = "runner"
-		} else if strings.Contains(pod_type, "reporter") == true {
-			pod_obectmeta["type"] = "reporter"
-		}
-		return pod_obectmeta
-	}
 }
 
 func (r *GatlingReconciler) getPodAffinity(gatling *gatlingv1alpha1.Gatling) *corev1.Affinity {
