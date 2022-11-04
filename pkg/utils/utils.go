@@ -26,26 +26,9 @@ func GetMapValue(key string, dataMap map[string][]byte) (string, bool) {
 
 // Add key-value to map
 func AddMapValue(key string, value string, dataMap map[string]string, overwrite bool) map[string]string {
-	_, ok := dataMap[key]
-	if overwrite {
-		if ok {
-			dataMap[key] = value
-			return dataMap
-		} else {
-			dataMap = map[string]string{}
-			dataMap[key] = value
-			return dataMap
-		}
-	} else {
-		if ok {
-			return dataMap
-		} else if dataMap != nil {
-			dataMap[key] = value
-			return dataMap
-		} else {
-			dataMap = map[string]string{}
-			dataMap[key] = value
-			return dataMap
-		}
+	if _, ok := dataMap[key]; ok && !overwrite {
+		return dataMap
 	}
+	dataMap[key] = value
+	return dataMap
 }
