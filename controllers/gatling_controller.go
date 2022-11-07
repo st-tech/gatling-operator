@@ -600,7 +600,7 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        r.getObjectMeta(gatling).Name,
-					Labels:      utils.AddMapValue("type", "-reporter", r.getObjectMeta(gatling).Labels, false),
+					Labels:      utils.AddMapValue("type", "reporter", r.getObjectMeta(gatling).Labels, false),
 					Annotations: r.getObjectMeta(gatling).Annotations,
 				},
 				Spec: corev1.PodSpec{
