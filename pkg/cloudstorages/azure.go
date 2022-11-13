@@ -43,10 +43,16 @@ export RCLONE_AZUREBLOB_KEY=${AZUREBLOB_KEY}
 export RCLONE_AZUREBLOB_SAS_URL=${AZUREBLOB_SAS_URL}
 RESULTS_DIR_PATH=%s
 rclone config create az azureblob env_auth=true
-for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
-do
-	rclone copyto ${source} %s/${HOSTNAME}.log
-done
+while true; do
+  if [ -f "${RESULTS_DIR_PATH}/COMPLETED" ]; then
+    for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
+    do
+      rclone copyto ${source} %s/${HOSTNAME}.log
+    done
+    break
+  fi
+  sleep 1;
+done	
 `
 	return fmt.Sprintf(template, resultsDirectoryPath, storagePath)
 }
