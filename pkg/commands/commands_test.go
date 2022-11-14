@@ -124,6 +124,7 @@ if [ ! -d ${RESULTS_DIR_PATH} ]; then
   mkdir -p ${RESULTS_DIR_PATH}
 fi
 gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s testSimulationClass -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} -nr
+
 if [ $? -eq 0 ]; then
 	touch ${RESULTS_DIR_PATH}/COMPLETED
 fi
