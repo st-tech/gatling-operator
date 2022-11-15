@@ -105,6 +105,10 @@ export RCLONE_AZUREBLOB_SAS_URL=${AZUREBLOB_SAS_URL}
 RESULTS_DIR_PATH=%s
 rclone config create az azureblob env_auth=true
 while true; do
+  if [ -f "${RESULTS_DIR_PATH}/FAILED" ]; then
+    echo "Skip transfering gatling results"
+    break
+  fi
   if [ -f "${RESULTS_DIR_PATH}/COMPLETED" ]; then
     for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
     do

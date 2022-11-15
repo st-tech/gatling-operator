@@ -29,6 +29,10 @@ func (p *AWSCloudStorageProvider) GetGatlingTransferResultCommand(resultsDirecto
 RESULTS_DIR_PATH=%s
 rclone config create s3 s3 env_auth=true region %s
 while true; do
+  if [ -f "${RESULTS_DIR_PATH}/FAILED" ]; then
+    echo "Skip transfering gatling results"
+    break
+  fi
   if [ -f "${RESULTS_DIR_PATH}/COMPLETED" ]; then
     for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
     do
