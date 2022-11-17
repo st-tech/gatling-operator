@@ -481,6 +481,8 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 									},
 								},
 							},
+						},
+						Containers: []corev1.Container{
 							{
 								Name:         "gatling-runner",
 								Image:        r.getGatlingContainerImage(gatling),
@@ -490,8 +492,6 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 								Resources:    r.getPodResources(gatling),
 								VolumeMounts: r.getGatlingRunnerJobVolumeMounts(gatling),
 							},
-						},
-						Containers: []corev1.Container{
 							{
 								Name:    "gatling-result-transferer",
 								Image:   r.getRcloneContainerImage(gatling),

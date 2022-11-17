@@ -85,10 +85,20 @@ var _ = Describe("GetGatlingTransferResultCommand", func() {
 RESULTS_DIR_PATH=testResultsDirectoryPath
 # assumes gcs bucket using uniform bucket-level access control
 rclone config create gs "google cloud storage" bucket_policy_only true --non-interactive
-# assumes each pod only contain single gatling log file but use for loop to use find command result
-for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
-do
-	rclone copyto ${source} testStoragePath/${HOSTNAME}.log
+while true; do
+  if [ -f "${RESULTS_DIR_PATH}/FAILED" ]; then
+    echo "Skip transfering gatling results"
+    break
+  fi
+  if [ -f "${RESULTS_DIR_PATH}/COMPLETED" ]; then
+    # assumes each pod only contain single gatling log file but use for loop to use find command result
+    for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
+    do
+      rclone copyto ${source} testStoragePath/${HOSTNAME}.log
+    done
+    break
+  fi
+  sleep 1;
 done
 `
 	})

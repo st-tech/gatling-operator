@@ -84,9 +84,19 @@ var _ = Describe("GetGatlingTransferResultCommand", func() {
 		expectedValue = `
 RESULTS_DIR_PATH=testResultsDirectoryPath
 rclone config create s3 s3 env_auth=true region ap-northeast-1
-for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
-do
-	rclone copyto ${source} --s3-no-check-bucket --s3-env-auth testStoragePath/${HOSTNAME}.log
+while true; do
+  if [ -f "${RESULTS_DIR_PATH}/FAILED" ]; then
+    echo "Skip transfering gatling results"
+    break
+  fi
+  if [ -f "${RESULTS_DIR_PATH}/COMPLETED" ]; then
+    for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
+    do
+      rclone copyto ${source} --s3-no-check-bucket --s3-env-auth testStoragePath/${HOSTNAME}.log
+    done
+    break
+  fi
+  sleep 1;
 done
 `
 	})

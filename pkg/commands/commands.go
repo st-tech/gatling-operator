@@ -41,6 +41,7 @@ TEMP_SIMULATIONS_DIR_PATH=%s
 RESOURCES_DIR_PATH=%s
 RESULTS_DIR_PATH=%s
 START_TIME="%s"
+RUN_STATUS_FILE="${RESULTS_DIR_PATH}/COMPLETED"
 if [ -z "${START_TIME}" ]; then
   START_TIME=$(date +"%%Y-%%m-%%d %%H:%%M:%%S" --utc)
 fi
@@ -66,6 +67,12 @@ if [ ! -d ${RESULTS_DIR_PATH} ]; then
   mkdir -p ${RESULTS_DIR_PATH}
 fi
 gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} %s
+
+if [ $? -ne 0 ]; then
+  RUN_STATUS_FILE="${RESULTS_DIR_PATH}/FAILED"
+  echo "gatling.sh has failed!" 1>&2
+fi
+touch ${RUN_STATUS_FILE}
 `
 	generateLocalReportOption := "-nr"
 	if generateLocalReport {

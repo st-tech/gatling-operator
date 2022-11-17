@@ -58,6 +58,7 @@ TEMP_SIMULATIONS_DIR_PATH=testTempSimulationsDirectoryPath
 RESOURCES_DIR_PATH=testResourcesDirectoryPath
 RESULTS_DIR_PATH=testResultsDirectoryPath
 START_TIME="2021-09-10 08:45:31"
+RUN_STATUS_FILE="${RESULTS_DIR_PATH}/COMPLETED"
 if [ -z "${START_TIME}" ]; then
   START_TIME=$(date +"%Y-%m-%d %H:%M:%S" --utc)
 fi
@@ -83,6 +84,12 @@ if [ ! -d ${RESULTS_DIR_PATH} ]; then
   mkdir -p ${RESULTS_DIR_PATH}
 fi
 gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s testSimulationClass -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} 
+
+if [ $? -ne 0 ]; then
+  RUN_STATUS_FILE="${RESULTS_DIR_PATH}/FAILED"
+  echo "gatling.sh has failed!" 1>&2
+fi
+touch ${RUN_STATUS_FILE}
 `
 		Expect(GetGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
 	})
@@ -95,6 +102,7 @@ TEMP_SIMULATIONS_DIR_PATH=testTempSimulationsDirectoryPath
 RESOURCES_DIR_PATH=testResourcesDirectoryPath
 RESULTS_DIR_PATH=testResultsDirectoryPath
 START_TIME="2021-09-10 08:45:31"
+RUN_STATUS_FILE="${RESULTS_DIR_PATH}/COMPLETED"
 if [ -z "${START_TIME}" ]; then
   START_TIME=$(date +"%Y-%m-%d %H:%M:%S" --utc)
 fi
@@ -120,6 +128,12 @@ if [ ! -d ${RESULTS_DIR_PATH} ]; then
   mkdir -p ${RESULTS_DIR_PATH}
 fi
 gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s testSimulationClass -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} -nr
+
+if [ $? -ne 0 ]; then
+  RUN_STATUS_FILE="${RESULTS_DIR_PATH}/FAILED"
+  echo "gatling.sh has failed!" 1>&2
+fi
+touch ${RUN_STATUS_FILE}
 `
 		Expect(GetGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
 	})
