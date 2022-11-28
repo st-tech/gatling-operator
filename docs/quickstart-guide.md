@@ -31,7 +31,7 @@ kind create cluster
 ## Install Gatling Operator
 
 ```bash
-kubectl apply -f https://github.com/st-tech/gatling-operator/releases/download/v0.5.0/gatling-operator.yaml
+kubectl apply -f https://github.com/st-tech/gatling-operator/releases/download/v0.9.0/gatling-operator.yaml
 ```
 
 Expected output would be like this:
@@ -49,7 +49,7 @@ deployment.apps/gatling-operator-controller-manager created
 
 All resources required for the Gatling operator, such as CRD and controller manager, are deployed using the command above. Now you're ready to deploy Gatling CR to run Gatling load testing.
 
-The command above applies a Gatling Operator manifest of v0.5.0. Please change the version if necessary. You can check the version from the [Release page](https://github.com/st-tech/gatling-operator/releases).
+The command above applies a Gatling Operator manifest of v0.9.0. Please change the version if necessary. You can check the version from the [Release page](https://github.com/st-tech/gatling-operator/releases).
 
 ## Run your first load testing by deploying Gatling CR
 
@@ -78,16 +78,16 @@ $ kubectl get gatling,job,pod
 Expected output would be like this:
 
 ```
-NAME                                                      AGE
-gatling.gatling-operator.tech.zozo.com/gatling-sample01   10s
+NAME                                                      RUNNED   REPORTED   NOTIFIED   REPORTURL                                                                                 AGE
+gatling.gatling-operator.tech.zozo.com/gatling-sample01   0/3                            https://gatling-operator-reports.s3.amazonaws.com/gatling-sample01/318807881/index.html   24s
 
 NAME                                COMPLETIONS   DURATION   AGE
-job.batch/gatling-sample01-runner   0/3           9s         9s
+job.batch/gatling-sample01-runner   0/3           24s        24s
 
 NAME                                READY   STATUS    RESTARTS   AGE
-pod/gatling-sample01-runner-8rhl4   1/1     Running   0          9s
-pod/gatling-sample01-runner-cg8rt   1/1     Running   0          9s
-pod/gatling-sample01-runner-tkplh   1/1     Running   0          9s
+pod/gatling-sample01-runner-8rhl4   2/2     Running   0          24s
+pod/gatling-sample01-runner-cg8rt   2/2     Running   0          24s
+pod/gatling-sample01-runner-tkplh   2/2     Running   0          24s
 ```
 
 You can also see from the Pod logs that Gatling is running.
