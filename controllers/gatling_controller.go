@@ -205,6 +205,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 		gatling.Status.Active = runnerJob.Status.Active
 		gatling.Status.Failed = runnerJob.Status.Failed
 		gatling.Status.Succeeded = runnerJob.Status.Succeeded
+		gatling.Status.RunnerCompletions = r.getRunnerCompletionsStatus(gatling)
 		gatling.Status.RunnerCompleted = false
 		gatling.Status.ReportCompleted = false
 		gatling.Status.NotificationCompleted = false
@@ -235,6 +236,7 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 	gatling.Status.Active = foundJob.Status.Active
 	gatling.Status.Failed = foundJob.Status.Failed
 	gatling.Status.Succeeded = foundJob.Status.Succeeded
+	gatling.Status.RunnerCompletions = r.getRunnerCompletionsStatus(gatling)
 
 	// Check if the job runs out of time in running the job
 	duration := utils.GetEpocTime() - gatling.Status.RunnerStartTime
@@ -838,10 +840,11 @@ func (r *GatlingReconciler) updateGatlingStatus(ctx context.Context, gatling *ga
 }
 
 func (r *GatlingReconciler) dumpGatlingStatus(gatling *gatlingv1alpha1.Gatling, log logr.Logger) {
-	log.Info(fmt.Sprintf("GatlingStatus: Active %d Succeeded %d Failed %d ReportCompleted %t NotificationCompleted %t ReportUrl %s Error %v",
+	log.Info(fmt.Sprintf("GatlingStatus: Active %d Succeeded %d Failed %d RunnerCompletions %s ReportCompleted %t NotificationCompleted %t ReportUrl %s Error %v",
 		gatling.Status.Active,
 		gatling.Status.Succeeded,
 		gatling.Status.Failed,
+		gatling.Status.RunnerCompletions,
 		gatling.Status.ReportCompleted,
 		gatling.Status.NotificationCompleted,
 		gatling.Status.ReportUrl,
@@ -1002,6 +1005,10 @@ func (r *GatlingReconciler) getGenerateLocalReport(gatling *gatlingv1alpha1.Gatl
 		return false
 	}
 	return gatling.Spec.GenerateLocalReport
+}
+
+func (r *GatlingReconciler) getRunnerCompletionsStatus(gatling *gatlingv1alpha1.Gatling) string {
+	return fmt.Sprintf("%d/%d", gatling.Status.Succeeded, *(r.getGatlingRunnerJobParallelism(gatling)))
 }
 
 // SetupWithManager sets up the controller with the Manager.

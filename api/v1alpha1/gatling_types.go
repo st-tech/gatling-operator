@@ -21,9 +21,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // GatlingSpec defines the desired state of Gatling
 type GatlingSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -200,6 +197,10 @@ type GatlingStatus struct {
 	// +optional
 	RunnerCompleted bool `json:"runnerCompleted,omitempty"`
 
+	// The number of successfully completed runner pods. The format is (completed#/parallelism#)
+	// +optional
+	RunnerCompletions string `json:"runnerCompletions,omitempty"`
+
 	// Reporter job name
 	// +optional
 	ReporterJobName string `json:"reporterJobName,omitempty"`
@@ -231,6 +232,11 @@ type GatlingStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Runned",type=string,JSONPath=`.status.runnerCompletions`
+//+kubebuilder:printcolumn:name="Reported",type=boolean,JSONPath=`.status.reportCompleted`
+//+kubebuilder:printcolumn:name="Notified",type=boolean,JSONPath=`.status.notificationCompleted`
+//+kubebuilder:printcolumn:name="ReportURL",type=string,JSONPath=`.status.reportUrl`
+//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // Gatling is the Schema for the gatlings API
 type Gatling struct {
