@@ -16,7 +16,23 @@ spec:
     singular: gatling
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.runnerCompletions
+      name: Runned
+      type: string
+    - jsonPath: .status.reportCompleted
+      name: Reported
+      type: boolean
+    - jsonPath: .status.notificationCompleted
+      name: Notified
+      type: boolean
+    - jsonPath: .status.reportUrl
+      name: ReportURL
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Gatling is the Schema for the gatlings API
@@ -1339,6 +1355,10 @@ spec:
               runnerCompleted:
                 description: Is runner job completed (default false)
                 type: boolean
+              runnerCompletions:
+                description: The number of successfully completed runner pods. The
+                  format is (completed#/parallelism#)
+                type: string
               runnerJobName:
                 description: Runner job name
                 type: string
