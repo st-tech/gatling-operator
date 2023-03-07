@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"hash/fnv"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -35,4 +38,17 @@ func AddMapValue(key string, value string, dataMap map[string]string, overwrite 
 	dataMap[key] = value
 	return dataMap
 
+}
+
+func GetNumEnv(key string, defaultValue int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	valueNum, err := strconv.Atoi(value)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ENV '%s' is not valid\n", key)
+		return defaultValue
+	}
+	return valueNum
 }
