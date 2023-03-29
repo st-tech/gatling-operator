@@ -68,11 +68,13 @@ if [ ! -d ${RESULTS_DIR_PATH} ]; then
 fi
 gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} %s
 
-if [ $? -ne 0 ]; then
+GATLING_EXIT_STATUS=$?
+if [ $GATLING_EXIT_STATUS -ne 0 ]; then
   RUN_STATUS_FILE="${RESULTS_DIR_PATH}/FAILED"
   echo "gatling.sh has failed!" 1>&2
 fi
 touch ${RUN_STATUS_FILE}
+exit $GATLING_EXIT_STATUS
 `
 	generateLocalReportOption := "-nr"
 	if generateLocalReport {
