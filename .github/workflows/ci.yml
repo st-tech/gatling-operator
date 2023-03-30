@@ -78,7 +78,6 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           tags: cinple/gatling-operator:${{ steps.get_version.outputs.VERSION }}
-          file: ./Dockerfile
           build-args: |
             VERSION=${{ steps.get_version.outputs.VERSION }}
           push: ${{ github.event_name == 'release' && github.event.action == 'created' }} #push only on release
@@ -87,7 +86,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           tags: cinple/gatling:${{ steps.get_version.outputs.VERSION }}
-          file: ./gatling/Dockerfile
+          context: gatling
           build-args: |
             VERSION=${{ steps.get_version.outputs.VERSION }}
           push: ${{ github.event_name == 'release' && github.event.action == 'created' }} #push only on release
