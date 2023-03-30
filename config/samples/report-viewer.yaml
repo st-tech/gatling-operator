@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: report-viewer-nginx-configmap
+  labels:
+    app: report-viewer
+data:
+  nginx.conf: |-
+    worker_processes 1;
+    error_log stderr;
+    daemon off;
+    pid nginx.pid;
+
+    events {
+      worker_connections  1024;
+    }
+
+    http {
+      include             /etc/nginx/mime.types;
+      default_type        application/octet-stream;
+
+      sendfile on;
+
+      keepalive_timeout   65;
+
+      ssl_protocols TLSv1 TLSv1.1 TLSv1.2; 
+      ssl_prefer_server_ciphers on;
+      access_log access.log;
+      server {
+        listen 8088;
+        server_name localhost;
+
+        root /opt/gatling;
+        index index.html;
+
+        location / {
+                try_files $uri $uri/ =404;
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: report-viewer
+  name: report-viewer-service
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8088
+  selector:
+    app: report-viewer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-viewer
+spec:
+  selector:
+    matchLabels:
+      app: report-viewer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: report-viewer
+    spec:
+      containers:
+      - image: gatling:local
+        imagePullPolicy: Never
+        name: report-viewer
+        command: [ "/bin/bash", "-c", ]
+        args:
+          - aws s3 sync s3://$S3_BUCKET_NAME /opt/gatling/results;
+            gatling.sh -ro /opt/gatling;
+            nginx -c /opt/gatling/etc/nginx/nginx.conf;
+        volumeMounts:
+          - mountPath: /opt/gatling/etc/nginx
+            name: report-viewer-nginx-volume
+        env:
+          - name: S3_BUCKET_NAME
+            value: gatling-operator-reports
+          - name: AWS_ACCESS_KEY_ID
+            value: xxxxxxxxxxxxxxx
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials-secret
+                key: AWS_SECRET_ACCESS_KEY
+        ports:
+          - containerPort: 8088
+            name: http
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "4G"
+          limits:
+            cpu: "2"
+            memory: "4G"
+      volumes:
+        - name: report-viewer-nginx-volume
+          configMap:
+            name: report-viewer-nginx-configmap

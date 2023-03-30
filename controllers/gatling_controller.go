@@ -217,8 +217,9 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 	err := r.Get(ctx, client.ObjectKey{Name: gatling.Status.RunnerJobName, Namespace: req.Namespace}, foundJob)
 	if err != nil && apierr.IsNotFound(err) {
 		duration := utils.GetEpocTime() - gatling.Status.RunnerStartTime
-		if duration > maxJobCreationWaitTimeInSeconds {
-			msg := fmt.Sprintf("Runs out of time (%d sec) in creating the runner job", maxJobCreationWaitTimeInSeconds)
+		maxCreationWaitTIme := int32(utils.GetNumEnv("MAX_JOB_CREATION_WAIT_TIME", maxJobCreationWaitTimeInSeconds))
+		if duration > maxCreationWaitTIme {
+			msg := fmt.Sprintf("Runs out of time (%d sec) in creating the runner job", maxCreationWaitTIme)
 			log.Error(err, msg, "namespace", req.Namespace, "name", gatling.Status.RunnerJobName)
 			gatling.Status.Error = msg
 			if err := r.updateGatlingStatus(ctx, gatling); err != nil {
@@ -240,8 +241,9 @@ func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl
 
 	// Check if the job runs out of time in running the job
 	duration := utils.GetEpocTime() - gatling.Status.RunnerStartTime
-	if duration > maxJobRunWaitTimeInSeconds {
-		msg := fmt.Sprintf("Runs out of time (%d sec) in running the runner job", maxJobCreationWaitTimeInSeconds)
+	maxRunWaitTIme := int32(utils.GetNumEnv("MAX_JOB_RUN_WAIT_TIME", maxJobRunWaitTimeInSeconds))
+	if duration > maxRunWaitTIme {
+		msg := fmt.Sprintf("Runs out of time (%d sec) in running the runner job", maxRunWaitTIme)
 		log.Error(nil, msg, "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
 		gatling.Status.Error = msg
 		if err := r.updateGatlingStatus(ctx, gatling); err != nil {
@@ -317,8 +319,9 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 	if err != nil && apierr.IsNotFound(err) {
 		// Check if the job runs out of time in creating the job
 		duration := utils.GetEpocTime() - gatling.Status.ReporterStartTime
-		if duration > maxJobCreationWaitTimeInSeconds {
-			msg := fmt.Sprintf("Runs out of time (%d sec) in creating the reporter job", maxJobCreationWaitTimeInSeconds)
+		maxCreationWaitTIme := int32(utils.GetNumEnv("MAX_JOB_CREATION_WAIT_TIME", maxJobCreationWaitTimeInSeconds))
+		if duration > maxCreationWaitTIme {
+			msg := fmt.Sprintf("Runs out of time (%d sec) in creating the reporter job", maxCreationWaitTIme)
 			log.Error(err, msg, "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
 			gatling.Status.Error = msg
 			if err := r.updateGatlingStatus(ctx, gatling); err != nil {
@@ -334,8 +337,9 @@ func (r *GatlingReconciler) gatlingReporterReconcile(ctx context.Context, req ct
 	}
 	// Check if the job runs out of time in running the job
 	duration := utils.GetEpocTime() - gatling.Status.ReporterStartTime
-	if duration > maxJobRunWaitTimeInSeconds {
-		msg := fmt.Sprintf("Runs out of time (%d sec) in running the reporter job, and no longer requeue", maxJobCreationWaitTimeInSeconds)
+	maxRunWaitTIme := int32(utils.GetNumEnv("MAX_JOB_RUN_WAIT_TIME", maxJobRunWaitTimeInSeconds))
+	if duration > maxRunWaitTIme {
+		msg := fmt.Sprintf("Runs out of time (%d sec) in running the reporter job, and no longer requeue", maxRunWaitTIme)
 		log.Error(nil, msg, "namespace", req.Namespace, "name", gatling.Status.ReporterJobName)
 		gatling.Status.Error = msg
 		if err := r.updateGatlingStatus(ctx, gatling); err != nil {
@@ -441,6 +445,8 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 		r.getGenerateLocalReport(gatling))
 	log.Info("gatlingRunnerCommand:", "comand", gatlingRunnerCommand)
 
+	var noRestarts int32 = 0
+
 	envVars := gatling.Spec.TestScenarioSpec.Env
 	if gatling.Spec.GenerateReport {
 		gatlingTransferResultCommand := commands.GetGatlingTransferResultCommand(
@@ -457,6 +463,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 				Labels:    labels,
 			},
 			Spec: batchv1.JobSpec{
+				BackoffLimit: &noRestarts,
 				Parallelism: r.getGatlingRunnerJobParallelism(gatling),
 				Completions: r.getGatlingRunnerJobParallelism(gatling),
 				Template: corev1.PodTemplateSpec{
@@ -523,6 +530,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			Labels:    labels,
 		},
 		Spec: batchv1.JobSpec{
+			BackoffLimit: &noRestarts,
 			Parallelism: &gatling.Spec.TestScenarioSpec.Parallelism,
 			Completions: &gatling.Spec.TestScenarioSpec.Parallelism,
 			Template: corev1.PodTemplateSpec{
