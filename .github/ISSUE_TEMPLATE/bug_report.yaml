@@ -1,0 +1,23 @@
+name: Bug Report
+description: Create a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Pre-requisites
+      options:
+        - label: I'd like to contribute the fix myself
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened/what you expected to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
