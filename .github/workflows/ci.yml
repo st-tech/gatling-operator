@@ -73,6 +73,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
       - name: Build and push operator image ${{ steps.get_version.outputs.VERSION }}
         uses: docker/build-push-action@v3
         with:
@@ -86,7 +88,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           tags: cinple/gatling:${{ steps.get_version.outputs.VERSION }}
-          context: gatling
+          context: ./gatling
           build-args: |
             VERSION=${{ steps.get_version.outputs.VERSION }}
           push: ${{ github.event_name == 'release' && github.event.action == 'created' }} #push only on release
