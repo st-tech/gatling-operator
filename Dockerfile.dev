@@ -40,7 +40,7 @@ RUN wget "https://go.dev/dl/go${GO_VERSION}.linux-${GO_DEV_CONTAINER_ARCH}.tar.g
 
 # golang envs
 ENV PATH "${PATH}:/usr/local/go/bin"
-ENV PATH "${PATH}:${HOME}/go/bin"
+ENV PATH "${PATH}:/root/go/bin"
 
 # kind
 # https://github.com/kind-ci/examples/blob/master/.github/workflows/kind.yml
