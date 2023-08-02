@@ -8,18 +8,16 @@
 		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
 		"dockerfile": "../Dockerfile.dev"
 	},
-	// https://github.com/microsoft/vscode-dev-containers/blob/main/script-library/docs/docker.md
 	"mounts": [
+		// Mount the host's Docker socket.
+		// Official document: https://github.com/microsoft/vscode-dev-containers/blob/main/script-library/docs/docker.md
 		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
 	],
 	"runArgs": [
-		"--network=host",
 		"--name=gatling-operator-dev-container",
-		"--hostname=gatling-operator-dev-container"
+		"--hostname=gatling-operator-dev-container",
+		// Set network mode to host to communicate with other containers.
+		"--network=host"
 	],
-	"containerEnv": {
-		// constant
-		"ETCD_UNSUPPORTED_ARCH": "arm64"
-	},
 	"postStartCommand": "if [ -d ${containerWorkspaceFolder}/.kube ]; then cp -r ${containerWorkspaceFolder}/.kube $HOME/.kube; fi"
 }
