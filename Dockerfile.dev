@@ -1,0 +1,47 @@
+FROM --platform=linux/arm64 ubuntu:22.04
+
+# dev container architecture
+ENV GO_DEV_CONTAINER_ARCH arm64
+ENV GO_VERSION 1.17.13
+ENV KUBECTL_VERSION v1.21.10
+
+# dev tools
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+        wget \
+        git \
+        make \
+        gcc
+
+# docker cli
+# https://docs.docker.com/engine/install/ubuntu/#installation-methods
+RUN apt-get install -y \
+        ca-certificates \
+        curl \
+        gnupg \
+    && install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+        | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+    && chmod a+r /etc/apt/keyrings/docker.gpg \
+    && echo "deb [arch=${GO_DEV_CONTAINER_ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+        "$(. /etc/os-release && echo "${VERSION_CODENAME}")" stable" \
+        | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update && apt-get install -y \
+        docker-ce-cli
+
+# kubectl
+RUN curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${GO_DEV_CONTAINER_ARCH}/kubectl" \
+    && chmod +x ./kubectl \
+    && mv ./kubectl /usr/local/bin/kubectl
+
+# golang
+# https://go.dev/doc/install
+RUN wget "https://go.dev/dl/go${GO_VERSION}.linux-${GO_DEV_CONTAINER_ARCH}.tar.gz" \
+    && tar -C /usr/local -xzf "go${GO_VERSION}.linux-${GO_DEV_CONTAINER_ARCH}.tar.gz"
+
+# golang envs
+ENV PATH "${PATH}:/usr/local/go/bin"
+ENV PATH "${PATH}:${HOME}/go/bin"
+
+# kind
+# https://github.com/kind-ci/examples/blob/master/.github/workflows/kind.yml
+RUN GO111MODULE=on go install sigs.k8s.io/kind@latest

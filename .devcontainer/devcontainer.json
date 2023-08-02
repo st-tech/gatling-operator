@@ -1,0 +1,25 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
+{
+	"name": "Gatling Operator Dev Container",
+	"build": {
+		// Sets the run context to one level up instead of the .devcontainer folder.
+		"context": "..",
+		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
+		"dockerfile": "../Dockerfile.dev"
+	},
+	// https://github.com/microsoft/vscode-dev-containers/blob/main/script-library/docs/docker.md
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	],
+	"runArgs": [
+		"--network=host",
+		"--name=gatling-operator-dev-container",
+		"--hostname=gatling-operator-dev-container"
+	],
+	"containerEnv": {
+		// constant
+		"ETCD_UNSUPPORTED_ARCH": "arm64"
+	},
+	"postStartCommand": "if [ -d ${containerWorkspaceFolder}/.kube ]; then cp -r ${containerWorkspaceFolder}/.kube $HOME/.kube; fi"
+}

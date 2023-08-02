@@ -52,6 +52,7 @@ ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l | tr -d '
 else
 	@echo "Creating Cluster"
 	kind create cluster --name ${KIND_CLUSTER_NAME} --image=kindest/node:${K8S_NODE_IMAGE} --config ${KIND_CONFIG_DIR}/cluster.yaml
+	cp -r ${HOME}/.kube .
 endif
 
 ##@ Development
