@@ -20,5 +20,13 @@
 		"--network=host"
 	],
 	// Restore the local kubectl config to a dev container.
-	"postStartCommand": "if [ -d ${containerWorkspaceFolder}/.kube ]; then cp -r ${containerWorkspaceFolder}/.kube $HOME/.kube; fi"
+	"postStartCommand": "if [ -d ${containerWorkspaceFolder}/.kube ]; then cp -r ${containerWorkspaceFolder}/.kube $HOME/.kube; fi",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"streetsidesoftware.code-spell-checker",
+				"mhutchie.git-graph"
+			]
+		}
+	}
 }
