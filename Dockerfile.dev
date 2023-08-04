@@ -3,7 +3,8 @@ FROM ubuntu:22.04
 ENV GO_VERSION 1.17.13
 ENV KUBECTL_VERSION v1.21.10
 
-# KEEP the value as arm64 for any architectures.
+# KEEP the value as arm64.
+# This environment variable is for arm64, but should be left as is for any architecture
 # References:
 # https://github.com/etcd-io/etcd/issues/10677
 # https://github.com/k0sproject/k0s/issues/424
