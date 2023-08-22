@@ -1,11 +1,16 @@
 # How to build and run Gatling Operator
 
-<!-- TOC -->
-<!-- /TOC -->
-
 This is the guide for how to build Gatling Operator from source code.
 And run sample in your local environment.
 In this guide, we use makefile to build and run Gatling Operator.
+
+- [How to build and run Gatling Operator](#how-to-build-and-run-gatling-operator)
+  - [Pre-requisites](#pre-requisites)
+    - [Get the Source code](#get-the-source-code)
+    - [Install the tools](#install-the-tools)
+  - [Create a Kubernetes cluster](#create-a-kubernetes-cluster)
+  - [Build \& Deploy Gatling Operator](#build--deploy-gatling-operator)
+  - [Create All in One manifest](#create-all-in-one-manifest)
 
 ## Pre-requisites
 
