@@ -51,4 +51,3 @@ ENV PATH "${PATH}:/root/go/bin"
 # https://github.com/kind-ci/examples/blob/master/.github/workflows/kind.yml
 # https://kind.sigs.k8s.io/docs/user/resources/
 RUN GO111MODULE=on go install sigs.k8s.io/kind@latest
-
