@@ -19,7 +19,7 @@ The desired state of a distributed Gatling load testing is described through a K
   - Horizontal scaling: number of pods running in parallel during a load testing can be configured
   - Vertical scaling: CPU and RAM resource allocation for Gatling runner Pod can be configured
 - Allows Gatling load testing to start running at a specific time
-  - By default, the Gatling load testing starts running as soon as the runner Pod's init container gets ready. By specifing the start time, the Gatling load testing waits to start running until the specified time
+  - By default, the Gatling load testing starts running as soon as the runner Pod's init container gets ready. By specifying the start time, the Gatling load testing waits to start running until the specified time
 - Gatling Pod attributions
   - Gatling runtime container image
   - [rclone](https://rclone.org/) container image
@@ -43,11 +43,13 @@ The desired state of a distributed Gatling load testing is described through a K
 ## Quick Start
 
 - [Quick Start Guide](docs/quickstart-guide.md)
+
 ## Documentations
 
 - [Architecture](docs/architecture.md)
 - [Gatling CRD Reference](docs/api.md)
 - [User Guide](docs/user-guide.md)
+- [How to build Gatling Operator](docs/user-guide.md)
 
 ## Contributing
 
