@@ -27,6 +27,7 @@ SHELL = /usr/bin/env bash -o pipefail
 
 ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
 KIND_CLUSTER_CONFIG_DIR=$(shell pwd)/config/kind
+KUBECTL_CONFIG_BACKUP_DIR=$(shell pwd)/.kube
 
 all: build
 
@@ -52,7 +53,7 @@ ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l | tr -d '
 else
 	@echo "Creating Cluster"
 	kind create cluster --name ${KIND_CLUSTER_NAME} --image=kindest/node:${K8S_NODE_IMAGE} --config ${KIND_CLUSTER_CONFIG_DIR}/cluster.yaml
-	if [ "${IN_DEV_CONTAINER}" = "true" ]; then mkdir -p .kube && kind get kubeconfig --name ${KIND_CLUSTER_NAME} > .kube/kind-conifg.yaml; fi
+	if [ "${IN_DEV_CONTAINER}" = "true" ]; then mkdir -p ${KUBECTL_CONFIG_BACKUP_DIR} && kind get kubeconfig --name ${KIND_CLUSTER_NAME} > ${KUBECTL_CONFIG_BACKUP_DIR}/kind-conifg.yaml; fi
 endif
 
 ##@ Development
