@@ -49,7 +49,7 @@ The desired state of a distributed Gatling load testing is described through a K
 - [Architecture](docs/architecture.md)
 - [Gatling CRD Reference](docs/api.md)
 - [User Guide](docs/user-guide.md)
-- [How to build Gatling Operator](docs/user-guide.md)
+- [How to build Gatling Operator](docs/build-guide.md)
 
 ## Contributing
 
