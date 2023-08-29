@@ -1,7 +1,6 @@
 # How to build and run Gatling Operator
 
-This is the guide for how to build Gatling Operator from source code.
-And run sample in your local environment.
+This guide explains how to build Gatling Operator from its source code and run a sample in your local environment.
 In this guide, we use makefile to build and run Gatling Operator.
 
 - [How to build and run Gatling Operator](#how-to-build-and-run-gatling-operator)
@@ -153,7 +152,7 @@ kubectl config use-context kind-gatling-cluster
 
     </details>
 
-5. Deploy Controller to Gatling Operator
+5. Deploy Controller to Cluster
 
     - Deploy to Local Kind Cluster
 
@@ -183,7 +182,7 @@ kubectl config use-context kind-gatling-cluster
 
 ## Create All in One manifest
 
-This command creates all in one manifest for Gatling Operator.
+This command creates an all in one manifest for Gatling Operator.
 All in One manifest create CRD and Gatling Operator Controller.
 
 ```bash
