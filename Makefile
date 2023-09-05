@@ -26,7 +26,8 @@ SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
 ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
-KIND_CONFIG_DIR=$(shell pwd)/config/kind
+KIND_CLUSTER_CONFIG_DIR=$(shell pwd)/config/kind
+KUBECONFIG_BACKUP_DIR=$(shell pwd)/.kube
 
 all: build
 
@@ -46,12 +47,16 @@ all: build
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-kind-create: ## Create a kind cluster named ${KIND_CLUSTER_NAME} locally if necessary
+kind-create: ## Create a kind cluster named ${KIND_CLUSTER_NAME} locally if necessary and save the kubectl config.
 ifeq (1, $(shell kind get clusters | grep ${KIND_CLUSTER_NAME} | wc -l | tr -d ' '))
 	@echo "Cluster already exists"
 else
 	@echo "Creating Cluster"
-	kind create cluster --name ${KIND_CLUSTER_NAME} --image=kindest/node:${K8S_NODE_IMAGE} --config ${KIND_CONFIG_DIR}/cluster.yaml
+	kind create cluster --name ${KIND_CLUSTER_NAME} --image=kindest/node:${K8S_NODE_IMAGE} --config ${KIND_CLUSTER_CONFIG_DIR}/cluster.yaml
+ifeq ($(IN_DEV_CONTAINER), true)
+	@echo "kubeconfig backup =>"
+	mkdir -p ${KUBECONFIG_BACKUP_DIR} && kind get kubeconfig --name ${KIND_CLUSTER_NAME} > ${KUBECONFIG_BACKUP_DIR}/kind-conifg.yaml
+endif
 endif
 
 ##@ Development

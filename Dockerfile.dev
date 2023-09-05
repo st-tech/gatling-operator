@@ -1,0 +1,53 @@
+FROM ubuntu:22.04
+
+ENV GO_VERSION 1.17.13
+ENV KUBECTL_VERSION v1.21.10
+
+# KEEP the value as arm64.
+# This environment variable is for arm64, but should be left as is for any architecture
+# References:
+# https://github.com/etcd-io/etcd/issues/10677
+# https://github.com/k0sproject/k0s/issues/424
+ENV ETCD_UNSUPPORTED_ARCH arm64
+
+# Development tools
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+        wget \
+        git \
+        make \
+        gcc
+
+# Docker CLI
+# Referring to https://docs.docker.com/engine/install/ubuntu/#installation-methods
+RUN apt-get install -y \
+        ca-certificates \
+        curl \
+        gnupg \
+    && install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+        | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+    && chmod a+r /etc/apt/keyrings/docker.gpg \
+    && echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+        "$(. /etc/os-release && echo "${VERSION_CODENAME}")" stable" \
+        | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update && apt-get install -y \
+        docker-ce-cli
+
+# kubectl
+# Referring to https://kubernetes.io/ja/docs/tasks/tools/install-kubectl/
+RUN curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/"$(dpkg --print-architecture)"/kubectl" \
+    && chmod +x ./kubectl \
+    && mv ./kubectl /usr/local/bin/kubectl
+
+# golang
+# Referring to https://go.dev/doc/install
+RUN wget "https://go.dev/dl/go${GO_VERSION}.linux-"$(dpkg --print-architecture)".tar.gz" \
+    && tar -C /usr/local -xzf "go${GO_VERSION}.linux-"$(dpkg --print-architecture)".tar.gz"
+ENV PATH "${PATH}:/usr/local/go/bin"
+ENV PATH "${PATH}:/root/go/bin"
+
+# kind
+# References:
+# https://github.com/kind-ci/examples/blob/master/.github/workflows/kind.yml
+# https://kind.sigs.k8s.io/docs/user/resources/
+RUN GO111MODULE=on go install sigs.k8s.io/kind@latest
