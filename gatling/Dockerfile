@@ -1,6 +1,9 @@
+# This is modified based on the original file:
+# https://github.com/denvazh/gatling/tree/master/3.2.1
+#
 # Gatling is a highly capable load testing tool.
 
-FROM openjdk:17-jdk-slim
+FROM openjdk:17-jdk-slim-bullseye
 
 # working directory for gatling
 WORKDIR /opt
@@ -12,7 +15,7 @@ ENV GATLING_VERSION 3.9.5
 RUN mkdir -p gatling
 
 # install gatling
-RUN apt-get update && apt install -y wget bash libc6-dev unzip && \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y wget libc6-dev unzip &&  \
   mkdir -p /tmp/downloads && \
   wget -q -O /tmp/downloads/gatling-$GATLING_VERSION.zip \
   https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/$GATLING_VERSION/gatling-charts-highcharts-bundle-$GATLING_VERSION-bundle.zip && \
