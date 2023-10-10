@@ -66,7 +66,7 @@ fi
 if [ ! -d ${RESULTS_DIR_PATH} ]; then
   mkdir -p ${RESULTS_DIR_PATH}
 fi
-gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} %s
+gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} %s %s
 
 GATLING_EXIT_STATUS=$?
 if [ $GATLING_EXIT_STATUS -ne 0 ]; then
@@ -81,6 +81,8 @@ exit $GATLING_EXIT_STATUS
 		generateLocalReportOption = ""
 	}
 
+	runModeOptionLocal := "-rm local"
+
 	return fmt.Sprintf(template,
 		simulationsDirectoryPath,
 		tempSimulationsDirectoryPath,
@@ -88,7 +90,8 @@ exit $GATLING_EXIT_STATUS
 		resultsDirectoryPath,
 		startTime,
 		simulationClass,
-		generateLocalReportOption)
+		generateLocalReportOption,
+		runModeOptionLocal)
 }
 
 func GetGatlingTransferResultCommand(resultsDirectoryPath string, provider string, region string, storagePath string) string {
