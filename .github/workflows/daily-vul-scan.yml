@@ -1,4 +1,4 @@
-name: Daily Vulnerability Scan
+name: daily vulnerability scan
 
 on:
   push:
@@ -7,6 +7,14 @@ on:
       - add_daily-vul-scan
   # pull_request:
   # workflow_dispatch:
+
+env:
+  IMAGE_NAME: zozo-gatling-operator
+  TRIVY_RESULT_MARKDOWN: trivy-results.md
+
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   build:
@@ -19,7 +27,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version-file: "./go.mod"
+          go-version-file: ./go.mod
           cache: true
 
       - name: Go modules sync
@@ -30,17 +38,39 @@ jobs:
 
       - name: Build an image from Dockerfile
         run: |
-          make docker-build IMG=zozo-gatling-operator:${{ github.sha }}
+          make docker-build IMG="${{ env.IMAGE_NAME }}:${{ github.sha }}"
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: image
-          image-ref: "zozo-gatling-operator:${{ github.sha }}"
-          format: "table"
-          exit-code: "1"
+          image-ref: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          exit-code: 1
           ignore-unfixed: true
-          vuln-type: "os,library"
-          severity: "CRITICAL,HIGH"
-          timeout: "5m0s"
-          scanners: "vuln,secret,config"
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          timeout: 10m0s
+          scanners: vuln,secret,config
+          format: template
+          template: "@gitrivy.tpl"
+          output: ${{ env.TRIVY_RESULT_MARKDOWN }}
+
+      - name: Insert YAML front matter into the result markdown
+        if: always()
+        run: |
+          sed -i '1i\
+          ---\
+          title: "[DO NOT CHANGE] Security Alert"\
+          labels: "trivy, vulnerability"\
+          ---\
+          ' "${{ env.TRIVY_RESULT_MARKDOWN }}"
+
+      - name: Create or update the trivy result issue
+        uses: JasonEtco/create-an-issue@v2
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          filename: ${{ env.TRIVY_RESULT_MARKDOWN }}
+          update_existing: true
+          search_existing: open
