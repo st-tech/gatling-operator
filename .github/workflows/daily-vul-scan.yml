@@ -1,12 +1,8 @@
 name: daily vulnerability scan
 
 on:
-  push:
-    branches:
-      # - main
-      - add_daily-vul-scan
-  # pull_request:
-  # workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
 
 env:
   IMAGE_NAME: zozo-gatling-operator
