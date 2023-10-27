@@ -13,8 +13,8 @@ permissions:
   issues: write
 
 jobs:
-  build:
-    name: Build
+  build-scan-and-save-results:
+    name: Build, scan, and save results
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
