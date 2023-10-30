@@ -3,19 +3,19 @@
 {{- range . -}}
 ## {{ .Target }}
 
-### {{ .Type }}
+### {{ .Type }} [{{ .Class }}]
 
 {{ if .Vulnerabilities -}}
-| Title | Severity | CVE | Package Name | Installed Version | Fixed Version | References |
+| Title | Severity | CVE | Package Name | Installed Version | Fixed Version | PrimaryURL |
 | :--: | :--: | :--: | :--: | :--: | :--: | :-- |
 {{- range .Vulnerabilities }}
 | {{ .Title -}}
-| {{ get $d .Vulnerability.Severity }}{{ .Vulnerability.Severity -}}
+| {{ get $d .Severity }}{{ .Severity -}}
 | {{ .VulnerabilityID -}}
 | {{ .PkgName -}}
 | {{ .InstalledVersion -}}
 | {{ .FixedVersion -}}
-| {{ range $ref := .Vulnerability.References -}}- {{ $ref }}<br>{{- end -}}
+| {{ .PrimaryURL -}}
 |
 {{- end }}
 
