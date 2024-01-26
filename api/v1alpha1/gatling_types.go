@@ -54,6 +54,14 @@ type GatlingSpec struct {
 	// +kubebuilder:validation:Optional
 	CloudStorageSpec CloudStorageSpec `json:"cloudStorageSpec,omitempty"`
 
+	// (Optional) PersistentVolume specification.
+	// +kubebuilder:validation:Optional
+	PersistentVolume corev1.PersistentVolume `json:"persistentVolume,omitempty"`
+
+	// (Optional) PersistentVolumeClaim specification.
+	// +kubebuilder:validation:Optional
+	PersistentVolumeClaim corev1.PersistentVolumeClaim `json:"persistentVolumeClaim,omitempty"`
+
 	// (Optional) Notification Service specification.
 	// +kubebuilder:validation:Optional
 	NotificationServiceSpec NotificationServiceSpec `json:"notificationServiceSpec,omitempty"`
@@ -88,6 +96,10 @@ type PodSpec struct {
 	// (Required) ServiceAccountName specification.
 	// +kubebuilder:validation:Required
 	ServiceAccountName string `json:"serviceAccountName"`
+
+	// (Optional) volumes specification.
+	// +kubebuilder:validation:Optional
+	Volumes []corev1.Volume `json:"volumes,omitempty"`
 }
 
 // TestScenarioSpec defines the load testing scenario
@@ -133,6 +145,10 @@ type TestScenarioSpec struct {
 	// (Optional) Environment variables used for running load testing scenario.
 	// +optional
 	Env []corev1.EnvVar `json:"env,omitempty"`
+
+	// (Optional) Pod volumes to mount into the container's filesystem.
+	// +kubebuilder:validation:Optional
+	VolumeMounts []corev1.VolumeMount `json:"volumeMounts,omitempty"`
 }
 
 // CloudStorageSpec defines Cloud Storage Provider specification.
