@@ -64,6 +64,8 @@ type GatlingReconciler struct {
 
 //+kubebuilder:rbac:groups="batch",resources=jobs,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="core",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="core",resources=persistentvolumes,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="core",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="core",resources=secrets,verbs=get;list;watch
 //+kubebuilder:rbac:groups=gatling-operator.tech.zozo.com,resources=gatlings,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=gatling-operator.tech.zozo.com,resources=gatlings/status,verbs=get;update;patch
@@ -87,6 +89,13 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		if gatling.Spec.CleanupAfterJobDone {
 			log.Info(fmt.Sprintf("Cleaning up gatlig %s", gatling.Name))
 			r.cleanupGatling(ctx, req, gatling.Name)
+			if gatling.Spec.PersistentVolumeSpec.Name != "" {
+				log.Info(fmt.Sprintf("Cleaning up persistent volume %s", gatling.Spec.PersistentVolumeSpec.Name))
+				if err := r.cleanupPersistentVolume(ctx, req, gatling.Spec.PersistentVolumeSpec.Name); err != nil {
+					log.Error(err, "Failed to clean up persistent volume")
+					return doNotRequeue(err)
+				}
+			}
 		}
 		return doNotRequeue(nil)
 	}
@@ -408,29 +417,31 @@ func (r *GatlingReconciler) createObjectsForCR(ctx context.Context, gatling *gat
 		}
 	}
 	// Create PersistentVolume if defined to create in CR
-	if &gatling.Spec.PersistentVolume != nil && gatling.Spec.PersistentVolume.GetName() != "" {
-		volumeName := gatling.Spec.PersistentVolume.GetName()
+	if &gatling.Spec.PersistentVolumeSpec != nil && gatling.Spec.PersistentVolumeSpec.Name != "" {
+		volumeName := gatling.Spec.PersistentVolumeSpec.Name
 		foundVolue := &corev1.PersistentVolume{}
 		if err := r.Get(ctx, client.ObjectKey{Name: volumeName, Namespace: namespace}, foundVolue); err != nil {
 			if !apierr.IsNotFound(err) {
 				return err
 			}
-			if err := r.createObject(ctx, gatling, &gatling.Spec.PersistentVolume); err != nil {
-				log.Error(err, fmt.Sprintf("Failed to creating new PersistentVolume: namespace %s name %s", gatling.Spec.PersistentVolume.GetNamespace(), gatling.Spec.PersistentVolume.GetName()))
+			persistentVolume := r.newPersistentVolumeForCR(gatling, volumeName, &gatling.Spec.PersistentVolumeSpec.Spec)
+			if err := r.createObject(ctx, gatling, persistentVolume); err != nil {
+				log.Error(err, fmt.Sprintf("Failed to creating new PersistentVolume: namespace %s name %s", gatling.GetNamespace(), volumeName))
 				return err
 			}
 		}
 	}
 	// Create PersistentVolumeClaim if defined to create in CR
-	if &gatling.Spec.PersistentVolumeClaim != nil && gatling.Spec.PersistentVolumeClaim.GetName() != "" {
-		claimName := gatling.Spec.PersistentVolumeClaim.GetName()
+	if &gatling.Spec.PersistentVolumeClaimSpec != nil && gatling.Spec.PersistentVolumeClaimSpec.Name != "" {
+		claimName := gatling.Spec.PersistentVolumeClaimSpec.Name
 		foundClaim := &corev1.PersistentVolumeClaim{}
 		if err := r.Get(ctx, client.ObjectKey{Name: claimName, Namespace: namespace}, foundClaim); err != nil {
 			if !apierr.IsNotFound(err) {
 				return err
 			}
-			if err := r.createObject(ctx, gatling, &gatling.Spec.PersistentVolumeClaim); err != nil {
-				log.Error(err, fmt.Sprintf("Failed to creating new PersistentVolumeClaim: namespace %s name %s", gatling.Spec.PersistentVolumeClaim.GetNamespace(), gatling.Spec.PersistentVolumeClaim.GetName()))
+			persistentVolumeClaim := r.newPersistentVolumeClaimForCR(gatling, claimName, &gatling.Spec.PersistentVolumeClaimSpec.Spec)
+			if err := r.createObject(ctx, gatling, persistentVolumeClaim); err != nil {
+				log.Error(err, fmt.Sprintf("Failed to creating new PersistentVolumeClaim: namespace %s name %s", gatling.GetNamespace(), claimName))
 				return err
 			}
 		}
@@ -453,6 +464,48 @@ func (r *GatlingReconciler) newConfigMapForCR(gatling *gatlingv1alpha1.Gatling, 
 			Labels:    labels,
 		},
 		Data: data,
+	}
+}
+
+func (r *GatlingReconciler) newPersistentVolumeForCR(gatling *gatlingv1alpha1.Gatling, name string, spec *corev1.PersistentVolumeSpec) *corev1.PersistentVolume {
+	labels := map[string]string{
+		"app": gatling.Name,
+	}
+	return &corev1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: gatling.Namespace,
+			Labels:    labels,
+		},
+		Spec: *spec,
+	}
+}
+
+func (r *GatlingReconciler) cleanupPersistentVolume(ctx context.Context, req ctrl.Request, name string) error {
+	pv := &corev1.PersistentVolume{}
+	if err := r.Get(ctx, client.ObjectKey{Name: name, Namespace: req.Namespace}, pv); err != nil {
+		if apierr.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	if err := r.Delete(ctx, pv); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *GatlingReconciler) newPersistentVolumeClaimForCR(gatling *gatlingv1alpha1.Gatling, name string, spec *corev1.PersistentVolumeClaimSpec) *corev1.PersistentVolumeClaim {
+	labels := map[string]string{
+		"app": gatling.Name,
+	}
+	return &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: gatling.Namespace,
+			Labels:    labels,
+		},
+		Spec: *spec,
 	}
 }
 

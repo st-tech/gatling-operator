@@ -56,11 +56,11 @@ type GatlingSpec struct {
 
 	// (Optional) PersistentVolume specification.
 	// +kubebuilder:validation:Optional
-	PersistentVolume corev1.PersistentVolume `json:"persistentVolume,omitempty"`
+	PersistentVolumeSpec PersistentVolumeSpec `json:"persistentVolume,omitempty"`
 
 	// (Optional) PersistentVolumeClaim specification.
 	// +kubebuilder:validation:Optional
-	PersistentVolumeClaim corev1.PersistentVolumeClaim `json:"persistentVolumeClaim,omitempty"`
+	PersistentVolumeClaimSpec PersistentVolumeClaimSpec `json:"persistentVolumeClaim,omitempty"`
 
 	// (Optional) Notification Service specification.
 	// +kubebuilder:validation:Optional
@@ -181,6 +181,26 @@ type NotificationServiceSpec struct {
 	// (Required) The name of secret in which all key/value sets needed for the notification are stored.
 	// +kubebuilder:validation:Required
 	SecretName string `json:"secretName"`
+}
+
+type PersistentVolumeSpec struct {
+	// (Required) The name of the PersistentVolume.
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+
+	// (Required) PersistentVolumeSpec is the specification of a persistent volume.
+	// +kubebuilder:validation:Required
+	Spec corev1.PersistentVolumeSpec `json:"spec"`
+}
+
+type PersistentVolumeClaimSpec struct {
+	// (Required) The name of the PersistentVolumeClaim.
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+
+	// (Required) PersistentVolumeClaimSpec is the specification of a persistent volume.
+	// +kubebuilder:validation:Required
+	Spec corev1.PersistentVolumeClaimSpec `json:"spec"`
 }
 
 // GatlingStatus defines the observed state of Gatling
