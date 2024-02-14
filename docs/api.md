@@ -63,6 +63,8 @@ _Appears in:_
 | `cleanupAfterJobDone` _boolean_ | (Optional) The flag of cleanup gatling resources after the job done. Defaults to `false` |
 | `podSpec` _[PodSpec](#podspec)_ | (Optional) Gatling Pod specification. |
 | `cloudStorageSpec` _[CloudStorageSpec](#cloudstoragespec)_ | (Optional) Cloud Storage Provider specification. |
+| `persistentVolume` _[PersistentVolumeSpec](#persistentvolumespec)_ | (Optional) PersistentVolume specification. |
+| `persistentVolumeClaim` _[PersistentVolumeClaimSpec](#persistentvolumeclaimspec)_ | (Optional) PersistentVolumeClaim specification. |
 | `notificationServiceSpec` _[NotificationServiceSpec](#notificationservicespec)_ | (Optional) Notification Service specification. |
 | `testScenarioSpec` _[TestScenarioSpec](#testscenariospec)_ | (Required) Test Scenario specification |
 
@@ -84,6 +86,36 @@ _Appears in:_
 | `secretName` _string_ | (Required) The name of secret in which all key/value sets needed for the notification are stored. |
 
 
+#### PersistentVolumeClaimSpec
+
+
+
+
+
+_Appears in:_
+- [GatlingSpec](#gatlingspec)
+
+| Field | Description |
+| --- | --- |
+| `name` _string_ | (Required) The name of the PersistentVolumeClaim. |
+| `spec` _[PersistentVolumeClaimSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#persistentvolumeclaimspec-v1-core)_ | (Required) PersistentVolumeClaimSpec is the specification of a persistent volume. |
+
+
+#### PersistentVolumeSpec
+
+
+
+
+
+_Appears in:_
+- [GatlingSpec](#gatlingspec)
+
+| Field | Description |
+| --- | --- |
+| `name` _string_ | (Required) The name of the PersistentVolume. |
+| `spec` _[PersistentVolumeSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#persistentvolumespec-v1-core)_ | (Required) PersistentVolumeSpec is the specification of a persistent volume. |
+
+
 #### PodSpec
 
 
@@ -101,6 +133,7 @@ _Appears in:_
 | `affinity` _[Affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#affinity-v1-core)_ | (Optional) Affinity specification. |
 | `tolerations` _[Toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#toleration-v1-core) array_ | (Optional) Tolerations specification. |
 | `serviceAccountName` _string_ | (Required) ServiceAccountName specification. |
+| `volumes` _[Volume](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volume-v1-core) array_ | (Optional) volumes specification. |
 
 
 #### TestScenarioSpec
@@ -124,5 +157,6 @@ _Appears in:_
 | `resourceData` _object (keys:string, values:string)_ | (Optional) Resource Data. |
 | `gatlingConf` _object (keys:string, values:string)_ | (Optional) Gatling Configurations. |
 | `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core) array_ | (Optional) Environment variables used for running load testing scenario. |
+| `volumeMounts` _[VolumeMount](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core) array_ | (Optional) Pod volumes to mount into the container's filesystem. |
 
 
