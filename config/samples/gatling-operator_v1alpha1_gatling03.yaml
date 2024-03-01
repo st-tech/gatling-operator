@@ -121,7 +121,7 @@ spec:
     # simulationsDirectoryPath: "/dir-path-to-simulation" # Optional. Default: /opt/gatling/user-files/simulations
     # resourcesDirectoryPath: "dir-path-to-resources"     # Optional. Default: /opt/gatling/user-files/resources
     # resultsDirectoryPath: "dir-path-to-results"         # Optional. Default: /opt/gatling/results.
-    simulationClass: "PersistentVolumeSampleSimulation"                  # Gatling simulation class name
+    simulationClass: "PersistentVolumeSampleSimulation"   # Gatling simulation class name
     env:
       - name: ENV
         value: "dev"

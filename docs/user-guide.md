@@ -7,6 +7,7 @@
 	- [Gatling Load Testing Configuration and Deployment](#gatling-load-testing-configuration-and-deployment)
 		- [Create Custom Gatling Image to bundle Gatling Load Testing Files](#create-custom-gatling-image-to-bundle-gatling-load-testing-files)
 		- [Add Gatling Load Testing Files in Gatling CR](#add-gatling-load-testing-files-in-gatling-cr)
+		- [Read Gatling Load Testing Files from PersistentVolume](#read-gatling-load-testing-files-from-persistentVolume)
 		- [Debug and Trace Gatling Load Testing](#debug-and-trace-gatling-load-testing)
 		- [How to Pull Gatling Runtime Image from Private Registry](#how-to-pull-gatling-runtime-image-from-private-registry)
 			- [Create an "image pull secret"](#create-an-image-pull-secret)
@@ -50,10 +51,11 @@ As described in Configuration Overview, there are 2 things that you need to cons
 
 For `Gatling docker image`, you can use default image `ghcr.io/st-tech/gatling:latest`, or you can create custom image to use.
 
-For `Gatling load testing related files`, you have 2 options:
+For `Gatling load testing related files`, you have 3 options:
 
 - Create custom image to bundle Gatling load testing files with Java runtime and Gatling standalone bundle package
 - Add Gatling load testing files as multi-line definitions in `.spec.testScenatioSpec` part of `Gatling CR`
+- Set up persistent volumes in `.persistentVolume` and `.persistentVolumeClaim` in `Gatling CR` and load test files from the persistent volumes in Gatling load test files.
 
 ### Create Custom Gatling Image to bundle Gatling Load Testing Files
 
@@ -204,6 +206,58 @@ spec:
 For a full sample manifest, please check [this](../config/samples/gatling-operator_v1alpha1_gatling02.yaml).
 
 📝 **Caution**: Please be noted that the data stored in a ConfigMap cannot exceed 1 MiB (ref [this](https://kubernetes.io/docs/concepts/configuration/configmap/)). If you need to store files that are larger than this limit, you may want to consider create Custom Gatling Image to bundle them in the container.
+
+### Read Gatling Load Testing Files from PersistentVolume
+
+You can place Gatling load testing files in a [Kubernetes persistent volume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) and read them from there. When you configure the required settings in `.spec.persistentVolume` and `.spec.persistentVolumeClaim`, Gatling Controller automatically creates the `PersistentVolume` and `PersistentVolumeClaim` resources in the cluster.
+
+If you're configuring Amazon EFS as a persistent volume, like this:
+```yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: efs-sc
+provisioner: efs.csi.aws.com
+
+---
+
+apiVersion: gatling-operator.tech.zozo.com/v1alpha1
+kind: Gatling
+metadata:
+  name: gatling-sample
+spec:
+  podSpec:
+    volumes:
+      - name: efs-vol
+        persistentVolumeClaim:
+          claimName: efs-pvc
+  persistentVolume:
+    name: efs-pv
+    spec:
+      capacity:
+        storage: 1Gi
+      accessModes:
+        - ReadWriteMany
+      storageClassName: efs-sc
+      csi:
+        driver: efs.csi.aws.com
+        volumeHandle: fs-xxxxxx
+  persistentVolumeClaim:
+    name: efs-pvc
+    spec:
+      accessModes:
+        - ReadWriteMany
+      storageClassName: efs-sc
+      resources:
+        requests:
+          storage: 1Gi
+  testScenarioSpec:
+    volumeMounts:
+      - name: efs-vol
+        mountPath: /opt/gatling/user-files
+```
+
+Assuming that `StorageClass` resources is created in advance, and if `PersistentVolume` resources are also created in advance, configuring only `podSec.volumes` and `testScenarioSpec.volumeMounts` settings will be sufficient for operation.
 
 ### Debug and Trace Gatling Load Testing
 
