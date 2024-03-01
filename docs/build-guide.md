@@ -27,6 +27,7 @@ git clone https://github.com/st-tech/gatling-operator
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 - [go](https://go.dev/doc/install)
+  - go version must be 1.17
 
 ## Create a Kubernetes cluster
 
