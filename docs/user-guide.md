@@ -55,7 +55,7 @@ For `Gatling load testing related files`, you have 3 options:
 
 - Create custom image to bundle Gatling load testing files with Java runtime and Gatling standalone bundle package
 - Add Gatling load testing files as multi-line definitions in `.spec.testScenatioSpec` part of `Gatling CR`
-- Set up persistent volumes in `.persistentVolume` and `.persistentVolumeClaim` in `Gatling CR` and load test files from the persistent volumes in Gatling load test files.
+- Set up persistent volume in `.persistentVolume` and `.persistentVolumeClaim` in `Gatling CR` and load test files from the persistent volume in Gatling load test files.
 
 ### Create Custom Gatling Image to bundle Gatling Load Testing Files
 

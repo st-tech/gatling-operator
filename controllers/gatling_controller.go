@@ -143,7 +143,7 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 // Implementation of reconciler logic for the runner job
 func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
-	if err := r.createObjectsForCR(ctx, gatling, req.Namespace, log); err != nil {
+	if err := r.createVolumesForCR(ctx, gatling, req.Namespace, log); err != nil {
 		return true, err
 	}
 	if gatling.Status.RunnerJobName == "" {
@@ -370,7 +370,7 @@ func doNotRequeue(err error) (ctrl.Result, error) {
 	return ctrl.Result{}, err
 }
 
-func (r *GatlingReconciler) createObjectsForCR(ctx context.Context, gatling *gatlingv1alpha1.Gatling, namespace string, log logr.Logger) error {
+func (r *GatlingReconciler) createVolumesForCR(ctx context.Context, gatling *gatlingv1alpha1.Gatling, namespace string, log logr.Logger) error {
 	// Create Simulation Data ConfigMap if defined to create in CR
 	if &gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
 		configMapName := gatling.Name + "-simulations-data"
@@ -419,14 +419,14 @@ func (r *GatlingReconciler) createObjectsForCR(ctx context.Context, gatling *gat
 	// Create PersistentVolume if defined to create in CR
 	if &gatling.Spec.PersistentVolumeSpec != nil && gatling.Spec.PersistentVolumeSpec.Name != "" {
 		volumeName := gatling.Spec.PersistentVolumeSpec.Name
-		foundVolue := &corev1.PersistentVolume{}
-		if err := r.Get(ctx, client.ObjectKey{Name: volumeName, Namespace: namespace}, foundVolue); err != nil {
+		foundVolume := &corev1.PersistentVolume{}
+		if err := r.Get(ctx, client.ObjectKey{Name: volumeName, Namespace: namespace}, foundVolume); err != nil {
 			if !apierr.IsNotFound(err) {
 				return err
 			}
 			persistentVolume := r.newPersistentVolumeForCR(gatling, volumeName, &gatling.Spec.PersistentVolumeSpec.Spec)
 			if err := r.createObject(ctx, gatling, persistentVolume); err != nil {
-				log.Error(err, fmt.Sprintf("Failed to creating new PersistentVolume: namespace %s name %s", gatling.GetNamespace(), volumeName))
+				log.Error(err, fmt.Sprintf("Failed to creating new PersistentVolume: namespace %s name %s", persistentVolume.GetNamespace(), volumeName))
 				return err
 			}
 		}
@@ -441,7 +441,7 @@ func (r *GatlingReconciler) createObjectsForCR(ctx context.Context, gatling *gat
 			}
 			persistentVolumeClaim := r.newPersistentVolumeClaimForCR(gatling, claimName, &gatling.Spec.PersistentVolumeClaimSpec.Spec)
 			if err := r.createObject(ctx, gatling, persistentVolumeClaim); err != nil {
-				log.Error(err, fmt.Sprintf("Failed to creating new PersistentVolumeClaim: namespace %s name %s", gatling.GetNamespace(), claimName))
+				log.Error(err, fmt.Sprintf("Failed to creating new PersistentVolumeClaim: namespace %s name %s", persistentVolumeClaim.GetNamespace(), claimName))
 				return err
 			}
 		}
