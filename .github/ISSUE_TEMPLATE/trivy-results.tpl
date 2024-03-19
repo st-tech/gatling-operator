@@ -1,4 +1,5 @@
 {{- $severity_icon := dict "CRITICAL" "🔴" "HIGH" "🟠" "MEDIUM" "🟡" "UNKNOWN" "🟤" -}}
+{{- $vulns_count := 0 }}
 
 {{- range . -}}
 ## {{ .Target }}
@@ -17,6 +18,7 @@
 | {{ .FixedVersion -}}
 | {{ .PrimaryURL -}}
 |
+{{- $vulns_count = add1 $vulns_count -}}
 {{- end }}
 
 {{ else -}}
@@ -25,3 +27,5 @@ _No vulnerabilities found_
 {{ end }}
 
 {{- end }}
+---
+**Total count of vulnerabilities: {{ $vulns_count }}**
