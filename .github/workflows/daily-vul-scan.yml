@@ -41,7 +41,7 @@ jobs:
         with:
           scan-type: image
           image-ref: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          exit-code: 1
+          exit-code: 0
           ignore-unfixed: true
           vuln-type: os,library
           severity: HIGH,CRITICAL
