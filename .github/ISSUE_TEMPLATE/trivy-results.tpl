@@ -1,4 +1,4 @@
-{{ $d := dict "CRITICAL" "🔴" "HIGH" "🟠" "MEDIUM" "🟡" "UNKNOWN" "🟤" }}
+{{- $severity_icon := dict "CRITICAL" "🔴" "HIGH" "🟠" "MEDIUM" "🟡" "UNKNOWN" "🟤" -}}
 
 {{- range . -}}
 ## {{ .Target }}
@@ -10,7 +10,7 @@
 | :--: | :--: | :--: | :--: | :--: | :--: | :-- |
 {{- range .Vulnerabilities }}
 | {{ .Title -}}
-| {{ get $d .Severity }}{{ .Severity -}}
+| {{ get $severity_icon .Severity }}{{ .Severity -}}
 | {{ .VulnerabilityID -}}
 | {{ .PkgName -}}
 | {{ .InstalledVersion -}}
