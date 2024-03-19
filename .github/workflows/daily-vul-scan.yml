@@ -56,7 +56,7 @@ jobs:
         run: |
           sed -i '1i\
           ---\
-          title: "[DO NOT CHANGE] Security Alert"\
+          title: "Security Alert by Trivy"\
           labels: "trivy, vulnerability"\
           ---\
           ' "${{ env.TRIVY_RESULTS_MARKDOWN }}"
