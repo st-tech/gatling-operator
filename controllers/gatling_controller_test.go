@@ -86,7 +86,7 @@ var _ = Context("Inside of a new namespace", func() {
 			Expect(job.Spec.Completions).Should(Equal(pointer.Int32Ptr(2)))
 		})
 
-		It("shoud create a New Gatling resource with PersistentVolume resources", func() {
+		It("should create a New Gatling resource with PersistentVolume resources", func() {
 			pvFS := corev1.PersistentVolumeFilesystem
 			gatling := &gatlingv1alpha1.Gatling{
 				ObjectMeta: metav1.ObjectMeta{
