@@ -1,4 +1,5 @@
-{{ $d := dict "CRITICAL" "🔴" "HIGH" "🟠" "MEDIUM" "🟡" "UNKNOWN" "🟤" }}
+{{- $severity_icon := dict "CRITICAL" "🔴" "HIGH" "🟠" "MEDIUM" "🟡" "UNKNOWN" "🟤" -}}
+{{- $vulns_count := 0 }}
 
 {{- range . -}}
 ## {{ .Target }}
@@ -10,13 +11,14 @@
 | :--: | :--: | :--: | :--: | :--: | :--: | :-- |
 {{- range .Vulnerabilities }}
 | {{ .Title -}}
-| {{ get $d .Severity }}{{ .Severity -}}
+| {{ get $severity_icon .Severity }}{{ .Severity -}}
 | {{ .VulnerabilityID -}}
 | {{ .PkgName -}}
 | {{ .InstalledVersion -}}
 | {{ .FixedVersion -}}
 | {{ .PrimaryURL -}}
 |
+{{- $vulns_count = add1 $vulns_count -}}
 {{- end }}
 
 {{ else -}}
@@ -25,3 +27,5 @@ _No vulnerabilities found_
 {{ end }}
 
 {{- end }}
+---
+**Total count of vulnerabilities: {{ $vulns_count }}**

@@ -37,11 +37,11 @@ jobs:
           make docker-build IMG="${{ env.IMAGE_NAME }}:${{ github.sha }}"
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.18.0
         with:
           scan-type: image
           image-ref: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          exit-code: 1
+          exit-code: 0
           ignore-unfixed: true
           vuln-type: os,library
           severity: HIGH,CRITICAL
@@ -51,19 +51,32 @@ jobs:
           template: "@.github/ISSUE_TEMPLATE/trivy-results.tpl"
           output: ${{ env.TRIVY_RESULTS_MARKDOWN }}
 
+      - name: Extract total count of vulnerabilities
+        id: extract-total-cnt-of-vulns
+        run: |
+          if [[ $(cat "${{ env.TRIVY_RESULTS_MARKDOWN }}") =~ Total\ count\ of\ vulnerabilities:\ ([0-9]+) ]]; then
+            result=${BASH_REMATCH[0]}
+            echo "$result"
+            total_cnt_of_vulns=${BASH_REMATCH[1]}
+            echo "total_cnt_of_vulns=$total_cnt_of_vulns" >> "$GITHUB_OUTPUT"
+          else
+            echo "Error: Failed to extract total count of vulnerabilities"
+            exit 1
+          fi
+
       - name: Insert YAML front matter into the results markdown
-        if: always()
+        if: ${{ fromJson(steps.extract-total-cnt-of-vulns.outputs.total_cnt_of_vulns) > 0 }}
         run: |
           sed -i '1i\
           ---\
-          title: "[DO NOT CHANGE] Security Alert"\
+          title: "Security Alert by Trivy"\
           labels: "trivy, vulnerability"\
           ---\
           ' "${{ env.TRIVY_RESULTS_MARKDOWN }}"
 
       - name: Create or update the trivy results issue
+        if: ${{ fromJson(steps.extract-total-cnt-of-vulns.outputs.total_cnt_of_vulns) > 0 }}
         uses: JasonEtco/create-an-issue@v2
-        if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
