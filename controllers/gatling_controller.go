@@ -464,8 +464,8 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 			},
 			Spec: batchv1.JobSpec{
 				BackoffLimit: &noRestarts,
-				Parallelism: r.getGatlingRunnerJobParallelism(gatling),
-				Completions: r.getGatlingRunnerJobParallelism(gatling),
+				Parallelism:  r.getGatlingRunnerJobParallelism(gatling),
+				Completions:  r.getGatlingRunnerJobParallelism(gatling),
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:        r.getObjectMeta(gatling).Name,
@@ -479,7 +479,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 						InitContainers: []corev1.Container{
 							{
 								Name:      "gatling-waiter",
-								Image:     "bitnami/kubectl:1.21.8",
+								Image:     "bitnami/kubectl:1.29.3",
 								Command:   []string{"/bin/sh", "-c"},
 								Args:      []string{gatlingWaiterCommand},
 								Resources: r.getPodResources(gatling),
@@ -531,8 +531,8 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 		},
 		Spec: batchv1.JobSpec{
 			BackoffLimit: &noRestarts,
-			Parallelism: &gatling.Spec.TestScenarioSpec.Parallelism,
-			Completions: &gatling.Spec.TestScenarioSpec.Parallelism,
+			Parallelism:  &gatling.Spec.TestScenarioSpec.Parallelism,
+			Completions:  &gatling.Spec.TestScenarioSpec.Parallelism,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        r.getObjectMeta(gatling).Name,
@@ -546,7 +546,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 					InitContainers: []corev1.Container{
 						{
 							Name:      "gatling-waiter",
-							Image:     "bitnami/kubectl:1.21.8",
+							Image:     "bitnami/kubectl:1.29.3",
 							Command:   []string{"/bin/sh", "-c"},
 							Args:      []string{gatlingWaiterCommand},
 							Resources: r.getPodResources(gatling),

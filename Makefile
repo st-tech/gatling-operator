@@ -97,8 +97,8 @@ run: manifests generate fmt vet ## Run a controller from your host.
 docker-build: test ## Build docker image with the manager.
 	docker build -t ${IMG} .
 
-docker-push: docker-build ## Push docker image with the manager.
-	docker push ${IMG}
+docker-push: test ## Push docker image with the manager.
+	docker buildx build --platform linux/amd64,linux/arm64 -t ${IMG} . --push
 
 kind-load-image: kind-create docker-build ## Load local docker image into the kind cluster
 	@echo "Loading image into kind"
