@@ -82,8 +82,11 @@ jobs:
           echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
           echo ::set-output name=TAG_NAME::${GITHUB_REF#refs/tags/}
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
       - name: Create release YAML (gatling-operator.yaml)
         env:
