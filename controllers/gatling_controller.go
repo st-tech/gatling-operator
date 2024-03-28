@@ -49,6 +49,7 @@ const (
 	maxJobRunWaitTimeInSeconds         = 10800 // 10800 sec (3 hours)
 	defaultGatlingImage                = "ghcr.io/st-tech/gatling:latest"
 	defaultRcloneImage                 = "rclone/rclone:latest"
+	defaultSimulationFormat            = "bundle"
 	defaultSimulationsDirectoryPath    = "/opt/gatling/user-files/simulations"
 	defaultResourcesDirectoryPath      = "/opt/gatling/user-files/resources"
 	defaultResultsDirectoryPath        = "/opt/gatling/results"
@@ -521,6 +522,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 	)
 
 	gatlingRunnerCommand := commands.GetGatlingRunnerCommand(
+		r.getSimulationFormat(gatling),
 		r.getSimulationsDirectoryPath(gatling),
 		r.getTempSimulationsDirectoryPath(gatling),
 		r.getResourcesDirectoryPath(gatling),
@@ -1070,6 +1072,14 @@ func (r *GatlingReconciler) getPodServiceAccountName(gatling *gatlingv1alpha1.Ga
 		serviceAccountName = gatling.Spec.PodSpec.ServiceAccountName
 	}
 	return serviceAccountName
+}
+
+func (r *GatlingReconciler) getSimulationFormat(gatling *gatlingv1alpha1.Gatling) string {
+	format := defaultSimulationFormat
+	if &gatling.Spec.TestScenarioSpec != nil && gatling.Spec.TestScenarioSpec.SimulationsFormat != "" {
+		format = gatling.Spec.TestScenarioSpec.SimulationsFormat
+	}
+	return format
 }
 
 func (r *GatlingReconciler) getSimulationsDirectoryPath(gatling *gatlingv1alpha1.Gatling) string {
