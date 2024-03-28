@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 // Package v1alpha1 contains API Schema definitions for the gatling-operator v1alpha1 API group
-//+kubebuilder:object:generate=true
-//+groupName=gatling-operator.tech.zozo.com
+// +kubebuilder:object:generate=true
+// +groupName=gatling-operator.tech.zozo.com
 package v1alpha1
 
 import (

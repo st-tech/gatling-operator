@@ -64,6 +64,8 @@ type GatlingReconciler struct {
 
 //+kubebuilder:rbac:groups="batch",resources=jobs,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="core",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="core",resources=persistentvolumes,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="core",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="core",resources=secrets,verbs=get;list;watch
 //+kubebuilder:rbac:groups=gatling-operator.tech.zozo.com,resources=gatlings,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=gatling-operator.tech.zozo.com,resources=gatlings/status,verbs=get;update;patch
@@ -87,6 +89,13 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		if gatling.Spec.CleanupAfterJobDone {
 			log.Info(fmt.Sprintf("Cleaning up gatlig %s", gatling.Name))
 			r.cleanupGatling(ctx, req, gatling.Name)
+			if gatling.Spec.PersistentVolumeSpec.Name != "" {
+				log.Info(fmt.Sprintf("Cleaning up persistent volume %s", gatling.Spec.PersistentVolumeSpec.Name))
+				if err := r.cleanupPersistentVolume(ctx, req, gatling.Spec.PersistentVolumeSpec.Name); err != nil {
+					log.Error(err, "Failed to clean up persistent volume")
+					return doNotRequeue(err)
+				}
+			}
 		}
 		return doNotRequeue(nil)
 	}
@@ -134,53 +143,8 @@ func (r *GatlingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 // Implementation of reconciler logic for the runner job
 func (r *GatlingReconciler) gatlingRunnerReconcile(ctx context.Context, req ctrl.Request, gatling *gatlingv1alpha1.Gatling, log logr.Logger) (bool, error) {
-	// Create Simulation Data ConfigMap if defined to create in CR
-	if &gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
-		configMapName := gatling.Name + "-simulations-data"
-		foundConfigMap := &corev1.ConfigMap{}
-		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
-			if apierr.IsNotFound(err) {
-				simulationDataConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.SimulationData)
-				if err := r.createObject(ctx, gatling, simulationDataConfigMap); err != nil {
-					log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", simulationDataConfigMap.GetNamespace(), simulationDataConfigMap.GetName()))
-					return true, err
-				}
-			} else {
-				return true, err
-			}
-		}
-	}
-	// Create Resource Data ConfigMap if defined to create in CR
-	if &gatling.Spec.TestScenarioSpec.ResourceData != nil && len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
-		configMapName := gatling.Name + "-resources-data"
-		foundConfigMap := &corev1.ConfigMap{}
-		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
-			if apierr.IsNotFound(err) {
-				resourceDataConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.ResourceData)
-				if err := r.createObject(ctx, gatling, resourceDataConfigMap); err != nil {
-					log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", resourceDataConfigMap.GetNamespace(), resourceDataConfigMap.GetName()))
-					return true, err
-				}
-			} else {
-				return true, err
-			}
-		}
-	}
-	// Create GatlingConf ConfigMap if defined to create in CR
-	if &gatling.Spec.TestScenarioSpec.GatlingConf != nil && len(gatling.Spec.TestScenarioSpec.GatlingConf) > 0 {
-		configMapName := gatling.Name + "-gatling-conf"
-		foundConfigMap := &corev1.ConfigMap{}
-		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: req.Namespace}, foundConfigMap); err != nil {
-			if apierr.IsNotFound(err) {
-				gatlingConfConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.GatlingConf)
-				if err := r.createObject(ctx, gatling, gatlingConfConfigMap); err != nil {
-					log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", gatlingConfConfigMap.GetNamespace(), gatlingConfConfigMap.GetName()))
-					return true, err
-				}
-			} else {
-				return true, err
-			}
-		}
+	if err := r.createVolumesForCR(ctx, gatling, req.Namespace, log); err != nil {
+		return true, err
 	}
 	if gatling.Status.RunnerJobName == "" {
 		var storagePath = ""
@@ -406,6 +370,85 @@ func doNotRequeue(err error) (ctrl.Result, error) {
 	return ctrl.Result{}, err
 }
 
+func (r *GatlingReconciler) createVolumesForCR(ctx context.Context, gatling *gatlingv1alpha1.Gatling, namespace string, log logr.Logger) error {
+	// Create Simulation Data ConfigMap if defined to create in CR
+	if &gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
+		configMapName := gatling.Name + "-simulations-data"
+		foundConfigMap := &corev1.ConfigMap{}
+		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: namespace}, foundConfigMap); err != nil {
+			if !apierr.IsNotFound(err) {
+				return err
+			}
+			simulationDataConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.SimulationData)
+			if err := r.createObject(ctx, gatling, simulationDataConfigMap); err != nil {
+				log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", simulationDataConfigMap.GetNamespace(), simulationDataConfigMap.GetName()))
+				return err
+			}
+		}
+	}
+	// Create Resource Data ConfigMap if defined to create in CR
+	if &gatling.Spec.TestScenarioSpec.ResourceData != nil && len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
+		configMapName := gatling.Name + "-resources-data"
+		foundConfigMap := &corev1.ConfigMap{}
+		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: namespace}, foundConfigMap); err != nil {
+			if !apierr.IsNotFound(err) {
+				return err
+			}
+			resourceDataConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.ResourceData)
+			if err := r.createObject(ctx, gatling, resourceDataConfigMap); err != nil {
+				log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", resourceDataConfigMap.GetNamespace(), resourceDataConfigMap.GetName()))
+				return err
+			}
+		}
+	}
+	// Create GatlingConf ConfigMap if defined to create in CR
+	if &gatling.Spec.TestScenarioSpec.GatlingConf != nil && len(gatling.Spec.TestScenarioSpec.GatlingConf) > 0 {
+		configMapName := gatling.Name + "-gatling-conf"
+		foundConfigMap := &corev1.ConfigMap{}
+		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: namespace}, foundConfigMap); err != nil {
+			if !apierr.IsNotFound(err) {
+				return err
+			}
+			gatlingConfConfigMap := r.newConfigMapForCR(gatling, configMapName, &gatling.Spec.TestScenarioSpec.GatlingConf)
+			if err := r.createObject(ctx, gatling, gatlingConfConfigMap); err != nil {
+				log.Error(err, fmt.Sprintf("Failed to creating new ConfigMap: namespace %s name %s", gatlingConfConfigMap.GetNamespace(), gatlingConfConfigMap.GetName()))
+				return err
+			}
+		}
+	}
+	// Create PersistentVolume if defined to create in CR
+	if &gatling.Spec.PersistentVolumeSpec != nil && gatling.Spec.PersistentVolumeSpec.Name != "" {
+		volumeName := gatling.Spec.PersistentVolumeSpec.Name
+		foundVolume := &corev1.PersistentVolume{}
+		if err := r.Get(ctx, client.ObjectKey{Name: volumeName, Namespace: namespace}, foundVolume); err != nil {
+			if !apierr.IsNotFound(err) {
+				return err
+			}
+			persistentVolume := r.newPersistentVolumeForCR(gatling, volumeName, &gatling.Spec.PersistentVolumeSpec.Spec)
+			if err := r.createObject(ctx, gatling, persistentVolume); err != nil {
+				log.Error(err, fmt.Sprintf("Failed to creating new PersistentVolume: namespace %s name %s", persistentVolume.GetNamespace(), volumeName))
+				return err
+			}
+		}
+	}
+	// Create PersistentVolumeClaim if defined to create in CR
+	if &gatling.Spec.PersistentVolumeClaimSpec != nil && gatling.Spec.PersistentVolumeClaimSpec.Name != "" {
+		claimName := gatling.Spec.PersistentVolumeClaimSpec.Name
+		foundClaim := &corev1.PersistentVolumeClaim{}
+		if err := r.Get(ctx, client.ObjectKey{Name: claimName, Namespace: namespace}, foundClaim); err != nil {
+			if !apierr.IsNotFound(err) {
+				return err
+			}
+			persistentVolumeClaim := r.newPersistentVolumeClaimForCR(gatling, claimName, &gatling.Spec.PersistentVolumeClaimSpec.Spec)
+			if err := r.createObject(ctx, gatling, persistentVolumeClaim); err != nil {
+				log.Error(err, fmt.Sprintf("Failed to creating new PersistentVolumeClaim: namespace %s name %s", persistentVolumeClaim.GetNamespace(), claimName))
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (r *GatlingReconciler) newConfigMapForCR(gatling *gatlingv1alpha1.Gatling, configMapName string, configMapData *map[string]string) *corev1.ConfigMap {
 	labels := map[string]string{
 		"app": gatling.Name,
@@ -421,6 +464,48 @@ func (r *GatlingReconciler) newConfigMapForCR(gatling *gatlingv1alpha1.Gatling, 
 			Labels:    labels,
 		},
 		Data: data,
+	}
+}
+
+func (r *GatlingReconciler) newPersistentVolumeForCR(gatling *gatlingv1alpha1.Gatling, name string, spec *corev1.PersistentVolumeSpec) *corev1.PersistentVolume {
+	labels := map[string]string{
+		"app": gatling.Name,
+	}
+	return &corev1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: gatling.Namespace,
+			Labels:    labels,
+		},
+		Spec: *spec,
+	}
+}
+
+func (r *GatlingReconciler) cleanupPersistentVolume(ctx context.Context, req ctrl.Request, name string) error {
+	pv := &corev1.PersistentVolume{}
+	if err := r.Get(ctx, client.ObjectKey{Name: name, Namespace: req.Namespace}, pv); err != nil {
+		if apierr.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	if err := r.Delete(ctx, pv); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *GatlingReconciler) newPersistentVolumeClaimForCR(gatling *gatlingv1alpha1.Gatling, name string, spec *corev1.PersistentVolumeClaimSpec) *corev1.PersistentVolumeClaim {
+	labels := map[string]string{
+		"app": gatling.Name,
+	}
+	return &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: gatling.Namespace,
+			Labels:    labels,
+		},
+		Spec: *spec,
 	}
 }
 
@@ -695,10 +780,13 @@ func (r *GatlingReconciler) getGatlingRunnerJobVolumeMounts(gatling *gatlingv1al
 			MountPath: r.getResultsDirectoryPath(gatling),
 		})
 	}
+	if gatling.Spec.TestScenarioSpec.VolumeMounts != nil && len(gatling.Spec.TestScenarioSpec.VolumeMounts) > 0 {
+		volumeMounts = append(volumeMounts, gatling.Spec.TestScenarioSpec.VolumeMounts...)
+	}
 	return volumeMounts
 }
 
-// ConfigMap Volume Source
+// Volume Source
 func (r *GatlingReconciler) getGatlingRunnerJobVolumes(gatling *gatlingv1alpha1.Gatling) []corev1.Volume {
 	volumes := make([]corev1.Volume, 0)
 	if &gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
@@ -732,6 +820,10 @@ func (r *GatlingReconciler) getGatlingRunnerJobVolumes(gatling *gatlingv1alpha1.
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		})
+	}
+
+	if gatling.Spec.PodSpec.Volumes != nil && len(gatling.Spec.PodSpec.Volumes) > 0 {
+		volumes = append(volumes, gatling.Spec.PodSpec.Volumes...)
 	}
 
 	volumes = append(volumes, corev1.Volume{

@@ -8,6 +8,8 @@ rules:
   - ""
   resources:
   - configmaps
+  - persistentvolumes
+  - persistentvolumeclaims
   verbs:
   - get
   - list
