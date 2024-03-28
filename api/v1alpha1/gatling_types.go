@@ -114,6 +114,10 @@ type TestScenarioSpec struct {
 	// +kubebuilder:validation:Optional
 	Parallelism int32 `json:"parallelism,omitempty"`
 
+	// (Optional) Gatling simulation format, supports `bundle` and `gradle`. Defaults to `bundle`
+	// +kubebuilder:validation:Optional
+	SimulationsFormat string `json:"simulationsFormat,omitempty"`
+
 	// (Optional) Gatling Resources directory path where simulation files are stored. Defaults to `/opt/gatling/user-files/simulations`
 	// +kubebuilder:validation:Optional
 	SimulationsDirectoryPath string `json:"simulationsDirectoryPath,omitempty"`

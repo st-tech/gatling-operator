@@ -31,6 +31,7 @@ done
 
 var _ = Describe("GetGatlingRunnerCommand", func() {
 	var (
+		simulationsFormat            string
 		simulationsDirectoryPath     string
 		tempSimulationsDirectoryPath string
 		resourcesDirectoryPath       string
@@ -42,6 +43,7 @@ var _ = Describe("GetGatlingRunnerCommand", func() {
 	)
 
 	BeforeEach(func() {
+		simulationsFormat = "bundle"
 		simulationsDirectoryPath = "testSimulationDirectoryPath"
 		tempSimulationsDirectoryPath = "testTempSimulationsDirectoryPath"
 		resourcesDirectoryPath = "testResourcesDirectoryPath"
@@ -53,11 +55,13 @@ var _ = Describe("GetGatlingRunnerCommand", func() {
 	It("GetCommandsWithLocalReport", func() {
 		generateLocalReport = true
 		expectedValue = `
+SIMULATIONS_FORMAT=bundle
 SIMULATIONS_DIR_PATH=testSimulationDirectoryPath
 TEMP_SIMULATIONS_DIR_PATH=testTempSimulationsDirectoryPath
 RESOURCES_DIR_PATH=testResourcesDirectoryPath
 RESULTS_DIR_PATH=testResultsDirectoryPath
 START_TIME="2021-09-10 08:45:31"
+SIMULATION_CLASS=testSimulationClass
 RUN_STATUS_FILE="${RESULTS_DIR_PATH}/COMPLETED"
 if [ -z "${START_TIME}" ]; then
   START_TIME=$(date +"%Y-%m-%d %H:%M:%S" --utc)
@@ -83,25 +87,34 @@ fi
 if [ ! -d ${RESULTS_DIR_PATH} ]; then
   mkdir -p ${RESULTS_DIR_PATH}
 fi
-gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s testSimulationClass -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} 
 
-if [ $? -ne 0 ]; then
+if [ ${SIMULATIONS_FORMAT} = "bundle" ]; then
+  gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s ${SIMULATION_CLASS} -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH}  -rm local
+elif [ ${SIMULATIONS_FORMAT} = "gradle" ]; then
+  ./gradlew -Dgatling.core.directory.results=${RESULTS_DIR_PATH} gatlingRun-${SIMULATION_CLASS} 
+fi
+
+GATLING_EXIT_STATUS=$?
+if [ $GATLING_EXIT_STATUS -ne 0 ]; then
   RUN_STATUS_FILE="${RESULTS_DIR_PATH}/FAILED"
   echo "gatling.sh has failed!" 1>&2
 fi
 touch ${RUN_STATUS_FILE}
+exit $GATLING_EXIT_STATUS
 `
-		Expect(GetGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
+		Expect(GetGatlingRunnerCommand(simulationsFormat, simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
 	})
 
 	It("GetCommandWithoutLocalReport", func() {
 		generateLocalReport = false
 		expectedValue = `
+SIMULATIONS_FORMAT=bundle
 SIMULATIONS_DIR_PATH=testSimulationDirectoryPath
 TEMP_SIMULATIONS_DIR_PATH=testTempSimulationsDirectoryPath
 RESOURCES_DIR_PATH=testResourcesDirectoryPath
 RESULTS_DIR_PATH=testResultsDirectoryPath
 START_TIME="2021-09-10 08:45:31"
+SIMULATION_CLASS=testSimulationClass
 RUN_STATUS_FILE="${RESULTS_DIR_PATH}/COMPLETED"
 if [ -z "${START_TIME}" ]; then
   START_TIME=$(date +"%Y-%m-%d %H:%M:%S" --utc)
@@ -127,15 +140,22 @@ fi
 if [ ! -d ${RESULTS_DIR_PATH} ]; then
   mkdir -p ${RESULTS_DIR_PATH}
 fi
-gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s testSimulationClass -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} -nr
 
-if [ $? -ne 0 ]; then
+if [ ${SIMULATIONS_FORMAT} = "bundle" ]; then
+  gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s ${SIMULATION_CLASS} -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} -nr -rm local
+elif [ ${SIMULATIONS_FORMAT} = "gradle" ]; then
+  ./gradlew -Dgatling.core.directory.results=${RESULTS_DIR_PATH} gatlingRun-${SIMULATION_CLASS} 
+fi
+
+GATLING_EXIT_STATUS=$?
+if [ $GATLING_EXIT_STATUS -ne 0 ]; then
   RUN_STATUS_FILE="${RESULTS_DIR_PATH}/FAILED"
   echo "gatling.sh has failed!" 1>&2
 fi
 touch ${RUN_STATUS_FILE}
+exit $GATLING_EXIT_STATUS
 `
-		Expect(GetGatlingRunnerCommand(simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
+		Expect(GetGatlingRunnerCommand(simulationsFormat, simulationsDirectoryPath, tempSimulationsDirectoryPath, resourcesDirectoryPath, resultsDirectoryPath, startTime, simulationClass, generateLocalReport)).To(Equal(expectedValue))
 	})
 })
 
@@ -160,9 +180,19 @@ var _ = Describe("GetGatlingTransferResultCommand", func() {
 			expectedValue = `
 RESULTS_DIR_PATH=testResultsDirectoryPath
 rclone config create s3 s3 env_auth=true region ap-northeast-1
-for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
-do
-	rclone copyto ${source} --s3-no-check-bucket --s3-env-auth testStoragePath/${HOSTNAME}.log
+while true; do
+  if [ -f "${RESULTS_DIR_PATH}/FAILED" ]; then
+    echo "Skip transfering gatling results"
+    break
+  fi
+  if [ -f "${RESULTS_DIR_PATH}/COMPLETED" ]; then
+    for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
+    do
+      rclone copyto ${source} --s3-no-check-bucket --s3-env-auth testStoragePath/${HOSTNAME}.log
+    done
+    break
+  fi
+  sleep 1;
 done
 `
 		})
@@ -178,10 +208,20 @@ done
 RESULTS_DIR_PATH=testResultsDirectoryPath
 # assumes gcs bucket using uniform bucket-level access control
 rclone config create gs "google cloud storage" bucket_policy_only true --non-interactive
-# assumes each pod only contain single gatling log file but use for loop to use find command result
-for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
-do
-	rclone copyto ${source} testStoragePath/${HOSTNAME}.log
+while true; do
+  if [ -f "${RESULTS_DIR_PATH}/FAILED" ]; then
+    echo "Skip transfering gatling results"
+    break
+  fi
+  if [ -f "${RESULTS_DIR_PATH}/COMPLETED" ]; then
+    # assumes each pod only contain single gatling log file but use for loop to use find command result
+    for source in $(find ${RESULTS_DIR_PATH} -type f -name *.log)
+    do
+      rclone copyto ${source} testStoragePath/${HOSTNAME}.log
+    done
+    break
+  fi
+  sleep 1;
 done
 `
 		})

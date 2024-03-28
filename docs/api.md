@@ -145,18 +145,19 @@ TestScenarioSpec defines the load testing scenario
 _Appears in:_
 - [GatlingSpec](#gatlingspec)
 
-| Field | Description |
-| --- | --- |
-| `startTime` _string_ | (Optional) Test Start time. |
-| `parallelism` _integer_ | (Optional) Number of pods running at the same time. Defaults to `1` (Minimum `1`) |
-| `simulationsDirectoryPath` _string_ | (Optional) Gatling Resources directory path where simulation files are stored. Defaults to `/opt/gatling/user-files/simulations` |
-| `resourcesDirectoryPath` _string_ | (Optional) Gatling Simulation directory path where resources are stored. Defaults to `/opt/gatling/user-files/resources` |
-| `resultsDirectoryPath` _string_ | (Optional) Gatling Results directory path where results are stored. Defaults to `/opt/gatling/results` |
-| `simulationClass` _string_ | (Required) Simulation Class Name. |
-| `simulationData` _object (keys:string, values:string)_ | (Optional) Simulation Data. |
-| `resourceData` _object (keys:string, values:string)_ | (Optional) Resource Data. |
-| `gatlingConf` _object (keys:string, values:string)_ | (Optional) Gatling Configurations. |
-| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core) array_ | (Optional) Environment variables used for running load testing scenario. |
-| `volumeMounts` _[VolumeMount](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core) array_ | (Optional) Pod volumes to mount into the container's filesystem. |
+| Field                                                                                                                          | Description                                                                                                                                                                                             |
+|--------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `startTime` _string_                                                                                                           | (Optional) Test Start time.                                                                                                                                                                             |
+| `parallelism` _integer_                                                                                                        | (Optional) Number of pods running at the same time. Defaults to `1` (Minimum `1`)                                                                                                                       |
+| `simulationFormat` _string_                                                                                                    | (Optional) Simulation format, should be one of `bundle` / `gradle`. Defaults to `bundle`. In case `gradle` one is chosen, all bundle-specific properties (e.g. `simulationsDirectoryPath`) are ignored. |
+| `simulationsDirectoryPath` _string_                                                                                            | (Optional) Gatling Resources directory path where simulation files are stored. Defaults to `/opt/gatling/user-files/simulations`                                                                        |
+| `resourcesDirectoryPath` _string_                                                                                              | (Optional) Gatling Simulation directory path where resources are stored. Defaults to `/opt/gatling/user-files/resources`                                                                                |
+| `resultsDirectoryPath` _string_                                                                                                | (Optional) Gatling Results directory path where results are stored. Defaults to `/opt/gatling/results`                                                                                                  |
+| `simulationClass` _string_                                                                                                     | (Required) Simulation Class Name.                                                                                                                                                                       |
+| `simulationData` _object (keys:string, values:string)_                                                                         | (Optional) Simulation Data.                                                                                                                                                                             |
+| `resourceData` _object (keys:string, values:string)_                                                                           | (Optional) Resource Data.                                                                                                                                                                               |
+| `gatlingConf` _object (keys:string, values:string)_                                                                            | (Optional) Gatling Configurations.                                                                                                                                                                      |
+| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core) array_                    | (Optional) Environment variables used for running load testing scenario.                                                                                                                                |
+| `volumeMounts` _[VolumeMount](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core) array_ | (Optional) Pod volumes to mount into the container's filesystem.                                                                                                                                        |
 
 
