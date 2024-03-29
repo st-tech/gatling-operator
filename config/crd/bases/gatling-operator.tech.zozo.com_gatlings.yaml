@@ -4099,6 +4099,9 @@ spec:
                   simulationsFormat:
                     description: (Optional) Gatling simulation format, supports `bundle`
                       and `gradle`. Defaults to `bundle`
+                    enum:
+                    - bundle
+                    - gradle
                     type: string
                   startTime:
                     description: (Optional) Test Start time.

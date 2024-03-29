@@ -12,8 +12,9 @@ The desired state of a distributed Gatling load testing is described through a K
 
 ## Features
 
-- Allows Gatling load testing scenario, resources, Gatling configurations files to be added in 2 ways:
+- Allows Gatling load testing scenario, resources, Gatling configurations files to be added in 3 ways:
   - Bundle them with Gatling runtime packages in a Gatling container
+  - Run the simulations through build tool plugin (e.g. `gradle gatlingRun`) in a Docker container  
   - Add them as multi-line definition in Gatling CR
 - Scaling Gatling load testing
   - Horizontal scaling: number of pods running in parallel during a load testing can be configured

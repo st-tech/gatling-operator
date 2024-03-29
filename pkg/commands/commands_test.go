@@ -91,7 +91,7 @@ fi
 if [ ${SIMULATIONS_FORMAT} = "bundle" ]; then
   gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s ${SIMULATION_CLASS} -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH}  -rm local
 elif [ ${SIMULATIONS_FORMAT} = "gradle" ]; then
-  ./gradlew -Dgatling.core.directory.results=${RESULTS_DIR_PATH} gatlingRun-${SIMULATION_CLASS} 
+  gradle -Dgatling.core.directory.results=${RESULTS_DIR_PATH} gatlingRun-${SIMULATION_CLASS} 
 fi
 
 GATLING_EXIT_STATUS=$?
@@ -144,7 +144,7 @@ fi
 if [ ${SIMULATIONS_FORMAT} = "bundle" ]; then
   gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s ${SIMULATION_CLASS} -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} -nr -rm local
 elif [ ${SIMULATIONS_FORMAT} = "gradle" ]; then
-  ./gradlew -Dgatling.core.directory.results=${RESULTS_DIR_PATH} gatlingRun-${SIMULATION_CLASS} 
+  gradle -Dgatling.core.directory.results=${RESULTS_DIR_PATH} gatlingRun-${SIMULATION_CLASS} 
 fi
 
 GATLING_EXIT_STATUS=$?
