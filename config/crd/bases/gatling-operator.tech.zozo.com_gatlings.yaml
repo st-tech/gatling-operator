@@ -4096,6 +4096,13 @@ spec:
                     description: (Optional) Gatling Resources directory path where
                       simulation files are stored. Defaults to `/opt/gatling/user-files/simulations`
                     type: string
+                  simulationsFormat:
+                    description: (Optional) Gatling simulation format, supports `bundle`
+                      and `gradle`. Defaults to `bundle`
+                    enum:
+                    - bundle
+                    - gradle
+                    type: string
                   startTime:
                     description: (Optional) Test Start time.
                     type: string

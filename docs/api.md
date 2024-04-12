@@ -24,7 +24,8 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `provider` _string_ | (Required) Provider specifies the cloud provider that will be used. Supported providers: `aws`, `gcp`, and `azure` |
+| `provider` _string_ | (Required) Provider specifies the cloud provider that will be used.
+Supported providers: `aws`, `gcp`, and `azure` |
 | `bucket` _string_ | (Required) Storage Bucket Name. |
 | `region` _string_ | (Optional) Region Name. |
 | `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core) array_ | (Optional) Environment variables used for connecting to the cloud providers. |
@@ -82,7 +83,8 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `provider` _string_ | (Required) Provider specifies notification service provider. Supported providers: `slack` |
+| `provider` _string_ | (Required) Provider specifies notification service provider.
+Supported providers: `slack` |
 | `secretName` _string_ | (Required) The name of secret in which all key/value sets needed for the notification are stored. |
 
 
@@ -149,6 +151,7 @@ _Appears in:_
 | --- | --- |
 | `startTime` _string_ | (Optional) Test Start time. |
 | `parallelism` _integer_ | (Optional) Number of pods running at the same time. Defaults to `1` (Minimum `1`) |
+| `simulationsFormat` _string_ | (Optional) Gatling simulation format, supports `bundle` and `gradle`. Defaults to `bundle` |
 | `simulationsDirectoryPath` _string_ | (Optional) Gatling Resources directory path where simulation files are stored. Defaults to `/opt/gatling/user-files/simulations` |
 | `resourcesDirectoryPath` _string_ | (Optional) Gatling Simulation directory path where resources are stored. Defaults to `/opt/gatling/user-files/resources` |
 | `resultsDirectoryPath` _string_ | (Optional) Gatling Results directory path where results are stored. Defaults to `/opt/gatling/results` |

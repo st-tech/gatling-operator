@@ -51,9 +51,10 @@ As described in Configuration Overview, there are 2 things that you need to cons
 
 For `Gatling docker image`, you can use default image `ghcr.io/st-tech/gatling:latest`, or you can create custom image to use.
 
-For `Gatling load testing related files`, you have 3 options:
+For `Gatling load testing related files`, you have 4 options:
 
 - Create custom image to bundle Gatling load testing files with Java runtime and Gatling standalone bundle package
+- Create custom image to bundle all Gatling related files with a gradle gatling plugin
 - Add Gatling load testing files as multi-line definitions in `.spec.testScenatioSpec` part of `Gatling CR`
 - Set up persistent volume in `.persistentVolume` and `.persistentVolumeClaim` in `Gatling CR` and load test files from the persistent volume in Gatling load test files.
 
@@ -176,6 +177,80 @@ spec:
   podSpec:
     serviceAccountName: "gatling-operator-worker"
     gatlingImage: <your-registry>/gatling:<tag>
+...omit...
+```
+
+### Create Custom Gatling Image with Gradle Gatling plugin
+
+Example project can be found [here](https://github.com/gatling/gatling-gradle-plugin-demo-kotlin).
+
+Let's start with cloning the repo:
+```bash
+git clone git@github.com:gatling/gatling-gradle-plugin-demo-kotlin.git
+cd gatling-gradle-plugin-demo-kotlin
+```
+
+In order to run this example on Gatling Operator, we have to build a custom docker image with both gradle and gatling baked in.
+
+Let's create a `Dockerfile` in the root directory of the `gatling-gradle-plugin-demo-kotlin` project:
+```bash
+FROM azul/zulu-openjdk:21-latest
+
+# dependency versions
+ENV GATLING_VERSION 3.10.5
+ENV GRADLE_VERSION 8.7
+
+# install gatling
+RUN mkdir /opt/gatling && \
+  apt-get update && apt-get upgrade -y && apt-get install -y wget unzip &&  \
+  mkdir -p /tmp/downloads && \
+  wget -q -O /tmp/downloads/gatling-$GATLING_VERSION.zip \
+  https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/$GATLING_VERSION/gatling-charts-highcharts-bundle-$GATLING_VERSION-bundle.zip && \
+  mkdir -p /tmp/archive && cd /tmp/archive && \
+  unzip /tmp/downloads/gatling-$GATLING_VERSION.zip && \
+  mv /tmp/archive/gatling-charts-highcharts-bundle-$GATLING_VERSION/* /opt/gatling/ && \
+  rm -rf /opt/gatling/user-files/simulations/computerdatabase /tmp/*
+
+# install gradle
+RUN mkdir /opt/gradle && \
+    wget -q -O /tmp/gradle-$GRADLE_VERSION.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip && \
+    unzip -d /opt/gradle /tmp/gradle-$GRADLE_VERSION.zip && \
+    rm -rf /tmp/*
+
+# change context to gatling directory
+WORKDIR  /opt/gatling
+
+# copy gradle files to gatling directory
+COPY . .
+
+# set environment variables
+ENV PATH /opt/gatling/bin:/opt/gradle/gradle-$GRADLE_VERSION/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV GATLING_HOME /opt/gatling
+
+ENTRYPOINT ["gatling.sh"]
+```
+
+Now we have to build the custom image:
+```bash
+# Build Docker image
+docker build -t <your-registry>/gatling:<tag> .
+# Push the image to your container registry
+docker push <your-registry>/gatling:<tag>
+```
+
+Finally, specify the image in `.spec.podSpec.gatlingImage` of Gatling CR and change the value of property `testScenarioSpec.simulationsFormat` to use it in your distributed load testing.
+
+```yaml
+apiVersion: gatling-operator.tech.zozo.com/v1alpha1
+kind: Gatling
+metadata:
+  name: gatling-gradle
+spec:
+  podSpec:
+    serviceAccountName: "gatling-operator-worker"
+    gatlingImage: <your-registry>/gatling:<tag>
+  testScenarioSpec:
+    simulationsFormat: gradle
 ...omit...
 ```
 

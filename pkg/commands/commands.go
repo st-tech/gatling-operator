@@ -32,15 +32,18 @@ done
 }
 
 func GetGatlingRunnerCommand(
-	simulationsDirectoryPath string, tempSimulationsDirectoryPath string, resourcesDirectoryPath string,
-	resultsDirectoryPath string, startTime string, simulationClass string, generateLocalReport bool) string {
+	simulationsFormat string, simulationsDirectoryPath string, tempSimulationsDirectoryPath string,
+	resourcesDirectoryPath string, resultsDirectoryPath string, startTime string, simulationClass string,
+	generateLocalReport bool) string {
 
 	template := `
+SIMULATIONS_FORMAT=%s
 SIMULATIONS_DIR_PATH=%s
 TEMP_SIMULATIONS_DIR_PATH=%s
 RESOURCES_DIR_PATH=%s
 RESULTS_DIR_PATH=%s
 START_TIME="%s"
+SIMULATION_CLASS=%s
 RUN_STATUS_FILE="${RESULTS_DIR_PATH}/COMPLETED"
 if [ -z "${START_TIME}" ]; then
   START_TIME=$(date +"%%Y-%%m-%%d %%H:%%M:%%S" --utc)
@@ -66,7 +69,12 @@ fi
 if [ ! -d ${RESULTS_DIR_PATH} ]; then
   mkdir -p ${RESULTS_DIR_PATH}
 fi
-gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s %s -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} %s %s
+
+if [ ${SIMULATIONS_FORMAT} = "bundle" ]; then
+  gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s ${SIMULATION_CLASS} -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} %s %s
+elif [ ${SIMULATIONS_FORMAT} = "gradle" ]; then
+  gradle -Dgatling.core.directory.results=${RESULTS_DIR_PATH} gatlingRun-${SIMULATION_CLASS} 
+fi
 
 GATLING_EXIT_STATUS=$?
 if [ $GATLING_EXIT_STATUS -ne 0 ]; then
@@ -84,6 +92,7 @@ exit $GATLING_EXIT_STATUS
 	runModeOptionLocal := "-rm local"
 
 	return fmt.Sprintf(template,
+		simulationsFormat,
 		simulationsDirectoryPath,
 		tempSimulationsDirectoryPath,
 		resourcesDirectoryPath,
