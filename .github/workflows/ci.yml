@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
           go-version: '1.21'
 
@@ -40,7 +40,7 @@ jobs:
           echo ::set-output name=build_cache::$(go env GOCACHE)
 
       - name: Go modules and build cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ${{ steps.go-paths.outputs.mod_cache }}
@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
           go-version: '1.21'
 
