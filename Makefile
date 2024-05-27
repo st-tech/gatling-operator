@@ -81,10 +81,8 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-test: manifests generate fmt vet ## Run tests.
-	$(ENVTEST) use $(ENVTEST_K8S_VERSION)
-	source <(setup-envtest use -i -p env $(ENVTEST_K8S_VERSION))
-	go test ./... -coverprofile cover.out
+test: manifests generate fmt vet setup-envtest ## Run tests.
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use -i -p path $(ENVTEST_K8S_VERSION))" go test ./... -coverprofile cover.out
 
 ##@ Build
 
@@ -150,8 +148,7 @@ crd-ref-docs: ## Download crd-ref-docs locally if necessary.
 
 ENVTEST = $(shell pwd)/bin/setup-envtest
 setup-envtest: ## Download setup-envtest locally if necessary.
-  $(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
-
+	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
 # go-install-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
