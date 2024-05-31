@@ -5,6 +5,10 @@
 
 FROM openjdk:17-jdk-slim-bullseye
 
+# create user/group
+RUN groupadd -g 1000 gatling && \
+  useradd -l -u 1000 -m gatling -g gatling
+
 # working directory for gatling
 WORKDIR /opt
 
@@ -22,7 +26,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y wget unzip &&  \
   mkdir -p /tmp/archive && cd /tmp/archive && \
   unzip /tmp/downloads/gatling-$GATLING_VERSION.zip && \
   mv /tmp/archive/gatling-charts-highcharts-bundle-$GATLING_VERSION/* /opt/gatling/ && \
-  rm -rf /opt/gatling/user-files/simulations/computerdatabase /tmp/*
+  rm -rf /opt/gatling/user-files/simulations/computerdatabase /tmp/*  && \
+  chown -R gatling:gatling /opt/gatling
 
 # change context to gatling directory
 WORKDIR  /opt/gatling

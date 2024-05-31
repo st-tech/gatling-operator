@@ -563,6 +563,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 						Affinity:           r.getPodAffinity(gatling),
 						Tolerations:        r.getPodTolerations(gatling),
 						ServiceAccountName: r.getPodServiceAccountName(gatling),
+						SecurityContext:    r.getPodSecurityContext(gatling),
 						InitContainers: []corev1.Container{
 							{
 								Name:      "gatling-waiter",
@@ -580,13 +581,14 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 						},
 						Containers: []corev1.Container{
 							{
-								Name:         "gatling-runner",
-								Image:        r.getGatlingContainerImage(gatling),
-								Command:      []string{"/bin/sh", "-c"},
-								Args:         []string{gatlingRunnerCommand},
-								Env:          envVars,
-								Resources:    r.getPodResources(gatling),
-								VolumeMounts: r.getGatlingRunnerJobVolumeMounts(gatling),
+								Name:            "gatling-runner",
+								Image:           r.getGatlingContainerImage(gatling),
+								Command:         []string{"/bin/sh", "-c"},
+								Args:            []string{gatlingRunnerCommand},
+								Env:             envVars,
+								Resources:       r.getPodResources(gatling),
+								VolumeMounts:    r.getGatlingRunnerJobVolumeMounts(gatling),
+								SecurityContext: r.getRunnerContainerSecurityContext(gatling),
 							},
 							{
 								Name:    "gatling-result-transferer",
@@ -630,6 +632,7 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 					Affinity:           r.getPodAffinity(gatling),
 					Tolerations:        r.getPodTolerations(gatling),
 					ServiceAccountName: r.getPodServiceAccountName(gatling),
+					SecurityContext:    r.getPodSecurityContext(gatling),
 					InitContainers: []corev1.Container{
 						{
 							Name:      "gatling-waiter",
@@ -647,13 +650,14 @@ func (r *GatlingReconciler) newGatlingRunnerJobForCR(gatling *gatlingv1alpha1.Ga
 					},
 					Containers: []corev1.Container{
 						{
-							Name:         "gatling-runner",
-							Image:        r.getGatlingContainerImage(gatling),
-							Command:      []string{"/bin/sh", "-c"},
-							Args:         []string{gatlingRunnerCommand},
-							Env:          envVars,
-							Resources:    r.getPodResources(gatling),
-							VolumeMounts: r.getGatlingRunnerJobVolumeMounts(gatling),
+							Name:            "gatling-runner",
+							Image:           r.getGatlingContainerImage(gatling),
+							Command:         []string{"/bin/sh", "-c"},
+							Args:            []string{gatlingRunnerCommand},
+							Env:             envVars,
+							Resources:       r.getPodResources(gatling),
+							VolumeMounts:    r.getGatlingRunnerJobVolumeMounts(gatling),
+							SecurityContext: r.getRunnerContainerSecurityContext(gatling),
 						},
 					},
 					RestartPolicy: "Never",
@@ -1108,6 +1112,22 @@ func (r *GatlingReconciler) getResultsDirectoryPath(gatling *gatlingv1alpha1.Gat
 		path = gatling.Spec.TestScenarioSpec.ResultsDirectoryPath
 	}
 	return path
+}
+
+func (r *GatlingReconciler) getPodSecurityContext(gatling *gatlingv1alpha1.Gatling) *corev1.PodSecurityContext {
+	securityContext := &corev1.PodSecurityContext{}
+	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.SecurityContext != nil {
+		securityContext = gatling.Spec.PodSpec.SecurityContext
+	}
+	return securityContext
+}
+
+func (r *GatlingReconciler) getRunnerContainerSecurityContext(gatling *gatlingv1alpha1.Gatling) *corev1.SecurityContext {
+	securityContext := &corev1.SecurityContext{}
+	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.RunnerContainerSecurityContext != nil {
+		securityContext = gatling.Spec.PodSpec.RunnerContainerSecurityContext
+	}
+	return securityContext
 }
 
 func (r *GatlingReconciler) getGenerateLocalReport(gatling *gatlingv1alpha1.Gatling) bool {
