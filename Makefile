@@ -11,6 +11,7 @@ VERSION := latest
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 KIND_CLUSTER_NAME ?= "gatling-cluster"
 K8S_NODE_IMAGE ?= v1.21.10
+ENVTEST_K8S_VERSION ?= 1.30.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -25,7 +26,6 @@ endif
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
-ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
 KIND_CLUSTER_CONFIG_DIR=$(shell pwd)/config/kind
 KUBECONFIG_BACKUP_DIR=$(shell pwd)/.kube
 
@@ -81,10 +81,8 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-test: manifests generate fmt vet ## Run tests.
-	mkdir -p ${ENVTEST_ASSETS_DIR}
-	test -f ${ENVTEST_ASSETS_DIR}/setup-envtest.sh || curl -sSLo ${ENVTEST_ASSETS_DIR}/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.8.3/hack/setup-envtest.sh
-	source ${ENVTEST_ASSETS_DIR}/setup-envtest.sh; fetch_envtest_tools $(ENVTEST_ASSETS_DIR); setup_envtest_env $(ENVTEST_ASSETS_DIR); go test ./... -coverprofile cover.out
+test: manifests generate fmt vet setup-envtest ## Run tests.
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use -p path $(ENVTEST_K8S_VERSION))" go test ./... -coverprofile cover.out
 
 ##@ Build
 
@@ -147,6 +145,10 @@ kustomize: ## Download kustomize locally if necessary.
 CRD_REF_DOCS = $(shell pwd)/bin/crd-ref-docs
 crd-ref-docs: ## Download crd-ref-docs locally if necessary.
 	$(call go-install-tool,$(CRD_REF_DOCS),github.com/elastic/crd-ref-docs@master)
+
+ENVTEST = $(shell pwd)/bin/setup-envtest
+setup-envtest: ## Download setup-envtest locally if necessary.
+	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
 # go-install-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
