@@ -3,7 +3,7 @@
 #
 # Gatling is a highly capable load testing tool.
 
-FROM openjdk:17-jdk-slim-bullseye
+FROM openjdk:21-jdk-slim-bullseye
 
 # create user/group
 RUN groupadd -g 1000 gatling && \
@@ -13,7 +13,7 @@ RUN groupadd -g 1000 gatling && \
 WORKDIR /opt
 
 # gating version
-ENV GATLING_VERSION 3.9.5
+ENV GATLING_VERSION 3.10.5
 
 # create directory for gatling install
 RUN mkdir -p gatling
