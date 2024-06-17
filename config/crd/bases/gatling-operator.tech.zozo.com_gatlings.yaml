@@ -2344,7 +2344,7 @@ spec:
                         type: object
                     type: object
                   runnerContainerSecurityContext:
-                    description: (Optional) RunecontainerSecurityContext specifies
+                    description: (Optional) RunnerContainerSecurityContext specifies
                       the SecurityContext of the Gatling runner container.
                     properties:
                       allowPrivilegeEscalation:

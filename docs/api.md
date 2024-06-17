@@ -135,7 +135,7 @@ _Appears in:_
 | `serviceAccountName` _string_ | (Required) ServiceAccountName specification. |
 | `volumes` _[Volume](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volume-v1-core) array_ | (Optional) volumes specification. |
 | `securityContext` _[PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#podsecuritycontext-v1-core)_ | (Optional) SecurityContext specification. |
-| `runnerContainerSecurityContext` _[SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core)_ | (Optional) RunecontainerSecurityContext specifies the SecurityContext of the Gatling runner container. |
+| `runnerContainerSecurityContext` _[SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core)_ | (Optional) RunnerContainerSecurityContext specifies the SecurityContext of the Gatling runner container. |
 
 
 #### TestScenarioSpec

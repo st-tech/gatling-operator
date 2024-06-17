@@ -105,7 +105,7 @@ type PodSpec struct {
 	// +kubebuilder:validation:Optional
 	SecurityContext *corev1.PodSecurityContext `json:"securityContext,omitempty"`
 
-	// (Optional) RunecontainerSecurityContext specifies the SecurityContext of the Gatling runner container.
+	// (Optional) RunnerContainerSecurityContext specifies the SecurityContext of the Gatling runner container.
 	// +kubebuilder:validation:Optional
 	RunnerContainerSecurityContext *corev1.SecurityContext `json:"runnerContainerSecurityContext,omitempty"`
 }
