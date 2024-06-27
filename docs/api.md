@@ -24,8 +24,7 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `provider` _string_ | (Required) Provider specifies the cloud provider that will be used.
-Supported providers: `aws`, `gcp`, and `azure` |
+| `provider` _string_ | (Required) Provider specifies the cloud provider that will be used. Supported providers: `aws`, `gcp`, and `azure` |
 | `bucket` _string_ | (Required) Storage Bucket Name. |
 | `region` _string_ | (Optional) Region Name. |
 | `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core) array_ | (Optional) Environment variables used for connecting to the cloud providers. |
@@ -83,8 +82,7 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `provider` _string_ | (Required) Provider specifies notification service provider.
-Supported providers: `slack` |
+| `provider` _string_ | (Required) Provider specifies notification service provider. Supported providers: `slack` |
 | `secretName` _string_ | (Required) The name of secret in which all key/value sets needed for the notification are stored. |
 
 
@@ -136,6 +134,8 @@ _Appears in:_
 | `tolerations` _[Toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#toleration-v1-core) array_ | (Optional) Tolerations specification. |
 | `serviceAccountName` _string_ | (Required) ServiceAccountName specification. |
 | `volumes` _[Volume](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volume-v1-core) array_ | (Optional) volumes specification. |
+| `securityContext` _[PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#podsecuritycontext-v1-core)_ | (Optional) SecurityContext specification. |
+| `runnerContainerSecurityContext` _[SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core)_ | (Optional) RunnerContainerSecurityContext specifies the SecurityContext of the Gatling runner container. |
 
 
 #### TestScenarioSpec

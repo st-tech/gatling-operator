@@ -37,6 +37,15 @@ var _ = Context("Inside of a new namespace", func() {
 					GenerateReport:      false,
 					NotifyReport:        false,
 					CleanupAfterJobDone: false,
+					PodSpec: gatlingv1alpha1.PodSpec{
+						SecurityContext: &corev1.PodSecurityContext{
+							Sysctls: []corev1.Sysctl{{Name: "net.ipv4.ip_local_port_range", Value: "1024 65535"}},
+						},
+						RunnerContainerSecurityContext: &corev1.SecurityContext{
+							RunAsUser:  pointer.Int64Ptr(1000),
+							RunAsGroup: pointer.Int64Ptr(1000),
+						},
+					},
 					TestScenarioSpec: gatlingv1alpha1.TestScenarioSpec{
 						SimulationClass: "MyBasicSimulation",
 					},

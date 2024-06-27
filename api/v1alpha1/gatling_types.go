@@ -100,6 +100,14 @@ type PodSpec struct {
 	// (Optional) volumes specification.
 	// +kubebuilder:validation:Optional
 	Volumes []corev1.Volume `json:"volumes,omitempty"`
+
+	// (Optional) SecurityContext specification.
+	// +kubebuilder:validation:Optional
+	SecurityContext *corev1.PodSecurityContext `json:"securityContext,omitempty"`
+
+	// (Optional) RunnerContainerSecurityContext specifies the SecurityContext of the Gatling runner container.
+	// +kubebuilder:validation:Optional
+	RunnerContainerSecurityContext *corev1.SecurityContext `json:"runnerContainerSecurityContext,omitempty"`
 }
 
 // TestScenarioSpec defines the load testing scenario
