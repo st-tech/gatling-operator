@@ -22,6 +22,7 @@
 			- [Parallel Number of Gatling Load Testing](#parallel-number-of-gatling-load-testing)
 		- [Configure Cloud Storage Provider](#configure-cloud-storage-provider)
 			- [Set Amazon S3 as Cloud Storage](#set-amazon-s3-as-cloud-storage)
+			- [Set Different from Amazon S3 Provider as Cloud Storage](#set-different-from-amazon-s3-provider-as-cloud-storage)
 			- [Set Google Cloud Storage as Cloud Storage](#set-google-cloud-storage-as-cloud-storage)
 			- [Set Azure Blob Storage as Cloud Storage](#set-azure-blob-storage-as-cloud-storage)
 		- [Configure Notification Service Provider](#configure-notification-service-provider)
@@ -656,6 +657,60 @@ Here is an IAM policy to attach for Gatling Pod to interact with Amazon S3 bucke
 
 - Replace `BUCKET_NAME` above with your bucket name
 - To know more about the ways to supply rclone with a set of AWS credentials, please check [this](https://rclone.org/s3/#configuration).
+
+#### Set Different from Amazon S3 Provider as Cloud Storage
+
+This section provides guidance on setting up any cloud storage provider that supports the S3 API.
+In this example suppose you want to store Gatling reports to a bucket named `gatling-operator-reports` in OHV's S3 provider, specifically in the `de` region. 
+You configure each fields in `.spec.cloudStorageSpec` and set `RCLONE_S3_ENDPOINT` env like this:
+
+```yaml
+apiVersion: gatling-operator.tech.zozo.com/v1alpha1
+kind: Gatling
+metadata:
+  name: gatling-sample
+spec:
+  cloudStorageSpec:
+    provider: "s3"
+    bucket: "gatling-operator-reports"
+    region: "de"
+    env:
+      - name: RCLONE_S3_ENDPOINT
+        value: https://s3.de.io.cloud.ovh.net
+...omit...
+```
+
+However, this is not enough. You must supply Gatling Pod (both Gatling Runner Pod and Gatling Reporter Pod) with credentials to access S3 bucket. Strictly speaking, [rclone](https://rclone.org/) container in Gatling Pod interacts with S3 bucket, thus you need to supply rclone with credentials.
+
+Below is shown how to set S3 credentials via environment variables:
+
+```yaml
+...omit...
+  cloudStorageSpec:
+    provider: "s3"
+    bucket: "gatling-operator-reports"
+    region: "de"
+    env:
+      - name: RCLONE_S3_PROVIDER
+        value: Other
+      - name: RCLONE_S3_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: s3-keys
+            key: S3_ACCESS_KEY
+      - name: RCLONE_S3_SECRET_ACCESS_KEY
+        valueFrom:
+        secretKeyRef:
+          name: s3-keys
+          key: S3_SECRET_ACCESS
+      - name: RCLONE_S3_ENDPOINT
+        value: https://s3.de.io.cloud.ovh.net
+      - name: RCLONE_S3_REGION
+        value: de
+...omit...
+```
+
+There are multiple ways to authenticate for more please check [this](https://rclone.org/s3/#configuration).
 
 #### Set Google Cloud Storage as Cloud Storage
 

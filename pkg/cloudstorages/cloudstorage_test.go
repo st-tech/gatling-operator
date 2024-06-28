@@ -15,7 +15,7 @@ var _ = Describe("GetProvider", func() {
 			provider = "aws"
 			expectedValue = "aws"
 		})
-		It("should get a pointer of AWSCloudStorageProvider that has ProviderName field value = aws", func() {
+		It("should get a pointer of S3CloudStorageProvider that has ProviderName field value = aws", func() {
 			cspp := GetProvider(provider)
 			Expect(cspp).NotTo(BeNil())
 			Expect((*cspp).GetName()).To(Equal(expectedValue))
@@ -28,6 +28,18 @@ var _ = Describe("GetProvider", func() {
 			expectedValue = "gcp"
 		})
 		It("should get a pointer of GCPCloudStorageProvider that has ProviderName field value = gcp", func() {
+			cspp := GetProvider(provider)
+			Expect(cspp).NotTo(BeNil())
+			Expect((*cspp).GetName()).To(Equal(expectedValue))
+		})
+	})
+
+	Context("Provider is s3", func() {
+		BeforeEach(func() {
+			provider = "s3"
+			expectedValue = "s3"
+		})
+		It("should get a pointer of S3CloudStorageProvider that has ProviderName field value = s3", func() {
 			cspp := GetProvider(provider)
 			Expect(cspp).NotTo(BeNil())
 			Expect((*cspp).GetName()).To(Equal(expectedValue))

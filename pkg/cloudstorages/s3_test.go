@@ -16,7 +16,7 @@ var _ = Describe("GetName", func() {
 	})
 	Context("Provider is aws", func() {
 		It("should get provider name = aws", func() {
-			csp := &AWSCloudStorageProvider{providerName: provider}
+			csp := &S3CloudStorageProvider{providerName: provider}
 			Expect(csp.GetName()).To(Equal(expectedValue))
 		})
 	})
@@ -39,7 +39,7 @@ var _ = Describe("GetCloudStoragePath", func() {
 	})
 	Context("Provider is aws", func() {
 		It("path is aws s3 bucket", func() {
-			csp := &AWSCloudStorageProvider{providerName: provider}
+			csp := &S3CloudStorageProvider{providerName: provider}
 			Expect(csp.GetCloudStoragePath(bucket, gatlingName, subDir)).To(Equal(expectedValue))
 		})
 	})
@@ -47,25 +47,37 @@ var _ = Describe("GetCloudStoragePath", func() {
 
 var _ = Describe("GetCloudStorageReportURL", func() {
 	var (
-		provider      string
-		bucket        string
-		gatlingName   string
-		subDir        string
-		expectedValue string
+		provider    string
+		bucket      string
+		gatlingName string
+		subDir      string
 	)
 	BeforeEach(func() {
-		provider = "aws"
+		provider = "s3"
 		bucket = "testBucket"
 		gatlingName = "testGatling"
 		subDir = "subDir"
-		expectedValue = "https://testBucket.s3.amazonaws.com/testGatling/subDir/index.html"
 	})
-	Context("Provider is aws", func() {
-		It("path is aws s3 bucket", func() {
-			csp := &AWSCloudStorageProvider{providerName: provider}
-			Expect(csp.GetCloudStorageReportURL(bucket, gatlingName, subDir)).To(Equal(expectedValue))
+	Context("Provider is s3", func() {
+		It("path is aws s3 bucket if RCLONE_S3_ENDPOINT not defined", func() {
+			csp := &S3CloudStorageProvider{providerName: provider}
+			Expect(csp.GetCloudStorageReportURL(bucket, gatlingName, subDir)).To(Equal("https://testBucket.s3.amazonaws.com/testGatling/subDir/index.html"))
+		})
+
+		It("path is S3 bucket with custom provider endpoint", func() {
+			csp := &S3CloudStorageProvider{providerName: provider}
+			csp.init([]EnvVars{
+				{
+					{
+						Name:  "RCLONE_S3_ENDPOINT",
+						Value: "https://s3.de.io.cloud.ovh.net",
+					},
+				},
+			})
+			Expect(csp.GetCloudStorageReportURL(bucket, gatlingName, subDir)).To(Equal("https://testBucket.s3.de.io.cloud.ovh.net/testGatling/subDir/index.html"))
 		})
 	})
+
 })
 
 var _ = Describe("GetGatlingTransferResultCommand", func() {
@@ -102,7 +114,7 @@ done
 	})
 	Context("Provider is aws", func() {
 		It("returns commands with s3 rclone config", func() {
-			csp := &AWSCloudStorageProvider{providerName: provider}
+			csp := &S3CloudStorageProvider{providerName: provider}
 			Expect(csp.GetGatlingTransferResultCommand(resultsDirectoryPath, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
@@ -129,7 +141,7 @@ rclone copy --s3-no-check-bucket --s3-env-auth testStoragePath ${GATLING_AGGREGA
 	})
 	Context("Provider is aws", func() {
 		It("returns commands with s3 rclone config", func() {
-			csp := &AWSCloudStorageProvider{providerName: provider}
+			csp := &S3CloudStorageProvider{providerName: provider}
 			Expect(csp.GetGatlingAggregateResultCommand(resultsDirectoryPath, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
@@ -156,7 +168,7 @@ rclone copy ${GATLING_AGGREGATE_DIR} --exclude "*.log" --s3-no-check-bucket --s3
 	})
 	Context("Provider is aws", func() {
 		It("returns commands with s3 rclone config", func() {
-			csp := &AWSCloudStorageProvider{providerName: provider}
+			csp := &S3CloudStorageProvider{providerName: provider}
 			Expect(csp.GetGatlingTransferReportCommand(resultsDirectoryPath, region, storagePath)).To(Equal(expectedValue))
 		})
 	})
