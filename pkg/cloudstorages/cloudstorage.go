@@ -27,7 +27,9 @@ func GetProvider(provider string, args ...EnvVars) *CloudStorageProvider {
 		var csp CloudStorageProvider
 		switch provider {
 		case "aws":
-			csp = &AWSCloudStorageProvider{providerName: provider}
+			csp = &S3CloudStorageProvider{providerName: provider}
+		case "s3":
+			csp = &S3CloudStorageProvider{providerName: provider}
 		case "gcp":
 			csp = &GCPCloudStorageProvider{providerName: provider}
 		case "azure":

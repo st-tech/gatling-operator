@@ -176,7 +176,7 @@ spec:
                     type: array
                   provider:
                     description: '(Required) Provider specifies the cloud provider
-                      that will be used. Supported providers: `aws`, `gcp`, and `azure`'
+                      that will be used. Supported providers: `aws`, `s3`, `gcp`, and `azure`'
                     type: string
                   region:
                     description: (Optional) Region Name.
