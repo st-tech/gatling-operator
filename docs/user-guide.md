@@ -22,7 +22,7 @@
 			- [Parallel Number of Gatling Load Testing](#parallel-number-of-gatling-load-testing)
 		- [Configure Cloud Storage Provider](#configure-cloud-storage-provider)
 			- [Set Amazon S3 as Cloud Storage](#set-amazon-s3-as-cloud-storage)
-			- [Set Different from Amazon S3 Provider as Cloud Storage](#set-different-from-amazon-s3-provider-as-cloud-storage)
+			- [Set S3 as Cloud Storage](#set-s3-as-cloud-storage)
 			- [Set Google Cloud Storage as Cloud Storage](#set-google-cloud-storage-as-cloud-storage)
 			- [Set Azure Blob Storage as Cloud Storage](#set-azure-blob-storage-as-cloud-storage)
 		- [Configure Notification Service Provider](#configure-notification-service-provider)
@@ -658,10 +658,10 @@ Here is an IAM policy to attach for Gatling Pod to interact with Amazon S3 bucke
 - Replace `BUCKET_NAME` above with your bucket name
 - To know more about the ways to supply rclone with a set of AWS credentials, please check [this](https://rclone.org/s3/#configuration).
 
-#### Set Different from Amazon S3 Provider as Cloud Storage
+#### Set S3 as Cloud Storage
 
 This section provides guidance on setting up any cloud storage provider that supports the S3 API.
-In this example suppose you want to store Gatling reports to a bucket named `gatling-operator-reports` in OHV's S3 provider, specifically in the `de` region. 
+In this example suppose you want to store Gatling reports to a bucket named `gatling-operator-reports` in OVH's S3 provider, specifically in the `de` region. 
 You configure each fields in `.spec.cloudStorageSpec` and set `RCLONE_S3_ENDPOINT` env like this:
 
 ```yaml
