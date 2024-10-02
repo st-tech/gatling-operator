@@ -372,6 +372,10 @@ func doNotRequeue(err error) (ctrl.Result, error) {
 }
 
 func (r *GatlingReconciler) createVolumesForCR(ctx context.Context, gatling *gatlingv1alpha1.Gatling, namespace string, log logr.Logger) error {
+	if gatling == nil {
+		return errors.New("gatling is nil")
+	}
+
 	// Create Simulation Data ConfigMap if defined to create in CR
 	if gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
 		configMapName := gatling.Name + "-simulations-data"
