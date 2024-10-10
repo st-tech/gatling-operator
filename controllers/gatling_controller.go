@@ -372,8 +372,12 @@ func doNotRequeue(err error) (ctrl.Result, error) {
 }
 
 func (r *GatlingReconciler) createVolumesForCR(ctx context.Context, gatling *gatlingv1alpha1.Gatling, namespace string, log logr.Logger) error {
+	if gatling == nil {
+		return errors.New("gatling is nil")
+	}
+
 	// Create Simulation Data ConfigMap if defined to create in CR
-	if &gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
+	if gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
 		configMapName := gatling.Name + "-simulations-data"
 		foundConfigMap := &corev1.ConfigMap{}
 		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: namespace}, foundConfigMap); err != nil {
@@ -388,7 +392,7 @@ func (r *GatlingReconciler) createVolumesForCR(ctx context.Context, gatling *gat
 		}
 	}
 	// Create Resource Data ConfigMap if defined to create in CR
-	if &gatling.Spec.TestScenarioSpec.ResourceData != nil && len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
+	if gatling.Spec.TestScenarioSpec.ResourceData != nil && len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
 		configMapName := gatling.Name + "-resources-data"
 		foundConfigMap := &corev1.ConfigMap{}
 		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: namespace}, foundConfigMap); err != nil {
@@ -403,7 +407,7 @@ func (r *GatlingReconciler) createVolumesForCR(ctx context.Context, gatling *gat
 		}
 	}
 	// Create GatlingConf ConfigMap if defined to create in CR
-	if &gatling.Spec.TestScenarioSpec.GatlingConf != nil && len(gatling.Spec.TestScenarioSpec.GatlingConf) > 0 {
+	if gatling.Spec.TestScenarioSpec.GatlingConf != nil && len(gatling.Spec.TestScenarioSpec.GatlingConf) > 0 {
 		configMapName := gatling.Name + "-gatling-conf"
 		foundConfigMap := &corev1.ConfigMap{}
 		if err := r.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: namespace}, foundConfigMap); err != nil {
@@ -418,7 +422,7 @@ func (r *GatlingReconciler) createVolumesForCR(ctx context.Context, gatling *gat
 		}
 	}
 	// Create PersistentVolume if defined to create in CR
-	if &gatling.Spec.PersistentVolumeSpec != nil && gatling.Spec.PersistentVolumeSpec.Name != "" {
+	if gatling.Spec.PersistentVolumeSpec.Name != "" {
 		volumeName := gatling.Spec.PersistentVolumeSpec.Name
 		foundVolume := &corev1.PersistentVolume{}
 		if err := r.Get(ctx, client.ObjectKey{Name: volumeName, Namespace: namespace}, foundVolume); err != nil {
@@ -433,7 +437,7 @@ func (r *GatlingReconciler) createVolumesForCR(ctx context.Context, gatling *gat
 		}
 	}
 	// Create PersistentVolumeClaim if defined to create in CR
-	if &gatling.Spec.PersistentVolumeClaimSpec != nil && gatling.Spec.PersistentVolumeClaimSpec.Name != "" {
+	if gatling.Spec.PersistentVolumeClaimSpec.Name != "" {
 		claimName := gatling.Spec.PersistentVolumeClaimSpec.Name
 		foundClaim := &corev1.PersistentVolumeClaim{}
 		if err := r.Get(ctx, client.ObjectKey{Name: claimName, Namespace: namespace}, foundClaim); err != nil {
@@ -768,13 +772,13 @@ func (r *GatlingReconciler) newGatlingReporterJobForCR(gatling *gatlingv1alpha1.
 // VolumeMounts for Galling Job
 func (r *GatlingReconciler) getGatlingRunnerJobVolumeMounts(gatling *gatlingv1alpha1.Gatling) []corev1.VolumeMount {
 	volumeMounts := make([]corev1.VolumeMount, 0)
-	if &gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
+	if gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      "simulations-data-volume",
 			MountPath: r.getTempSimulationsDirectoryPath(gatling),
 		})
 	}
-	if &gatling.Spec.TestScenarioSpec.ResourceData != nil && len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
+	if gatling.Spec.TestScenarioSpec.ResourceData != nil && len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      "resources-data-volume",
 			MountPath: r.getResourcesDirectoryPath(gatling),
@@ -795,7 +799,7 @@ func (r *GatlingReconciler) getGatlingRunnerJobVolumeMounts(gatling *gatlingv1al
 // Volume Source
 func (r *GatlingReconciler) getGatlingRunnerJobVolumes(gatling *gatlingv1alpha1.Gatling) []corev1.Volume {
 	volumes := make([]corev1.Volume, 0)
-	if &gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
+	if gatling.Spec.TestScenarioSpec.SimulationData != nil && len(gatling.Spec.TestScenarioSpec.SimulationData) > 0 {
 		volumes = append(volumes, corev1.Volume{
 			Name: "simulations-data-volume",
 			VolumeSource: corev1.VolumeSource{
@@ -807,7 +811,7 @@ func (r *GatlingReconciler) getGatlingRunnerJobVolumes(gatling *gatlingv1alpha1.
 			},
 		})
 	}
-	if &gatling.Spec.TestScenarioSpec.ResourceData != nil && len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
+	if gatling.Spec.TestScenarioSpec.ResourceData != nil && len(gatling.Spec.TestScenarioSpec.ResourceData) > 0 {
 		volumes = append(volumes, corev1.Volume{
 			Name: "resources-data-volume",
 			VolumeSource: corev1.VolumeSource{
@@ -968,7 +972,7 @@ func (r *GatlingReconciler) isGatlingCompleted(gatling *gatlingv1alpha1.Gatling)
 
 func (r *GatlingReconciler) getCloudStorageProvider(gatling *gatlingv1alpha1.Gatling) string {
 	provider := ""
-	if &gatling.Spec.CloudStorageSpec != nil && gatling.Spec.CloudStorageSpec.Provider != "" {
+	if gatling.Spec.CloudStorageSpec.Provider != "" {
 		provider = gatling.Spec.CloudStorageSpec.Provider
 	}
 	return provider
@@ -976,7 +980,7 @@ func (r *GatlingReconciler) getCloudStorageProvider(gatling *gatlingv1alpha1.Gat
 
 func (r *GatlingReconciler) getCloudStorageRegion(gatling *gatlingv1alpha1.Gatling) string {
 	region := ""
-	if &gatling.Spec.CloudStorageSpec != nil && gatling.Spec.CloudStorageSpec.Region != "" {
+	if gatling.Spec.CloudStorageSpec.Region != "" {
 		region = gatling.Spec.CloudStorageSpec.Region
 	}
 	return region
@@ -984,7 +988,7 @@ func (r *GatlingReconciler) getCloudStorageRegion(gatling *gatlingv1alpha1.Gatli
 
 func (r *GatlingReconciler) getCloudStorageBucket(gatling *gatlingv1alpha1.Gatling) string {
 	bucket := ""
-	if &gatling.Spec.CloudStorageSpec != nil && gatling.Spec.CloudStorageSpec.Bucket != "" {
+	if gatling.Spec.CloudStorageSpec.Bucket != "" {
 		bucket = gatling.Spec.CloudStorageSpec.Bucket
 	}
 	return bucket
@@ -992,7 +996,7 @@ func (r *GatlingReconciler) getCloudStorageBucket(gatling *gatlingv1alpha1.Gatli
 
 func (r *GatlingReconciler) getNotificationServiceProvider(gatling *gatlingv1alpha1.Gatling) string {
 	provider := defaultNotificationServiceProvider
-	if &gatling.Spec.NotificationServiceSpec != nil && gatling.Spec.NotificationServiceSpec.Provider != "" {
+	if gatling.Spec.NotificationServiceSpec.Provider != "" {
 		provider = gatling.Spec.NotificationServiceSpec.Provider
 	}
 	return provider
@@ -1000,7 +1004,7 @@ func (r *GatlingReconciler) getNotificationServiceProvider(gatling *gatlingv1alp
 
 func (r *GatlingReconciler) getNotificationServiceSecretName(gatling *gatlingv1alpha1.Gatling) string {
 	secretName := ""
-	if &gatling.Spec.NotificationServiceSpec != nil && gatling.Spec.NotificationServiceSpec.SecretName != "" {
+	if gatling.Spec.NotificationServiceSpec.SecretName != "" {
 		secretName = gatling.Spec.NotificationServiceSpec.SecretName
 	}
 	return secretName
@@ -1008,7 +1012,7 @@ func (r *GatlingReconciler) getNotificationServiceSecretName(gatling *gatlingv1a
 
 func (r *GatlingReconciler) getGatlingRunnerJobStartTime(gatling *gatlingv1alpha1.Gatling) string {
 	var startTime string
-	if &gatling.Spec.TestScenarioSpec != nil && gatling.Spec.TestScenarioSpec.StartTime != "" {
+	if gatling.Spec.TestScenarioSpec.StartTime != "" {
 		startTime = gatling.Spec.TestScenarioSpec.StartTime
 	}
 	return startTime
@@ -1016,7 +1020,7 @@ func (r *GatlingReconciler) getGatlingRunnerJobStartTime(gatling *gatlingv1alpha
 
 func (r *GatlingReconciler) getGatlingRunnerJobParallelism(gatling *gatlingv1alpha1.Gatling) *int32 {
 	var parallelism int32
-	if &gatling.Spec.TestScenarioSpec != nil && gatling.Spec.TestScenarioSpec.Parallelism != 0 {
+	if gatling.Spec.TestScenarioSpec.Parallelism != 0 {
 		parallelism = gatling.Spec.TestScenarioSpec.Parallelism
 	}
 	return &parallelism
@@ -1024,7 +1028,7 @@ func (r *GatlingReconciler) getGatlingRunnerJobParallelism(gatling *gatlingv1alp
 
 func (r *GatlingReconciler) getGatlingContainerImage(gatling *gatlingv1alpha1.Gatling) string {
 	image := defaultGatlingImage
-	if &gatling.Spec.PodSpec != nil && gatling.Spec.PodSpec.GatlingImage != "" {
+	if gatling.Spec.PodSpec.GatlingImage != "" {
 		image = gatling.Spec.PodSpec.GatlingImage
 	}
 	return image
@@ -1032,55 +1036,43 @@ func (r *GatlingReconciler) getGatlingContainerImage(gatling *gatlingv1alpha1.Ga
 
 func (r *GatlingReconciler) getRcloneContainerImage(gatling *gatlingv1alpha1.Gatling) string {
 	image := defaultRcloneImage
-	if &gatling.Spec.PodSpec != nil && gatling.Spec.PodSpec.RcloneImage != "" {
+	if gatling.Spec.PodSpec.RcloneImage != "" {
 		image = gatling.Spec.PodSpec.RcloneImage
 	}
 	return image
 }
 
 func (r *GatlingReconciler) getPodResources(gatling *gatlingv1alpha1.Gatling) corev1.ResourceRequirements {
-	resources := corev1.ResourceRequirements{}
-	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.Resources != nil {
-		resources = gatling.Spec.PodSpec.Resources
-	}
-	return resources
+	return gatling.Spec.PodSpec.Resources
 }
 
 func (r *GatlingReconciler) getObjectMeta(gatling *gatlingv1alpha1.Gatling) *metav1.ObjectMeta {
 	objectmeta := metav1.ObjectMeta{}
-	if &gatling != nil && &gatling.ObjectMeta != nil {
+	if gatling != nil {
 		objectmeta = gatling.ObjectMeta
 	}
 	return &objectmeta
 }
 
 func (r *GatlingReconciler) getPodAffinity(gatling *gatlingv1alpha1.Gatling) *corev1.Affinity {
-	affinity := corev1.Affinity{}
-	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.Affinity != nil {
-		affinity = gatling.Spec.PodSpec.Affinity
-	}
-	return &affinity
+	return &gatling.Spec.PodSpec.Affinity
 }
 
 func (r *GatlingReconciler) getPodTolerations(gatling *gatlingv1alpha1.Gatling) []corev1.Toleration {
 	tolerations := []corev1.Toleration{}
-	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.Tolerations != nil {
+	if gatling.Spec.PodSpec.Tolerations != nil {
 		tolerations = gatling.Spec.PodSpec.Tolerations
 	}
 	return tolerations
 }
 
 func (r *GatlingReconciler) getPodServiceAccountName(gatling *gatlingv1alpha1.Gatling) string {
-	serviceAccountName := ""
-	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.ServiceAccountName != nil {
-		serviceAccountName = gatling.Spec.PodSpec.ServiceAccountName
-	}
-	return serviceAccountName
+	return gatling.Spec.PodSpec.ServiceAccountName
 }
 
 func (r *GatlingReconciler) getSimulationFormat(gatling *gatlingv1alpha1.Gatling) string {
 	format := defaultSimulationFormat
-	if &gatling.Spec.TestScenarioSpec != nil && gatling.Spec.TestScenarioSpec.SimulationsFormat != "" {
+	if gatling.Spec.TestScenarioSpec.SimulationsFormat != "" {
 		format = gatling.Spec.TestScenarioSpec.SimulationsFormat
 	}
 	return format
@@ -1088,7 +1080,7 @@ func (r *GatlingReconciler) getSimulationFormat(gatling *gatlingv1alpha1.Gatling
 
 func (r *GatlingReconciler) getSimulationsDirectoryPath(gatling *gatlingv1alpha1.Gatling) string {
 	path := defaultSimulationsDirectoryPath
-	if &gatling.Spec.TestScenarioSpec != nil && gatling.Spec.TestScenarioSpec.SimulationsDirectoryPath != "" {
+	if gatling.Spec.TestScenarioSpec.SimulationsDirectoryPath != "" {
 		path = gatling.Spec.TestScenarioSpec.SimulationsDirectoryPath
 	}
 	return path
@@ -1100,7 +1092,7 @@ func (r *GatlingReconciler) getTempSimulationsDirectoryPath(gatling *gatlingv1al
 
 func (r *GatlingReconciler) getResourcesDirectoryPath(gatling *gatlingv1alpha1.Gatling) string {
 	path := defaultResourcesDirectoryPath
-	if &gatling.Spec.TestScenarioSpec != nil && gatling.Spec.TestScenarioSpec.ResourcesDirectoryPath != "" {
+	if gatling.Spec.TestScenarioSpec.ResourcesDirectoryPath != "" {
 		path = gatling.Spec.TestScenarioSpec.ResourcesDirectoryPath
 	}
 	return path
@@ -1108,7 +1100,7 @@ func (r *GatlingReconciler) getResourcesDirectoryPath(gatling *gatlingv1alpha1.G
 
 func (r *GatlingReconciler) getResultsDirectoryPath(gatling *gatlingv1alpha1.Gatling) string {
 	path := defaultResultsDirectoryPath
-	if &gatling.Spec.TestScenarioSpec != nil && gatling.Spec.TestScenarioSpec.ResultsDirectoryPath != "" {
+	if gatling.Spec.TestScenarioSpec.ResultsDirectoryPath != "" {
 		path = gatling.Spec.TestScenarioSpec.ResultsDirectoryPath
 	}
 	return path
@@ -1116,7 +1108,7 @@ func (r *GatlingReconciler) getResultsDirectoryPath(gatling *gatlingv1alpha1.Gat
 
 func (r *GatlingReconciler) getPodSecurityContext(gatling *gatlingv1alpha1.Gatling) *corev1.PodSecurityContext {
 	securityContext := &corev1.PodSecurityContext{}
-	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.SecurityContext != nil {
+	if gatling.Spec.PodSpec.SecurityContext != nil {
 		securityContext = gatling.Spec.PodSpec.SecurityContext
 	}
 	return securityContext
@@ -1124,16 +1116,13 @@ func (r *GatlingReconciler) getPodSecurityContext(gatling *gatlingv1alpha1.Gatli
 
 func (r *GatlingReconciler) getRunnerContainerSecurityContext(gatling *gatlingv1alpha1.Gatling) *corev1.SecurityContext {
 	securityContext := &corev1.SecurityContext{}
-	if &gatling.Spec.PodSpec != nil && &gatling.Spec.PodSpec.RunnerContainerSecurityContext != nil {
+	if gatling.Spec.PodSpec.RunnerContainerSecurityContext != nil {
 		securityContext = gatling.Spec.PodSpec.RunnerContainerSecurityContext
 	}
 	return securityContext
 }
 
 func (r *GatlingReconciler) getGenerateLocalReport(gatling *gatlingv1alpha1.Gatling) bool {
-	if &gatling.Spec.GenerateLocalReport == nil {
-		return false
-	}
 	return gatling.Spec.GenerateLocalReport
 }
 
