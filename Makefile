@@ -8,7 +8,7 @@ SAMPLE_IMG := gatling:$(IMAGE_TAG)
 # Release version
 VERSION := latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
+CRD_OPTIONS ?= "crd"
 KIND_CLUSTER_NAME ?= "gatling-cluster"
 K8S_NODE_IMAGE ?= v1.32.0
 ENVTEST_K8S_VERSION ?= 1.30.0
@@ -140,7 +140,7 @@ controller-gen: ## Download controller-gen locally if necessary.
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 kustomize: ## Download kustomize locally if necessary.
-	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5@v5.3.0)
+	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5@v5.5.0)
 
 CRD_REF_DOCS = $(shell pwd)/bin/crd-ref-docs
 crd-ref-docs: ## Download crd-ref-docs locally if necessary.
