@@ -37,6 +37,40 @@ func GetGatlingRunnerCommand(
 	generateLocalReport bool) string {
 
 	template := `
+can_use_gatling_3_11_syntax() {
+  version=$1
+
+  # if the version can't be find/parsed, it's better to allow use of newer syntax
+  if [ -z "${version}" ]; then
+	echo 0
+	return
+  fi
+
+  ver_major=$(echo "$version" | cut -d. -f1)
+  ver_minor=$(echo "$version" | cut -d. -f2)
+
+  # Compare major versions
+  if [ "$ver_major" -gt "3" ]; then
+	echo 0
+	return
+  elif [ "$ver_major" -lt "3" ]; then
+	echo 1
+	return
+  fi
+
+  # Compare minor versions
+  if [ "$ver_minor" -gt "10" ]; then
+	echo 0
+	return
+  elif [ "$ver_minor" -lt "10" ]; then
+	echo 1
+	return
+  fi
+
+  # you can't use 3.11 syntax, you're running 3.10.x
+  echo 1
+}
+
 SIMULATIONS_FORMAT=%s
 SIMULATIONS_DIR_PATH=%s
 TEMP_SIMULATIONS_DIR_PATH=%s
@@ -73,7 +107,12 @@ fi
 if [ ${SIMULATIONS_FORMAT} = "bundle" ]; then
   gatling.sh -sf ${SIMULATIONS_DIR_PATH} -s ${SIMULATION_CLASS} -rsf ${RESOURCES_DIR_PATH} -rf ${RESULTS_DIR_PATH} %s %s
 elif [ ${SIMULATIONS_FORMAT} = "gradle" ]; then
-  gradle -Dgatling.core.directory.results=${RESULTS_DIR_PATH} gatlingRun-${SIMULATION_CLASS} 
+  gatling_ver=$(find . -name "build.gradle*" -execdir gradle buildEnvironment \; | grep 'gatling-gradle-plugin:' | sed -n 's/.*:gatling-gradle-plugin:\(.*\)$/\1/p')
+  if [ $(can_use_gatling_3_11_syntax "${gatling_ver}") -eq 0 ]; then
+    gradle -Dgatling.core.directory.results=${RESULTS_DIR_PATH} gatlingRun --simulation=${SIMULATION_CLASS}
+  else
+    gradle -Dgatling.core.directory.results=${RESULTS_DIR_PATH} gatlingRun-${SIMULATION_CLASS}
+  fi
 fi
 
 GATLING_EXIT_STATUS=$?
