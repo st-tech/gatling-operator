@@ -98,7 +98,7 @@ RESULTS_DIR_PATH=testResultsDirectoryPath
 rclone config create s3 s3 env_auth=true region ap-northeast-1
 while true; do
   if [ -f "${RESULTS_DIR_PATH}/FAILED" ]; then
-    echo "Skip transfering gatling results"
+    echo "Skip transferring gatling results"
     break
   fi
   if [ -f "${RESULTS_DIR_PATH}/COMPLETED" ]; then

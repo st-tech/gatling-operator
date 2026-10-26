@@ -106,7 +106,7 @@ RESULTS_DIR_PATH=%s
 rclone config create az azureblob env_auth=true
 while true; do
   if [ -f "${RESULTS_DIR_PATH}/FAILED" ]; then
-    echo "Skip transfering gatling results"
+    echo "Skip transferring gatling results"
     break
   fi
   if [ -f "${RESULTS_DIR_PATH}/COMPLETED" ]; then
