@@ -2,6 +2,13 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/st-tech/gatling-operator)](https://goreportcard.com/report/github.com/st-tech/gatling-operator) [![CI](https://github.com/st-tech/gatling-operator/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/st-tech/gatling-operator/actions/workflows/ci.yml)  [![daily vulnerability scan](https://github.com/st-tech/gatling-operator/actions/workflows/daily-vul-scan.yml/badge.svg?branch=main)](https://github.com/st-tech/gatling-operator/actions/workflows/daily-vul-scan.yml) ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/st-tech/gatling-operator)
 
+> [!WARNING]
+> **This project is no longer maintained.**
+>
+> This repository has been archived and will not receive any further updates, bug fixes, or security patches.
+>
+> This software may contain known or unknown security vulnerabilities. If you choose to use it, you do so entirely at your own risk, and you should carefully assess its security implications before deploying it in any environment. If you need to continue using it, please fork the repository and maintain your own copy at your own responsibility.
+
 [Gatling](https://gatling.io/) is an open source load testing tool that allows to analyze and measure the performance of a variety of services. [Gatling Operator](https://github.com/st-tech/gatling-operator) is a Kubernetes Operator for running automated distributed Gatling load testing.
 
 ## How Gatling Operator works
